@@ -1,2 +1,2 @@
-# functional_error_handling
+# Functional Error Handling
 Code for Pycon2024 Presentation
