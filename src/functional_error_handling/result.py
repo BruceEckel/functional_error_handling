@@ -1,4 +1,4 @@
-from typing import TypeVar, Generic
+from typing import Generic, TypeVar
 from dataclasses import dataclass
 
 T = TypeVar("T")  # Success type
@@ -7,19 +7,14 @@ E = TypeVar("E")  # Error type
 
 @dataclass(frozen=True)
 class Result(Generic[T, E]):
-    value: T | E
-    error: bool
+    pass
 
-    @classmethod
-    def Ok(cls, value: T) -> "Result[T, E]":
-        return cls(value, False)
 
-    @classmethod
-    def Err(cls, error: E) -> "Result[T, E]":
-        return cls(error, True)
+@dataclass(frozen=True)
+class Ok(Result[T, E]):
+    value: T
 
-    def __repr__(self) -> str:
-        if self.error:
-            return f"Error({self.value})"
-        else:
-            return f"Ok({self.value})"
+
+@dataclass(frozen=True)
+class Err(Result[T, E]):
+    error: E
