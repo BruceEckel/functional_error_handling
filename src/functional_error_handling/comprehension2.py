@@ -1,9 +1,9 @@
 from result import Result, Err, Ok
 
 
-def f2(i: int) -> Result[int, ValueError]:
+def f2(i: int) -> Result[int, str]:
     if i == 3:
-        return Err(ValueError("i cannot be 3"))
+        return Err("i cannot be 3")
     else:
         return Ok(i * 2)
 
@@ -19,7 +19,7 @@ for result in results:
             print(f"Error: {error}")
 
 
-def g(i: int) -> Result[int, ValueError]:
+def g(i: int) -> Result[int, str]:
     return f2(i)
 
 
