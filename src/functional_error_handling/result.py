@@ -1,3 +1,5 @@
+#: result.py
+# Result with OK & Err subtypes
 from typing import Generic, TypeVar
 from dataclasses import dataclass
 
@@ -12,9 +14,9 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Ok(Result[ANSWER, ERROR]):
-    value: ANSWER
+    value: ANSWER  # return Ok(answer)
 
 
 @dataclass(frozen=True)
 class Err(Result[ANSWER, ERROR]):
-    error: ERROR
+    error: ERROR  # return Err(error)

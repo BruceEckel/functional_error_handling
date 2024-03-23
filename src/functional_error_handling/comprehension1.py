@@ -1,3 +1,7 @@
+#: Comprehension1.py
+# Exception produces no results, stops everything
+
+
 def f1(i: int) -> int:
     if i == 3:
         raise ValueError("i cannot be 3")

@@ -1,24 +1,26 @@
-from result import Result, Err, Ok
+#: Comprehension2.py
+# Type union aka Sum Type
+# Not terrible, but explicit type seems better...
 
 
-def f2(i: int) -> Result[int, str]:
+def f3(i: int) -> int | str:  # Sum type
     if i == 3:
-        return Err("i cannot be 3")
+        return "i cannot be 3"
     else:
-        return Ok(i * 2)
+        return i * 2
 
 
-results = [f2(i) for i in range(5)]
+results = [f3(i) for i in range(5)]
 print(results)
 """
-[Ok(value=0), Ok(value=2), Ok(value=4), Err(error='i cannot be 3'), Ok(value=8)]
+[0, 2, 4, 'i cannot be 3', 8]
 """
 
 for result in results:
     match result:
-        case Ok(value):
+        case int(value):
             print(value)
-        case Err(error):
+        case str(error):
             print(f"Error: {error}")
 """
 0
@@ -30,13 +32,13 @@ Error: i cannot be 3
 
 
 # Composition: return type enforced
-def g(i: int) -> Result[int, str]:
-    return f2(i)
+def g(i: int) -> int | str:
+    return f3(i)
 
 
 print(g(1))
 print(g(5))
 """
-Ok(value=2)
-Ok(value=10)
+2
+10
 """
