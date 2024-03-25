@@ -1,19 +1,19 @@
 #: Comprehension2.py
 # Type union aka Sum Type
-# Not terrible, but explicit type seems better...
+# Success vs error is not clear
 
 
 def f3(i: int) -> int | str:  # Sum type
-    if i == 3:
-        return "i cannot be 3"
+    if i == 1:
+        return "i cannot be 1"
     else:
         return i * 2
 
 
-results = [f3(i) for i in range(5)]
+results = [f3(i) for i in range(3)]
 print(results)
 """
-[0, 2, 4, 'i cannot be 3', 8]
+[0, 'i cannot be 1', 4]
 """
 
 for result in results:
@@ -24,10 +24,8 @@ for result in results:
             print(f"Error: {error}")
 """
 0
-2
+Error: i cannot be 1
 4
-Error: i cannot be 3
-8
 """
 
 
@@ -39,6 +37,6 @@ def g(i: int) -> int | str:
 print(g(1))
 print(g(5))
 """
-2
+i cannot be 1
 10
 """

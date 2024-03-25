@@ -4,16 +4,16 @@ from result import Result, Err, Ok
 
 
 def f2(i: int) -> Result[int, str]:
-    if i == 3:
-        return Err("i cannot be 3")
+    if i == 1:
+        return Err("i cannot be 1")
     else:
         return Ok(i * 2)
 
 
-results = [f2(i) for i in range(5)]
+results = [f2(i) for i in range(3)]
 print(results)
 """
-[Ok(value=0), Ok(value=2), Ok(value=4), Err(error='i cannot be 3'), Ok(value=8)]
+[Ok(value=0), Err(error='i cannot be 1'), Ok(value=4)]
 """
 
 for result in results:
@@ -24,10 +24,8 @@ for result in results:
             print(f"Error: {error}")
 """
 0
-2
+Error: i cannot be 1
 4
-Error: i cannot be 3
-8
 """
 
 
@@ -39,6 +37,6 @@ def g(i: int) -> Result[int, str]:
 print(g(1))
 print(g(5))
 """
-Ok(value=2)
+Err(error='i cannot be 1')
 Ok(value=10)
 """
