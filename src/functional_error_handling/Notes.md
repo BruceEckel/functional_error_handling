@@ -1,0 +1,1 @@
+- Functional programmers don't have the curse of knowledge, but the damnation of knowledge. It's amazing what they assume you know. Like concurrency, whatever niche they understand, they assume is obvious. (Their focus is figuring out functional programming, not communicating)
