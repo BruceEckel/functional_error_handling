@@ -1,37 +1,42 @@
 #: Comprehension3.py
 # Explicit result type
 from result import Result, Err, Ok
+from typing import reveal_type
 
 
-def f2(i: int) -> Result[int, str]:
+def f3(i: int) -> Result[int, str]:
     if i == 1:
         return Err("i cannot be 1")
     else:
         return Ok(i * 2)
 
 
-results = [f2(i) for i in range(3)]
+results = [f3(i) for i in range(3)]
 print(results)
 """
 [Ok(value=0), Err(error='i cannot be 1'), Ok(value=4)]
 """
 
 for result in results:
+    reveal_type(result)
     match result:
         case Ok(value):
-            print(value)
+            print(f"{value = }")
         case Err(error):
-            print(f"Error: {error}")
+            print(f"{error = }")
 """
-0
-Error: i cannot be 1
-4
+Runtime type is 'Ok'
+value = 0
+Runtime type is 'Err'
+error = 'i cannot be 1'
+Runtime type is 'Ok'
+value = 4
 """
 
 
 # Composition: return type enforced
 def g(i: int) -> Result[int, str]:
-    return f2(i)
+    return f3(i)
 
 
 print(g(1))
