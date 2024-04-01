@@ -7,6 +7,7 @@ authors = [
 ]
 dependencies = [
     "pretty_errors>=1.2.25",
+    "returns>=0.22.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

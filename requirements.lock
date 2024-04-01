@@ -5,7 +5,14 @@
 #   pre: false
 #   features: []
 #   all-features: false
+#   with-sources: false
 
 -e file:.
 colorama==0.4.6
+    # via pretty-errors
 pretty-errors==1.2.25
+    # via functional-error-handling
+returns==0.22.0
+    # via functional-error-handling
+typing-extensions==4.10.0
+    # via returns
