@@ -1,4 +1,4 @@
-# results_pipeline.py
+#: results_pipeline.py
 # Adapted from https://returns.readthedocs.io/en/latest/pages/pipeline.html
 from returns.pipeline import pipe
 from returns.result import Result, Success, Failure
