@@ -1,6 +1,6 @@
-# composed.py
-from returns.result import Result, Success, Failure
-from returns.pipeline import pipe
+#: composed.py
+from returns.result import Result, Success, Failure, attempt
+from returns.pipeline import pipe, is_successful
 from returns.pointfree import bind
 from typing import Callable
 
@@ -10,6 +10,12 @@ def f4(arg: int) -> Result[int, str]:
         return Failure(f"f4({arg = })")
     else:
         return Success(arg * 2)
+
+
+@attempt
+def divzero(arg: int) -> float:  # becomes: Result[float, int]
+    # return Success(10 / arg)
+    return 10 / arg
 
 
 def f5(arg: int) -> Result[str, str]:
@@ -26,9 +32,18 @@ def f6(arg: str) -> Result[str, ValueError]:
 
 composed: Callable[[int], Result[str, ValueError | str]] = pipe(
     f4,
+    # bind(divzero),
     bind(f5),
     bind(f6),
 )
 
+results = [composed(i) for i in range(-1, 3)]
 
-print([composed(i) for i in range(-1, 3)])
+print(results)
+print([r.value_or(None) for r in results])
+
+for r in results:
+    if is_successful(r):
+        print(f"{r.unwrap() = }")
+    else:
+        print(f"{r.failure() = }")
