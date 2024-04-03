@@ -37,12 +37,13 @@ composed: Callable[[int], Result[str, ValueError | str]] = pipe(
     bind(f6),
 )
 
-results = [composed(i) for i in range(-1, 3)]
+print(items := [composed(i) for i in range(-1, 3)])
 
-print(results)
-print([r.value_or(None) for r in results])
+# Extract results, converting failure to None:
+print([r.value_or(None) for r in items])
 
-for r in results:
+# Another way to extract results:
+for r in items:
     if is_successful(r):
         print(f"{r.unwrap() = }")
     else:

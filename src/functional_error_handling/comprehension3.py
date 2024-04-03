@@ -11,15 +11,15 @@ def f3(i: int) -> Result[int, str]:
         return Ok(i * 2)
 
 
-results = [f3(i) for i in range(3)]
-print(results)
+items = [f3(i) for i in range(3)]
+print(items)
 """
 [Ok(value=0), Err(error='i cannot be 1'), Ok(value=4)]
 """
 
-for result in results:
-    reveal_type(result)
-    match result:
+for r in items:
+    reveal_type(r)
+    match r:
         case Ok(value):
             print(f"{value = }")
         case Err(error):
