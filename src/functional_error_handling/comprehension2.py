@@ -10,13 +10,12 @@ def f2(i: int) -> int | str:  # Sum type
         return i * 2
 
 
-items = [f2(i) for i in range(3)]
-print(items)
+print(outputs := [f2(i) for i in range(3)])
 """
 [0, 'i cannot be 1', 4]
 """
 
-for r in items:
+for r in outputs:
     match r:
         case int(value):
             print(value)
