@@ -13,7 +13,7 @@ def a(arg: int) -> Result[int, str]:
     return Success(arg)
 
 
-# Convert an existing function:
+# Convert existing function:
 @attempt
 def b(arg: int) -> int:  # becomes Result[int, int]
     print(f"b({arg}): {1 / arg}")
