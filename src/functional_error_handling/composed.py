@@ -51,3 +51,15 @@ for r in outputs:
         print(f"{r.unwrap() = }")
     else:
         print(f"{r.failure() = }")
+
+# fmt: off
+def do_notation(i: int):
+    return Result.do(
+        cr
+        for ar in a(i)
+        for br in b(ar)
+        for cr in c(br)
+    )
+
+
+print([do_notation(i) for i in inputs])
