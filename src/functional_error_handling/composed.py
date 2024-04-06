@@ -1,37 +1,38 @@
 #: composed.py
-from returns.result import Result, Success, Failure, attempt
-from returns.pipeline import pipe, is_successful
+from returns.result import Result, Success, Failure, safe
+from returns.pipeline import flow, is_successful
 from returns.pointfree import bind
-from typing import Callable
-
-# Is there a way to catch an exception and convert it to a typed Failure?
 
 
-def a(arg: int) -> Result[int, str]:
-    if arg == 1:
-        return Failure(f"a({arg = })")
-    return Success(arg)
+def a(i: int) -> Result[int, str]:
+    if i == 1:
+        return Failure(f"a({i = })")
+    return Success(i)
 
 
-# Convert existing function:
-@attempt
-def b(arg: int) -> int:  # becomes Result[int, int]
-    print(f"b({arg}): {1 / arg}")
-    return arg
+# Convert existing function.
+# Return type becomes Result[int, ZeroDivisionError]
+@safe
+def b(i: int) -> int:
+    print(f"b({i}): {1 / i}")
+    return i
 
 
-# Use an exception (but don't raise it):
-def c(arg: int) -> Result[str, ValueError]:
-    if arg == -1:
-        return Failure(ValueError(f"c({arg = })"))
-    return Success(f"{arg}!")
+# Use an exception for extra info (but don't raise it):
+def c(i: int) -> Result[str, ValueError]:
+    if i == -1:
+        return Failure(ValueError(f"c({i = })"))
+    return Success(f"{i}!")
 
 
-composed: Callable[[int], Result[str, ValueError | str | int]] = pipe(
-    a,
-    bind(b),
-    bind(c),
-)
+def composed(i: int) -> Result[str, ValueError | str | int]:
+    return flow(
+        i,
+        a,
+        bind(b),
+        bind(c),
+    )
+
 
 inputs = range(-1, 3)
 print(f"inputs = {list(inputs)}")
@@ -60,6 +61,5 @@ def do_notation(i: int):
         for br in b(ar)
         for cr in c(br)
     )
-
 
 print([do_notation(i) for i in inputs])
