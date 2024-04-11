@@ -1,8 +1,9 @@
 #: composed.py
-# Is there a way to have multiple arguments to compose()?
+# Is there a way to have multiple arguments to composed()?
 from returns.result import Result, Success, Failure, safe
-from returns.pipeline import flow, is_successful
+from returns.pipeline import flow
 from returns.pointfree import bind
+from test import test
 
 
 def a(i: int) -> Result[int, str]:
@@ -35,38 +36,4 @@ def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
     )
 
 
-def test(fn, inputs=range(-1, 3)) -> str:
-    results = [f"inputs = {list(inputs)}"]
-    outputs = [fn(i) for i in inputs]
-
-    for e in zip(inputs, outputs):
-        results.append(f"{e[0]:>2}: {e[1]}")
-
-    # Extract results, converting failure to None:
-    outputs2 = [r.value_or(None) for r in outputs]
-
-    results.append(str(outputs2))
-    results.append(str(list(filter(None, outputs2))))
-
-    # Another way to extract results:
-    for r in outputs:
-        if is_successful(r):
-            results.append(f"{r.unwrap() = }")
-        else:
-            results.append(f"{r.failure() = }")
-
-    return "\n".join(results)
-
-
 print(test(composed))
-
-# fmt: off
-def do_notation(i: int):
-    return Result.do(
-        cr
-        for ar in a(i)
-        for br in b(ar)
-        for cr in c(br)
-    )
-
-assert test(do_notation) == test(composed)

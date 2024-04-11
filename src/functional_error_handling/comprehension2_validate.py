@@ -1,6 +1,7 @@
-#: Comprehension2.py
+#: Comprehension2_validate.py
 # Type union aka Sum Type
 # Success vs error is not clear
+from validate_output import validate
 
 
 def f2(i: int) -> int | str:  # Sum type
@@ -39,3 +40,5 @@ print(g(5))
 i cannot be 1
 10
 """
+
+# validate()
