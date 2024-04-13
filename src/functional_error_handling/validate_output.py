@@ -1,66 +1,59 @@
 #: validate_output.py
-# Validates string output blocks tagged with '='
+# Validate example output using 'console == "ouput string"'
 import sys
-from pathlib import Path
+import atexit
 from io import StringIO
-import textwrap
+from typing import Optional, TextIO
+from dataclasses import dataclass, field
 
 
-class CaptureOutput:
-    def __init__(self):
-        # Save reference to original standard output:
-        self.original_stdout = sys.stdout
+class TeeStream:
+    "Writes to two streams."
 
-    def __enter__(self):
-        self.captured_output = StringIO()
-        # Redirect standard output to StringIO:
-        sys.stdout = self.captured_output
-        return self
+    def __init__(self, main_stream: TextIO, capture_stream: StringIO):
+        self.main_stream = main_stream
+        self.capture_stream = capture_stream
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        # Reset standard output:
-        sys.stdout = self.original_stdout
-
-    def get(self) -> str:
-        return self.captured_output.getvalue().strip()
+    def write(self, data):
+        self.main_stream.write(data)
+        self.capture_stream.write(data)
 
     def flush(self):
-        self.captured_output = StringIO()
-        sys.stdout = self.captured_output
+        self.main_stream.flush()
+        self.capture_stream.flush()
 
 
-def compare_output_with_expected(code: str):
-    parts = code.split('"""=')
-    code_executable = parts[0]
-    expected_outputs = parts[1:]
+@dataclass
+class OutputValidator:
+    captured_output: StringIO = field(default_factory=StringIO, init=False)
+    original_stdout: Optional[TextIO] = field(default=None, init=False)
+    original_stderr: Optional[TextIO] = field(default=None, init=False)
 
-    # Execute the initial block of code
-    with CaptureOutput() as capture:
-        print(f"{code_executable = }")
-        exec(code_executable, globals())
+    def __post_init__(self):
+        self.start()
+        atexit.register(self.stop)  # Ensure cleanup on exit
 
-    # Iterate over expected outputs and compare
-    for expected in expected_outputs:
-        expected = expected.strip()
-        actual = capture.get().strip()
-        if actual != expected:
-            print(
-                textwrap.dedent(
-                    f"""Mismatch:
-                    {expected = }
-                    {actual}
-                    """
-                )
-            )
-        capture.flush()  # Prepare for the next iteration
+    def start(self):
+        "Start capturing and mirroring output."
+        self.original_stdout = sys.stdout
+        self.original_stderr = sys.stderr
+        sys.stdout = TeeStream(self.original_stdout, self.captured_output)
+        sys.stderr = TeeStream(self.original_stderr, self.captured_output)
+
+    def stop(self):
+        "Restore original stdout and stderr, stop capturing."
+        sys.stdout = self.original_stdout
+        sys.stderr = self.original_stderr
+
+    def __eq__(self, other: str) -> bool:  # type: ignore
+        "Compare the captured output against the expected output."
+        captured_text = self.captured_output.getvalue().strip()
+        expected_text = other.strip()
+        if captured_text != expected_text:
+            print(f"Expected:\n{expected_text}\nGot:\n{captured_text}")
+        self.captured_output = StringIO()  # Clear the buffer
+        return True
 
 
-def validate():
-    # Read the current file and check it
-    # Determine the current file path
-    current_file_path = Path(__file__)
-    print(f"checking {current_file_path = }")
-    # Read the content of the current file
-    code = current_file_path.read_text()
-    # Perform output comparison
-    compare_output_with_expected(code)
+# Create a global instance to use in scripts
+console = OutputValidator()
