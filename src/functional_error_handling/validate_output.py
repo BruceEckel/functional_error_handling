@@ -46,12 +46,16 @@ class OutputValidator:
         sys.stderr = self.original_stderr
 
     def __eq__(self, other: str) -> bool:  # type: ignore
-        "Compare the captured output against the expected output."
+        "Compare captured output to expected output."
+        sys.stdout.flush()
+        sys.stderr.flush()
         captured_text = self.captured_output.getvalue().strip()
         expected_text = other.strip()
+        self.captured_output = StringIO()  # Clear the buffer for the next capture
+        sys.stdout = TeeStream(self.original_stdout, self.captured_output)
+        sys.stderr = TeeStream(self.original_stderr, self.captured_output)
         if captured_text != expected_text:
-            print(f"Expected:\n{expected_text}\nGot:\n{captured_text}")
-        self.captured_output = StringIO()  # Clear the buffer
+            print(f"! Expected:\n{expected_text}\n! Got:\n{captured_text}")
         return True
 
 
