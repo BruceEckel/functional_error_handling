@@ -61,6 +61,8 @@ console = OutputValidator()  # Global to use in scripts
 
 
 """ Notes:
+Can we auto-generate the outputs?
+
 If you directly assign sys.stdout or sys.stderr as defaults, like
 original_stdout: TextIO = sys.stdout
 the value is evaluated at the time the class is defined, not when
