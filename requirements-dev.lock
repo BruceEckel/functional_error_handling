@@ -10,7 +10,16 @@
 -e file:.
 colorama==0.4.6
     # via pretty-errors
+    # via pytest
+iniconfig==2.0.0
+    # via pytest
+packaging==24.0
+    # via pytest
+pluggy==1.4.0
+    # via pytest
 pretty-errors==1.2.25
+    # via functional-error-handling
+pytest==8.1.1
     # via functional-error-handling
 returns==0.22.0
     # via functional-error-handling

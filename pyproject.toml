@@ -8,6 +8,7 @@ authors = [
 dependencies = [
     "pretty_errors>=1.2.25",
     "returns>=0.22.0",
+    "pytest>=8.1.1",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"
@@ -25,3 +26,10 @@ allow-direct-references = true
 
 [tool.pyright]
 reportUnusedExpression = false
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "src/functional_error_handling"
+]
