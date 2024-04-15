@@ -7,18 +7,17 @@ from typing import TextIO
 from dataclasses import dataclass, field
 
 
+@dataclass(frozen=True)
 class TeeStream:
     "Writes to two streams."
+    main_stream: TextIO
+    capture_stream: StringIO
 
-    def __init__(self, main_stream: TextIO, capture_stream: StringIO):
-        self.main_stream = main_stream
-        self.capture_stream = capture_stream
-
-    def write(self, data):
+    def write(self, data: str) -> None:
         self.main_stream.write(data)
         self.capture_stream.write(data)
 
-    def flush(self):
+    def flush(self) -> None:
         self.main_stream.flush()
         self.capture_stream.flush()
 
