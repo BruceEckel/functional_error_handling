@@ -1,6 +1,6 @@
 #: do_notation.py
-from composed import a, b, c, composed
 from returns.result import Result
+from composed import a, b, c, composed
 from test import test
 
 

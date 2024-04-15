@@ -1,6 +1,7 @@
-#: Comprehension2.py
+#: Comprehension2_validate.py
 # Type union aka Sum Type
 # Success vs error is not clear
+from validate_output import console
 
 
 def f2(i: int) -> int | str:  # Sum type
@@ -11,9 +12,7 @@ def f2(i: int) -> int | str:  # Sum type
 
 
 print(outputs := [f2(i) for i in range(3)])
-"""=
-[0, 'i cannot be 1', 4]
-"""
+console == "[0, 'i cannot be 1', 4]"
 
 for r in outputs:
     match r:
@@ -21,7 +20,7 @@ for r in outputs:
             print(value)
         case str(error):
             print(f"Error: {error}")
-"""=
+console == """
 0
 Error: i cannot be 1
 4
@@ -35,7 +34,7 @@ def g(i: int) -> int | str:
 
 print(g(1))
 print(g(5))
-"""=
+console == """
 i cannot be 1
 10
 """

@@ -3,7 +3,7 @@
 import sys
 import atexit
 from io import StringIO
-from typing import Optional, TextIO
+from typing import TextIO
 from dataclasses import dataclass, field
 
 
@@ -26,8 +26,8 @@ class TeeStream:
 @dataclass
 class OutputValidator:
     captured_output: StringIO = field(default_factory=StringIO, init=False)
-    original_stdout: Optional[TextIO] = field(default=None, init=False)
-    original_stderr: Optional[TextIO] = field(default=None, init=False)
+    original_stdout: TextIO = field(default_factory=lambda: sys.stdout, init=False)
+    original_stderr: TextIO = field(default_factory=lambda: sys.stderr, init=False)
 
     def __post_init__(self):
         self.start()
@@ -35,8 +35,6 @@ class OutputValidator:
 
     def start(self):
         "Start capturing and mirroring output."
-        self.original_stdout = sys.stdout
-        self.original_stderr = sys.stderr
         sys.stdout = TeeStream(self.original_stdout, self.captured_output)
         sys.stderr = TeeStream(self.original_stderr, self.captured_output)
 
@@ -51,13 +49,37 @@ class OutputValidator:
         sys.stderr.flush()
         captured_text = self.captured_output.getvalue().strip()
         expected_text = other.strip()
-        self.captured_output = StringIO()  # Clear the buffer for the next capture
+        assert (
+            captured_text == expected_text
+        ), f"Expected:\n{expected_text.strip()}\nGot:\n{captured_text}"
+        self.captured_output = StringIO()  # Clear buffer for the next capture
         sys.stdout = TeeStream(self.original_stdout, self.captured_output)
         sys.stderr = TeeStream(self.original_stderr, self.captured_output)
-        if captured_text != expected_text:
-            print(f"! Expected:\n{expected_text}\n! Got:\n{captured_text}")
         return True
 
 
-# Create a global instance to use in scripts
-console = OutputValidator()
+console = OutputValidator()  # Global to use in scripts
+
+
+""" Notes:
+If you directly assign sys.stdout or sys.stderr as defaults, like
+original_stdout: TextIO = sys.stdout
+the value is evaluated at the time the class is defined, not when
+instances are created. This means every instance would use the
+same sys.stdout and sys.stderr that were present when the class
+was first loaded, ignoring any changes made to these streams between
+the class definition and instance creation. By using lambda: sys.stdout,
+the function is executed each time an instance is initialized, thereby
+always capturing the current sys.stdout and sys.stderr at that moment.
+This is more flexible and accurate in environments where the standard
+streams might be redirected or modified.
+
+
+In a Python dataclass, the init=False parameter within a field
+specification indicates that the field should not be included
+as a parameter in the automatically generated __init__ method
+of the dataclass. This means that the field will not be initialized
+via the constructor of the class, but rather it should be set or
+initialized internally within the class, typically in methods
+like __post_init__ or directly within the body of the class.
+"""

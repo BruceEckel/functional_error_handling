@@ -2,6 +2,7 @@
 # Explicit result type
 from result import Result, Err, Ok
 from typing import reveal_type
+from validate_output import console
 
 
 def f3(i: int) -> Result[int, str]:
@@ -12,7 +13,7 @@ def f3(i: int) -> Result[int, str]:
 
 
 print(outputs := [f3(i) for i in range(3)])
-"""
+console == """
 [Ok(value=0), Err(error='i cannot be 1'), Ok(value=4)]
 """
 
@@ -23,7 +24,7 @@ for r in outputs:
             print(f"{value = }")
         case Err(error):
             print(f"{error = }")
-"""
+console == """
 Runtime type is 'Ok'
 value = 0
 Runtime type is 'Err'
@@ -40,7 +41,7 @@ def g(i: int) -> Result[int, str]:
 
 print(g(1))
 print(g(5))
-"""
+console == """
 Err(error='i cannot be 1')
 Ok(value=10)
 """
