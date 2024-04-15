@@ -20,10 +20,6 @@ def run_script(file_name, throws_exception=False):
         ), f"Script {file_name} failed with output:\n{result.stdout}\n{result.stderr}"
 
 
-def test_composed():
-    run_script("composed.py")
-
-
 def test_comprehension1():
     run_script("comprehension1.py", throws_exception=True)
 
@@ -34,6 +30,10 @@ def test_comprehension2():
 
 def test_comprehension3():
     run_script("comprehension3.py")
+
+
+def test_composed():
+    run_script("composed.py")
 
 
 def test_do_notation():
