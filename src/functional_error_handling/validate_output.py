@@ -13,7 +13,7 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class TeeStream:
-    "Writes to two streams."
+    "Writes to two streams"
     main_stream: TextIO
     capture_stream: StringIO
 
@@ -37,17 +37,17 @@ class OutputValidator:
         atexit.register(self.stop)  # Ensure cleanup on exit
 
     def start(self):
-        "Start capturing and mirroring output."
+        "Start capturing and mirroring output"
         sys.stdout = TeeStream(self.original_stdout, self.captured_output)
         sys.stderr = TeeStream(self.original_stderr, self.captured_output)
 
     def stop(self):
-        "Restore original stdout and stderr, stop capturing."
+        "Restore original stdout and stderr, stop capturing"
         sys.stdout = self.original_stdout
         sys.stderr = self.original_stderr
 
     def __eq__(self, other: str) -> bool:  # type: ignore
-        "Compare captured output to expected output."
+        "Compare captured output to expected output"
         sys.stdout.flush()
         sys.stderr.flush()
         captured_text = self.captured_output.getvalue().strip()
@@ -73,7 +73,7 @@ def capture_script_output(script_path: Path) -> SyntaxWarning:
 
 
 def update_script_with_output(script_path, outputs):
-    """Read the script, find 'console ==' and update the outputs."""
+    "Read the script, find 'console ==' and update the outputs"
     content = Path(script_path).read_text()
     # Handle both triple-double-quoted and single-double-quoted strings
     pattern = re.compile(r'console\s*==\s*(?:"""[\s\S]*?"""|"[^"]*")')
@@ -100,14 +100,14 @@ def main(file_args: List[str]):
                 ]  # Extract the actual outputs
                 print(f"{outputs = }")
                 update_script_with_output(file, outputs)
-                print(f"Updated {file} with actual outputs.")
+                print(f"Updated {file} with actual outputs")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Update 'console ==' sections of Python scripts"
     )
-    parser.add_argument("files", nargs="+", help="File names or patterns to process.")
+    parser.add_argument("files", nargs="+", help="File names or patterns to process")
     args = parser.parse_args()
     main(args.files)
 
