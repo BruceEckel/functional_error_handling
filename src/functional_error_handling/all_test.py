@@ -2,13 +2,18 @@
 # Works with pytest or as a standalone test
 import subprocess
 from pathlib import Path
+import sys
+import os
 
 
 def run_script(file_name, throws_exception=False):
     "Run a Python script using subprocess and assert it exits OK"
     script_path = Path(__file__).parent / file_name
     result = subprocess.run(
-        ["python", str(script_path)], capture_output=True, text=True
+        [sys.executable, str(script_path)],
+        capture_output=True,
+        text=True,
+        env=os.environ.copy(),
     )
     if throws_exception:
         assert (
