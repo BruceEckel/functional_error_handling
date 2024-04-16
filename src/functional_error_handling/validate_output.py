@@ -5,6 +5,10 @@ import atexit
 from io import StringIO
 from typing import TextIO
 from dataclasses import dataclass, field
+import argparse
+import subprocess
+import re
+from pathlib import Path
 
 
 @dataclass(frozen=True)
@@ -60,9 +64,52 @@ class OutputValidator:
 console = OutputValidator()  # Global to use in scripts
 
 
-""" Notes:
-Can we auto-generate the outputs?
+def capture_script_output(script_path: Path) -> SyntaxWarning:
+    "Execute a script and capture its output"
+    result = subprocess.run(
+        [sys.executable, str(script_path)], capture_output=True, text=True
+    )
+    return result.stdout
 
+
+def update_script_with_output(script_path: Path, outputs) -> None:
+    "Read the script, find 'console ==' and update the outputs"
+    content = Path(script_path).read_text()
+    pattern = re.compile(r'(console\s*==\s*"""[\s\S]*?""")')
+
+    def replace_with_output(match):
+        current_output = outputs.pop(0) if outputs else ""
+        return f'console == """\n{current_output.strip()}\n"""'
+
+    new_content = pattern.sub(replace_with_output, content)
+    Path(script_path).write_text(new_content)
+
+
+def main(files):
+    for file_pattern in files:
+        script_path = Path(file_pattern)
+        print(f"Processing {script_path}...")
+        output = capture_script_output(script_path)
+        outputs = output.split('console == """')[
+            1:
+        ]  # Split the output based on our delimiter
+        outputs = [
+            out.split('"""')[0] for out in outputs
+        ]  # Extract the actual outputs between the delimiters
+        update_script_with_output(script_path, outputs)
+        print(f"Updated {script_path} 'console ==' outputs.")
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        description="Update 'console ==' sections of Python scripts"
+    )
+    parser.add_argument("files", nargs="+", help="File names or patterns to process.")
+    args = parser.parse_args()
+    main(args.files)
+
+
+""" Notes:
 If you directly assign sys.stdout or sys.stderr as defaults, like
 original_stdout: TextIO = sys.stdout
 the value is evaluated at the time the class is defined, not when
