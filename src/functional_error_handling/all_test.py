@@ -38,3 +38,11 @@ def test_composed():
 
 def test_do_notation():
     run_script("do_notation.py")
+
+
+if __name__ == "__main__":
+    test_comprehension1()
+    test_comprehension2()
+    test_comprehension3()
+    test_composed()
+    test_do_notation()
