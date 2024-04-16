@@ -98,6 +98,7 @@ def main(file_args: List[str]):
                 outputs = re.split(r'console\s*==\s*"""|"""', output)[
                     1::2
                 ]  # Extract the actual outputs
+                print(f"{outputs = }")
                 update_script_with_output(file, outputs)
                 print(f"Updated {file} with actual outputs.")
 
