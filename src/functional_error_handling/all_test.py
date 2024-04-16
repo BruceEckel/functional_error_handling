@@ -9,11 +9,12 @@ import os
 def run_script(file_name, throws_exception=False):
     "Run a Python script using subprocess and assert it exits OK"
     script_path = Path(__file__).parent / file_name
+    env = os.environ.copy()
+    # env["PYTHONPATH"] = str(
+    #     Path(__file__).parent
+    # )  # Ensure local modules can be imported
     result = subprocess.run(
-        [sys.executable, str(script_path)],
-        capture_output=True,
-        text=True,
-        env=os.environ.copy(),
+        [sys.executable, str(script_path)], capture_output=True, text=True, env=env
     )
     if throws_exception:
         assert (
