@@ -3,7 +3,7 @@
 import sys
 import atexit
 from io import StringIO
-from typing import TextIO
+from typing import List, TextIO
 from dataclasses import dataclass, field
 import argparse
 import subprocess
@@ -66,38 +66,40 @@ console = OutputValidator()  # Global to use in scripts
 
 def capture_script_output(script_path: Path) -> SyntaxWarning:
     "Execute a script and capture its output"
-    result = subprocess.run(
+    result = subprocess.run(  # sys.executable is the Python interpreter
         [sys.executable, str(script_path)], capture_output=True, text=True
     )
     return result.stdout
 
 
-def update_script_with_output(script_path: Path, outputs) -> None:
-    "Read the script, find 'console ==' and update the outputs"
+def update_script_with_output(script_path, outputs):
+    """Read the script, find 'console ==' and update the outputs."""
     content = Path(script_path).read_text()
-    pattern = re.compile(r'(console\s*==\s*"""[\s\S]*?""")')
+    # Handle both triple-double-quoted and single-double-quoted strings
+    pattern = re.compile(r'console\s*==\s*(?:"""[\s\S]*?"""|"[^"]*")')
 
     def replace_with_output(match):
         current_output = outputs.pop(0) if outputs else ""
-        return f'console == """\n{current_output.strip()}\n"""'
+        # Decide which quote to use based on matched quote type
+        quote_type = '"""' if '"""' in match.group(0) else '"'
+        return f"console == {quote_type}\n{current_output.strip()}\n{quote_type}"
 
     new_content = pattern.sub(replace_with_output, content)
     Path(script_path).write_text(new_content)
 
 
-def main(files):
-    for file_pattern in files:
-        script_path = Path(file_pattern)
-        print(f"Processing {script_path}...")
-        output = capture_script_output(script_path)
-        outputs = output.split('console == """')[
-            1:
-        ]  # Split the output based on our delimiter
-        outputs = [
-            out.split('"""')[0] for out in outputs
-        ]  # Extract the actual outputs between the delimiters
-        update_script_with_output(script_path, outputs)
-        print(f"Updated {script_path} 'console ==' outputs.")
+def main(file_args: List[str]):
+    this_script_name = Path(__file__).name
+    for file_pattern in file_args:
+        for file in Path(".").glob(file_pattern):
+            if file.name.endswith(".py") and file.name != this_script_name:
+                print(f"Processing {file}...")
+                output = capture_script_output(file)
+                outputs = re.split(r'console\s*==\s*"""|"""', output)[
+                    1::2
+                ]  # Extract the actual outputs
+                update_script_with_output(file, outputs)
+                print(f"Updated {file} with actual outputs.")
 
 
 if __name__ == "__main__":
