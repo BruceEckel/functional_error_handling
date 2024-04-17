@@ -1,5 +1,6 @@
 #: validate_output.py
 # Validate example output using 'console == "output string"'
+# Can also use triple quotes: 'console == """output string"""'
 import sys
 import atexit
 from io import StringIO
@@ -63,38 +64,43 @@ class OutputValidator:
 
 console = OutputValidator()  # Global to use in scripts
 
-# Remainder of file is for updating 'console ==' expressions
+# Remainder of file is for updating 'console ==' expressions in scripts
+# python validate_output.py *  # Checks all python scripts
 
 
 def capture_script_output(script_path: Path, temp_content: str) -> str:
     "Temporarily rewrite the script for output capture, run it, then restore original"
     original_content = script_path.read_text()
-    script_path.write_text(
-        temp_content
-    )  # Write temporary content that does not redirect output
+    script_path.write_text(temp_content)  # temp_content does not redirect output
 
     try:
         result = subprocess.run(
             [sys.executable, str(script_path)], capture_output=True, text=True
         )
         return result.stdout
-    finally:
-        script_path.write_text(
-            original_content
-        )  # Restore original content no matter what happens
+    finally:  # Always restore original content
+        script_path.write_text(original_content)
 
 
-def update_script_with_output(script_path, outputs) -> bool:
+def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     "Read script, find 'console ==' and update outputs"
     original_content = script_path.read_text()
 
     # Regex to handle both triple-double-quoted and single-double-quoted strings
-    pattern = re.compile(r'console\s*==\s*(?:"""[\s\S]*?"""|"[^"]*")')
+    pattern = re.compile(r'(console\s*==\s*"""[\s\S]*?"""|console\s*==\s*"[^"]*")')
 
     def replace_with_output(match):
-        current_output = outputs.pop(0) if outputs else ""
+        current_output = outputs.pop(0).strip() if outputs else ""
         quote_type = '"""' if '"""' in match.group(0) else '"'
-        return f"console == {quote_type}\n{current_output.strip()}\n{quote_type}"
+
+        match quote_type:
+            case '"""':
+                formatted_output = f"\n{current_output}\n"
+            case '"':
+                # Single quotes cannot contain newlines:
+                formatted_output = current_output.replace("\n", " ")
+
+        return f"console == {quote_type}{formatted_output}{quote_type}"
 
     new_content = pattern.sub(replace_with_output, original_content)
 
@@ -117,7 +123,7 @@ def main(file_args: List[str]):
                     temp_content = content.replace(console_import_line, "console = ''")
                     output = capture_script_output(file, temp_content)
                     print(f"\n{output = }\n")
-                    outputs = re.split(r'console\s*==\s*"""|"""', output)[1::2]
+                    outputs = [out.strip() for out in output.split("\n") if out.strip()]
                     if update_script_with_output(file, outputs):
                         print(f"Updated {file} with console outputs.")
                     else:
