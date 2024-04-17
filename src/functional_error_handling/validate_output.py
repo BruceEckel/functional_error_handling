@@ -9,6 +9,7 @@ import argparse
 import subprocess
 import re
 from pathlib import Path
+from xmlrpc.client import Boolean
 
 
 @dataclass(frozen=True)
@@ -64,43 +65,77 @@ class OutputValidator:
 console = OutputValidator()  # Global to use in scripts
 
 
-def capture_script_output(script_path: Path) -> SyntaxWarning:
-    "Execute a script and capture its output"
-    result = subprocess.run(  # sys.executable is the Python interpreter
-        [sys.executable, str(script_path)], capture_output=True, text=True
-    )
-    return result.stdout
+def capture_script_output(script_path: Path, temp_content: str) -> str:
+    "Temporarily rewrite the script for output capture, run it, then restore original"
+    original_content = script_path.read_text()
+    script_path.write_text(
+        temp_content
+    )  # Write temporary content that does not redirect output
+
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script_path)], capture_output=True, text=True
+        )
+        return result.stdout
+    finally:
+        script_path.write_text(
+            original_content
+        )  # Restore original content no matter what happens
 
 
-def update_script_with_output(script_path, outputs):
-    "Read the script, find 'console ==' and update the outputs"
-    content = Path(script_path).read_text()
-    # Handle both triple-double-quoted and single-double-quoted strings
+# def update_script_with_output(script_path, outputs):
+#     "Read the script, find 'console ==' and update the outputs"
+#     content = Path(script_path).read_text()
+#     # Handle both triple-double-quoted and single-double-quoted strings
+#     pattern = re.compile(r'console\s*==\s*(?:"""[\s\S]*?"""|"[^"]*")')
+
+#     def replace_with_output(match):
+#         current_output = outputs.pop(0) if outputs else ""
+#         # Decide which quote to use based on matched quote type
+#         quote_type = '"""' if '"""' in match.group(0) else '"'
+#         return f"console == {quote_type}\n{current_output.strip()}\n{quote_type}"
+
+#     new_content = pattern.sub(replace_with_output, content)
+#     Path(script_path).write_text(new_content)
+
+
+def update_script_with_output(script_path, outputs) -> Boolean:
+    "Read script, find 'console ==' and update outputs"
+    original_content = script_path.read_text()
+
+    # Regex to handle both triple-double-quoted and single-double-quoted strings
     pattern = re.compile(r'console\s*==\s*(?:"""[\s\S]*?"""|"[^"]*")')
 
     def replace_with_output(match):
         current_output = outputs.pop(0) if outputs else ""
-        # Decide which quote to use based on matched quote type
         quote_type = '"""' if '"""' in match.group(0) else '"'
         return f"console == {quote_type}\n{current_output.strip()}\n{quote_type}"
 
-    new_content = pattern.sub(replace_with_output, content)
-    Path(script_path).write_text(new_content)
+    new_content = pattern.sub(replace_with_output, original_content)
+
+    # Write back to the file only if changes have occurred
+    if new_content != original_content:
+        script_path.write_text(new_content)
+        return True  # Changed
+    return False  # Unchanged
 
 
 def main(file_args: List[str]):
     this_script_name = Path(__file__).name
+    console_import_line = "from validate_output import console"
     for file_pattern in file_args:
         for file in Path(".").glob(file_pattern):
             if file.name.endswith(".py") and file.name != this_script_name:
-                print(f"Processing {file}...")
-                output = capture_script_output(file)
-                outputs = re.split(r'console\s*==\s*"""|"""', output)[
-                    1::2
-                ]  # Extract the actual outputs
-                print(f"{outputs = }")
-                update_script_with_output(file, outputs)
-                print(f"Updated {file} with actual outputs")
+                content = file.read_text()
+                if console_import_line in content:
+                    print(f"Processing {file}", end=" ... ")
+                    temp_content = content.replace(console_import_line, "console = ''")
+                    output = capture_script_output(file, temp_content)
+                    outputs = re.split(r'console\s*==\s*"""|"""', output)[1::2]
+                    if update_script_with_output(file, outputs):
+                        print(f"Updated {file} with console outputs.")
+                    else:
+                        print(f"No changes made to {file}.")
 
 
 if __name__ == "__main__":
@@ -108,8 +143,7 @@ if __name__ == "__main__":
         description="Update 'console ==' sections of Python scripts"
     )
     parser.add_argument("files", nargs="+", help="File names or patterns to process")
-    args = parser.parse_args()
-    main(args.files)
+    main(parser.parse_args().files)
 
 
 """ Notes:

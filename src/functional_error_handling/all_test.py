@@ -24,6 +24,7 @@ def run_script(file_name, throws_exception=False):
         assert (
             result.returncode == 0
         ), f"Script {file_name} failed with output:\n{result.stdout}\n{result.stderr}"
+    print(f"{file_name} completed")
 
 
 def test_comprehension1():
