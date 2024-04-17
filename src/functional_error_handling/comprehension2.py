@@ -1,4 +1,4 @@
-#: Comprehension2_validate.py
+#: comprehension2.py
 # Type union aka Sum Type
 # Success vs error is not clear
 from validate_output import console

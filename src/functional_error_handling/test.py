@@ -1,3 +1,5 @@
+#: test.py
+# Runs tests on function 'fn'
 from returns.pipeline import is_successful
 
 
