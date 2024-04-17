@@ -1,5 +1,5 @@
 #: validate_output.py
-# Validate example output using 'console == "ouput string"'
+# Validate example output using 'console == "output string"'
 import sys
 import atexit
 from io import StringIO
@@ -9,7 +9,6 @@ import argparse
 import subprocess
 import re
 from pathlib import Path
-from xmlrpc.client import Boolean
 
 
 @dataclass(frozen=True)
@@ -64,6 +63,8 @@ class OutputValidator:
 
 console = OutputValidator()  # Global to use in scripts
 
+# Remainder of file is for updating 'console ==' expressions
+
 
 def capture_script_output(script_path: Path, temp_content: str) -> str:
     "Temporarily rewrite the script for output capture, run it, then restore original"
@@ -83,23 +84,7 @@ def capture_script_output(script_path: Path, temp_content: str) -> str:
         )  # Restore original content no matter what happens
 
 
-# def update_script_with_output(script_path, outputs):
-#     "Read the script, find 'console ==' and update the outputs"
-#     content = Path(script_path).read_text()
-#     # Handle both triple-double-quoted and single-double-quoted strings
-#     pattern = re.compile(r'console\s*==\s*(?:"""[\s\S]*?"""|"[^"]*")')
-
-#     def replace_with_output(match):
-#         current_output = outputs.pop(0) if outputs else ""
-#         # Decide which quote to use based on matched quote type
-#         quote_type = '"""' if '"""' in match.group(0) else '"'
-#         return f"console == {quote_type}\n{current_output.strip()}\n{quote_type}"
-
-#     new_content = pattern.sub(replace_with_output, content)
-#     Path(script_path).write_text(new_content)
-
-
-def update_script_with_output(script_path, outputs) -> Boolean:
+def update_script_with_output(script_path, outputs) -> bool:
     "Read script, find 'console ==' and update outputs"
     original_content = script_path.read_text()
 
@@ -131,6 +116,7 @@ def main(file_args: List[str]):
                     print(f"Processing {file}", end=" ... ")
                     temp_content = content.replace(console_import_line, "console = ''")
                     output = capture_script_output(file, temp_content)
+                    print(f"\n{output = }\n")
                     outputs = re.split(r'console\s*==\s*"""|"""', output)[1::2]
                     if update_script_with_output(file, outputs):
                         print(f"Updated {file} with console outputs.")
@@ -158,7 +144,6 @@ the function is executed each time an instance is initialized, thereby
 always capturing the current sys.stdout and sys.stderr at that moment.
 This is more flexible and accurate in environments where the standard
 streams might be redirected or modified.
-
 
 In a Python dataclass, the init=False parameter within a field
 specification indicates that the field should not be included
