@@ -1,6 +1,9 @@
 #: validate_output.py
-# Validate example output using 'console == "output string"'
-# Can also use triple quotes: 'console == """output string"""'
+# Validate example output using
+# console == """output string"""
+# Or
+# console == "output string"
+# Update scripts using: python validate_output.py *
 import sys
 import atexit
 from io import StringIO
@@ -29,7 +32,9 @@ class TeeStream:
 
 @dataclass
 class OutputValidator:
+    # init=False means do not include this field in the generated __init__ method
     captured_output: StringIO = field(default_factory=StringIO, init=False)
+    # lambda forces evaluation at instance creation, not class creation:
     original_stdout: TextIO = field(default_factory=lambda: sys.stdout, init=False)
     original_stderr: TextIO = field(default_factory=lambda: sys.stderr, init=False)
 
@@ -64,8 +69,11 @@ class OutputValidator:
 
 console = OutputValidator()  # Global to use in scripts
 
-# Remainder of file is for updating 'console ==' expressions in scripts
-# python validate_output.py *  # Checks all python scripts
+# Remainder of file is for updating 'console ==' expressions in scripts.
+# Check all python scripts:
+# python validate_output.py *
+# Check foo.py and bar.py:
+# python validate_output.py foo.py bar.py
 
 
 def capture_script_output(script_path: Path, temp_content: str) -> str:
@@ -83,32 +91,45 @@ def capture_script_output(script_path: Path, temp_content: str) -> str:
 
 
 def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
-    "Read script, find 'console ==' and update outputs"
-    original_content = script_path.read_text()
+    "Update the 'console ==' lines with the new outputs"
+    original_script = script_path.read_text()
+    modified_script = original_script
 
-    # Regex to handle both triple-double-quoted and single-double-quoted strings
-    pattern = re.compile(r'(console\s*==\s*"""[\s\S]*?"""|console\s*==\s*"[^"]*")')
+    delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
+    pattern = re.compile(r'(console\s*==\s*("""|")([\s\S]*?)\2)')
+    matches = list(pattern.finditer(original_script))
 
-    def replace_with_output(match):
-        current_output = outputs.pop(0).strip() if outputs else ""
-        quote_type = '"""' if '"""' in match.group(0) else '"'
+    # Replace the console placeholders with delimiter prints in the temp script
+    for match in matches:
+        placeholder_text = f'print("{delimiter}")'  # Replace each console match
+        modified_script = modified_script.replace(match.group(0), placeholder_text)
 
-        match quote_type:
+    # Capture output using the modified script
+    output = capture_script_output(script_path, modified_script)
+    output_sections = output.split(delimiter)  # Split output by delimiter
+
+    # Update original script with new outputs
+    modified_script = original_script
+    for match, new_output in zip(matches, output_sections):
+        quotes = match.group(2)
+        match quotes:
             case '"""':
-                formatted_output = f"\n{current_output}\n"
+                new_output_formatted = f'"""\n{new_output.strip()}\n"""'
             case '"':
-                # Single quotes cannot contain newlines:
-                formatted_output = current_output.replace("\n", " ")
+                new_output_formatted = f'"{new_output.replace("\n", " ").strip()}"'
+            case _:
+                raise Exception(f"{quotes = } Neither single nor triple quotes")
 
-        return f"console == {quote_type}{formatted_output}{quote_type}"
+        modified_script = modified_script.replace(
+            match.group(0), f"console == {new_output_formatted}"
+        )
 
-    new_content = pattern.sub(replace_with_output, original_content)
-
-    # Write back to the file only if changes have occurred
-    if new_content != original_content:
-        script_path.write_text(new_content)
-        return True  # Changed
-    return False  # Unchanged
+    if modified_script != original_script:
+        script_path.write_text(modified_script)
+        # print("-" * 60)
+        # print(modified_script)
+        return True  # Indicate that changes were made
+    return False  # Indicate no changes were made
 
 
 def main(file_args: List[str]):
@@ -122,12 +143,11 @@ def main(file_args: List[str]):
                     print(f"Processing {file}", end=" ... ")
                     temp_content = content.replace(console_import_line, "console = ''")
                     output = capture_script_output(file, temp_content)
-                    print(f"\n{output = }\n")
                     outputs = [out.strip() for out in output.split("\n") if out.strip()]
                     if update_script_with_output(file, outputs):
-                        print(f"Updated {file} with console outputs.")
+                        print(f"\n\tUpdated {file} with console outputs.")
                     else:
-                        print(f"No changes made to {file}.")
+                        print("no changes.")
 
 
 if __name__ == "__main__":
@@ -136,26 +156,3 @@ if __name__ == "__main__":
     )
     parser.add_argument("files", nargs="+", help="File names or patterns to process")
     main(parser.parse_args().files)
-
-
-""" Notes:
-If you directly assign sys.stdout or sys.stderr as defaults, like
-original_stdout: TextIO = sys.stdout
-the value is evaluated at the time the class is defined, not when
-instances are created. This means every instance would use the
-same sys.stdout and sys.stderr that were present when the class
-was first loaded, ignoring any changes made to these streams between
-the class definition and instance creation. By using lambda: sys.stdout,
-the function is executed each time an instance is initialized, thereby
-always capturing the current sys.stdout and sys.stderr at that moment.
-This is more flexible and accurate in environments where the standard
-streams might be redirected or modified.
-
-In a Python dataclass, the init=False parameter within a field
-specification indicates that the field should not be included
-as a parameter in the automatically generated __init__ method
-of the dataclass. This means that the field will not be initialized
-via the constructor of the class, but rather it should be set or
-initialized internally within the class, typically in methods
-like __post_init__ or directly within the body of the class.
-"""

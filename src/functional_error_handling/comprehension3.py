@@ -1,7 +1,6 @@
 #: comprehension3.py
 # Explicit result type
 from result import Result, Err, Ok
-from typing import reveal_type
 from validate_output import console
 
 
@@ -18,18 +17,14 @@ console == """
 """
 
 for r in outputs:
-    reveal_type(r)
     match r:
         case Ok(value):
             print(f"{value = }")
         case Err(error):
             print(f"{error = }")
 console == """
-Runtime type is 'Ok'
 value = 0
-Runtime type is 'Err'
 error = 'i cannot be 1'
-Runtime type is 'Ok'
 value = 4
 """
 
