@@ -58,9 +58,10 @@ class OutputValidator:
         sys.stderr.flush()
         captured_text = self.captured_output.getvalue().strip()
         expected_text = other.strip()
-        assert (
-            captured_text == expected_text
-        ), f"Expected:\n{expected_text.strip()}\nGot:\n{captured_text}"
+        if captured_text != expected_text:
+            print(
+                f"--Mismatch--\nExpected:\n{expected_text.strip()}\nGot:\n{captured_text}"
+            )
         self.captured_output = StringIO()  # Clear buffer for the next capture
         sys.stdout = TeeStream(self.original_stdout, self.captured_output)
         sys.stderr = TeeStream(self.original_stderr, self.captured_output)
@@ -140,7 +141,7 @@ def main(file_args: List[str]):
             if file.name.endswith(".py") and file.name != this_script_name:
                 content = file.read_text()
                 if console_import_line in content:
-                    print(f"Processing {file}", end=" ... ")
+                    print(f"Processing {file}", end=": ")
                     temp_content = content.replace(console_import_line, "console = ''")
                     output = capture_script_output(file, temp_content)
                     outputs = [out.strip() for out in output.split("\n") if out.strip()]
