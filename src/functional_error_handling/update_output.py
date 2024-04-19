@@ -36,28 +36,35 @@ def capture_script_output(script_path: Path, temp_content: str) -> str:
 
 def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     "Update the 'console ==' lines with the new outputs"
+    delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
     original_script = script_path.read_text()
     modified_script = original_script
-
-    delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
     pattern = re.compile(r'(console\s*==\s*("""|")([\s\S]*?)\2)')
     matches = list(pattern.finditer(original_script))
+    if __trace:
+        for match in matches:
+            trace(f"{match.group(0) = }")
+            trace(f"{match.group(2) = }")
 
     # Replace the console placeholders with delimiter prints in the temp script
     for match in matches:
-        placeholder_text = f'print("{delimiter}")'  # Replace each console match
-        modified_script = modified_script.replace(match.group(0), placeholder_text)
+        modified_script = modified_script.replace(
+            match.group(0), f'print("{delimiter}")'
+        )
 
     # Capture output using the modified script
     output = capture_script_output(script_path, modified_script)
-    trace(output)
+    trace(f"{output = }")
     output_sections = output.split(delimiter)  # Split output by delimiter
+    if __trace:
+        for output_section in output_sections:
+            trace(f"{output_section = }")
 
     # Update original script with new outputs
     modified_script = original_script
     for match, new_output in zip(matches, output_sections):
         quotes = match.group(2)
-        trace(f"quotes = [{quotes}]")
+        trace(f"{match.group(0) = }\n\tquotes = [{quotes}]\n\t{new_output = }")
         match quotes:
             case '"""':
                 new_output_formatted = f'"""\n{new_output.strip()}\n"""'
@@ -65,7 +72,7 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
                 new_output_formatted = f'"{new_output.replace("\n", " ").strip()}"'
             case _:
                 raise Exception(f"quotes[{quotes}] Neither single nor triple quotes")
-        trace(f"{new_output_formatted = }")
+        trace(f"\t{new_output_formatted = }")
         modified_script = modified_script.replace(
             match.group(0), f"console == {new_output_formatted}"
         )
@@ -99,7 +106,7 @@ def main(file_args: List[str]):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Update 'console ==' sections in Python scripts"
+        description="Update 'console ==' output sections in Python scripts"
     )
     parser.add_argument("files", nargs="+", help="File names or patterns to process")
     main(parser.parse_args().files)
