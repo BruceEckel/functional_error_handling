@@ -7,12 +7,8 @@
 import sys
 import atexit
 from io import StringIO
-from typing import List, TextIO
+from typing import TextIO
 from dataclasses import dataclass, field
-import argparse
-import subprocess
-import re
-from pathlib import Path
 
 
 @dataclass(frozen=True)
