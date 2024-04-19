@@ -88,7 +88,7 @@ def main(file_args: List[str]):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Update 'console ==' sections of Python scripts"
+        description="Update 'console ==' sections in Python scripts"
     )
     parser.add_argument("files", nargs="+", help="File names or patterns to process")
     main(parser.parse_args().files)

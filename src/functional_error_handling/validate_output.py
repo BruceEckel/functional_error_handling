@@ -1,9 +1,9 @@
 #: validate_output.py
-# Validate example output using
+# Ensure correctness of example output using
 # console == """output string"""
 # Or
 # console == "output string"
-# Update scripts using: python validate_output.py *
+# Update scripts using: python update_output.py *
 import sys
 import atexit
 from io import StringIO
