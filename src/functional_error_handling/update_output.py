@@ -11,6 +11,14 @@ import re
 import sys
 from pathlib import Path
 
+__trace = True
+# __trace = False
+
+
+def trace(msg: str):
+    if __trace:
+        print(msg)
+
 
 def capture_script_output(script_path: Path, temp_content: str) -> str:
     "Temporarily rewrite the script for output capture, run it, then restore original"
@@ -42,28 +50,31 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
 
     # Capture output using the modified script
     output = capture_script_output(script_path, modified_script)
+    trace(output)
     output_sections = output.split(delimiter)  # Split output by delimiter
 
     # Update original script with new outputs
     modified_script = original_script
     for match, new_output in zip(matches, output_sections):
         quotes = match.group(2)
+        trace(f"quotes = [{quotes}]")
         match quotes:
             case '"""':
                 new_output_formatted = f'"""\n{new_output.strip()}\n"""'
             case '"':
                 new_output_formatted = f'"{new_output.replace("\n", " ").strip()}"'
             case _:
-                raise Exception(f"{quotes = } Neither single nor triple quotes")
-
+                raise Exception(f"quotes[{quotes}] Neither single nor triple quotes")
+        trace(f"{new_output_formatted = }")
         modified_script = modified_script.replace(
             match.group(0), f"console == {new_output_formatted}"
         )
 
     if modified_script != original_script:
-        script_path.write_text(modified_script)
-        # print("-" * 60)
-        # print(modified_script)
+        if not __trace:
+            script_path.write_text(modified_script)
+        trace("-" * 60)
+        trace(modified_script)
         return True  # Indicate that changes were made
     return False  # Indicate no changes were made
 
@@ -76,14 +87,14 @@ def main(file_args: List[str]):
             if file.name.endswith(".py") and file.name != this_script_name:
                 content = file.read_text()
                 if console_import_line in content:
-                    print(f"Processing {file}", end=": ")
+                    print(f"Processing {file}")
                     temp_content = content.replace(console_import_line, "console = ''")
                     output = capture_script_output(file, temp_content)
                     outputs = [out.strip() for out in output.split("\n") if out.strip()]
                     if update_script_with_output(file, outputs):
-                        print(f"\n\tUpdated {file} with console outputs.")
+                        print(f"\t--> Updated {file} with console outputs.")
                     else:
-                        print("no changes.")
+                        print(f"(No changes to {file})")
 
 
 if __name__ == "__main__":
