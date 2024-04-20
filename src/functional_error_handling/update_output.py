@@ -15,7 +15,7 @@ console_import_line = "from validate_output import console"
 output_section_delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
 
 __trace = True
-__trace = False
+# __trace = False
 
 
 def trace(msg: str):
@@ -40,6 +40,20 @@ def capture_script_output(script_path: Path, temp_content: str) -> str:
         return result.stdout
     finally:  # Always restore original content
         script_path.write_text(original_content)
+
+
+def test_script(script_path: Path) -> bool:
+    "Check script to see if it already works"
+    trace(f"Checking: {script_path}")
+    result = subprocess.run(
+        [sys.executable, str(script_path)], capture_output=True, text=True
+    )
+    # Check if the script ran successfully
+    trace(f"{result = }")
+    if result.returncode != 0:
+        trace(f"--- {script_path} did not run successfully: {result.returncode = } ---")
+        return False
+    return True
 
 
 def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
@@ -104,16 +118,22 @@ def main(file_args: List[str]):
     for file_pattern in file_args:
         for file in Path(".").glob(file_pattern):
             if file.name.endswith(".py") and file.name != this_script_name:
-                content = file.read_text()
-                if console_import_line in content:
-                    print(f"Processing {file}")
-                    temp_content = content.replace(console_import_line, "console = ''")
-                    output = capture_script_output(file, temp_content)
-                    outputs = [out.strip() for out in output.split("\n") if out.strip()]
-                    if update_script_with_output(file, outputs):
-                        print(f"\t--> Updated {file} with console outputs.")
-                    else:
-                        print(f"(No changes to {file})")
+                if not test_script(file):
+                    print(f"Script {file} does not work.")
+                    content = file.read_text()
+                    if console_import_line in content:
+                        print(f"Processing {file}")
+                        temp_content = content.replace(
+                            console_import_line, "console = ''"
+                        )
+                        output = capture_script_output(file, temp_content)
+                        outputs = [
+                            out.strip() for out in output.split("\n") if out.strip()
+                        ]
+                        if update_script_with_output(file, outputs):
+                            print(f"\t--> Updated {file} with console outputs.")
+                        else:
+                            print(f"(No changes to {file})")
 
 
 if __name__ == "__main__":
