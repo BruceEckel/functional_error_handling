@@ -1,5 +1,10 @@
 #: all_test.py
-# Works with pytest or as a standalone test
+# Works with
+# rye test
+# or
+# python -m pytest
+# or
+# python all_test.py
 import subprocess
 from pathlib import Path
 import sys

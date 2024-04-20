@@ -55,7 +55,7 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     # Capture output using the modified script
     output = capture_script_output(script_path, modified_script)
     trace(f"{output = }")
-    output_sections = output.split(delimiter)  # Split output by delimiter
+    output_sections = output.split(delimiter)
     if __trace:
         for output_section in output_sections:
             trace(f"{output_section = }")
