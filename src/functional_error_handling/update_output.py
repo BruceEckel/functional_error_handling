@@ -13,9 +13,8 @@ from pathlib import Path
 
 console_import_line = "from validate_output import console"
 output_section_delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
-console_pattern = re.compile(r'(console\s*==\s*(""")([\s\S]*?)("""))')
+console_pattern = re.compile(r'(console\s*==\s*"""[\s\S]*?""")')
 
-__debug = True
 __debug = False
 
 
@@ -107,10 +106,9 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     debug(modified_script, title="modified_script")
 
     if modified_script != original_script:
-        if __debug:
-            script_path = script_path.with_name(script_path.stem + "_temp.py")
-            print("-" * 20 + f" {script_path} " + "-" * 20)
-            print(modified_script)
+        # if __debug:
+        #     script_path = script_path.with_name(script_path.stem + "_temp.py")
+        #     debug(modified_script, title=f"{script_path}")
         script_path.write_text(modified_script)
         return True  # Changes made
     return False  # No changes made
@@ -152,7 +150,15 @@ if __name__ == "__main__":
         action="store_true",
         help="Clear outputs instead of updating them",
     )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Turn on debugging",
+    )
     args = parser.parse_args()
     if args.clear:
         print("Clearing all outputs")
+    if args.debug:
+        print("Debugging")
+        __debug = True
     main(args.files, args.clear)
