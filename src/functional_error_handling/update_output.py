@@ -13,9 +13,10 @@ from pathlib import Path
 
 console_import_line = "from validate_output import console"
 output_section_delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
+console_pattern = re.compile(r'(console\s*==\s*(""")([\s\S]*?)("""))')
 
 __trace = True
-# __trace = False
+__trace = False
 
 
 def trace(msg: str):
@@ -44,24 +45,42 @@ def capture_script_output(script_path: Path, temp_content: str) -> str:
 
 def test_script(script_path: Path) -> bool:
     "Check script to see if it already works"
-    trace(f"Checking: {script_path}")
+    print(f"Checking: {script_path}")
     result = subprocess.run(
         [sys.executable, str(script_path)], capture_output=True, text=True
     )
     # Check if the script ran successfully
-    trace(f"{result = }")
-    if result.returncode != 0:
-        trace(f"--- {script_path} did not run successfully: {result.returncode = } ---")
-        return False
-    return True
+    # trace(f"{result = }")
+    # if result.returncode != 0:
+    #     trace(f"--- {script_path} did not run successfully: {result.returncode = } ---")
+    #     return False
+    # return True
+    return result.returncode == 0
+
+
+def clear_script_output(script_path: Path) -> bool:
+    original_script = script_path.read_text()
+    cleared_script = original_script
+    matches = list(console_pattern.finditer(original_script))
+    if __trace:
+        for match in matches:
+            trace(f"{match.group(0) = }")
+            trace(f"{match.group(2) = }")
+
+    for match in matches:
+        trace(f"{match.group(0) = }")
+        trace(f'print("{output_section_delimiter}")')
+        cleared_script = cleared_script.replace(match.group(0), 'console == """"""', 1)
+        script_path.write_text(cleared_script)
+    # print("cleared_script:")
+    # print(cleared_script)
 
 
 def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     "Update 'console ==' lines with the new outputs"
     original_script = script_path.read_text()
     modified_script = original_script
-    pattern = re.compile(r'(console\s*==\s*(""")([\s\S]*?)("""))')
-    matches = list(pattern.finditer(original_script))
+    matches = list(console_pattern.finditer(original_script))
     if __trace:
         for match in matches:
             trace(f"{match.group(0) = }")
@@ -113,16 +132,19 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     return False  # No changes made
 
 
-def main(file_args: List[str]):
+def main(file_args: List[str], clear: bool):
     this_script_name = Path(__file__).name
     for file_pattern in file_args:
         for file in Path(".").glob(file_pattern):
             if file.name.endswith(".py") and file.name != this_script_name:
-                if not test_script(file):
-                    print(f"Script {file} does not work.")
-                    content = file.read_text()
-                    if console_import_line in content:
-                        print(f"Processing {file}")
+                content = file.read_text()
+                if console_import_line in content:
+                    if clear:
+                        clear_script_output(file)
+                        print(f"Cleared {file}")
+                        continue  # Do not process this file
+                    if not test_script(file):
+                        print(f"Processing failing {file}")
                         temp_content = content.replace(
                             console_import_line, "console = ''"
                         )
@@ -138,7 +160,15 @@ def main(file_args: List[str]):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description="Update 'console ==' output sections in Python scripts"
+        description="Update or clear 'console ==' output sections in Python scripts"
     )
     parser.add_argument("files", nargs="+", help="File names or patterns to process")
-    main(parser.parse_args().files)
+    parser.add_argument(
+        "--clear",
+        action="store_true",
+        help="Clear all outputs instead of updating them",
+    )
+    args = parser.parse_args()
+    if args.clear:
+        print("Clearing all outputs")
+    main(args.files, args.clear)
