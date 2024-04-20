@@ -121,7 +121,6 @@ def main(file_args: List[str], clear: bool):
                         clear_script_output(file)
                         continue  # Do not process this file
                     if not test_script(file):
-                        print(f"\tProcessing {file} ", end="... ")
                         temp_content = content.replace(
                             console_import_line, "console = ''"
                         )
@@ -130,9 +129,9 @@ def main(file_args: List[str], clear: bool):
                             out.strip() for out in output.split("\n") if out.strip()
                         ]
                         if update_script_with_output(file, outputs):
-                            print("updated with console outputs.")
+                            print(f"\t{file} updated with console outputs.")
                         else:
-                            print(f"(No changes to {file})")
+                            print(f"\t(No changes to {file})")
 
 
 if __name__ == "__main__":
