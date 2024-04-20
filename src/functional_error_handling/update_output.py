@@ -15,13 +15,16 @@ console_import_line = "from validate_output import console"
 output_section_delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
 console_pattern = re.compile(r'(console\s*==\s*(""")([\s\S]*?)("""))')
 
-__trace = True
-__trace = False
+__debug = True
+__debug = False
 
 
-def trace(msg: str):
-    if __trace:
-        print(msg)
+def debug(*msgs: str, title: str | None = None) -> None:
+    if __debug:
+        if title is not None:
+            print((" " + title + " ").center(50, "-"))
+        for msg in msgs:
+            print(msg)
 
 
 def capture_script_output(script_path: Path, temp_content: str) -> str:
@@ -57,18 +60,13 @@ def test_script(script_path: Path) -> bool:
         return True
 
 
-def clear_script_output(script_path: Path) -> bool:
+def clear_script_output(script_path: Path) -> None:
+    debug(title=f"Clearing {script_path}")
     original_script = script_path.read_text()
     cleared_script = original_script
     matches = list(console_pattern.finditer(original_script))
-    if __trace:
-        for match in matches:
-            trace(f"{match.group(0) = }")
-            trace(f"{match.group(2) = }")
-
     for match in matches:
-        trace(f"{match.group(0) = }")
-        trace(f'print("{output_section_delimiter}")')
+        debug(f"{match.group(0) = }")
         cleared_script = cleared_script.replace(match.group(0), 'console == """"""', 1)
         script_path.write_text(cleared_script)
 
@@ -78,49 +76,38 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     original_script = script_path.read_text()
     modified_script = original_script
     matches = list(console_pattern.finditer(original_script))
-    if __trace:
-        for match in matches:
-            trace(f"{match.group(0) = }")
-            trace(f"{match.group(2) = }")
-
     # Replace the console placeholders with delimiter prints in the temp script
     for match in matches:
-        trace(f"{match.group(0) = }")
-        trace(f'print("{output_section_delimiter}")')
+        debug(f"{match.group(0) = }")
         modified_script = modified_script.replace(
             match.group(0), f'print("{output_section_delimiter}")', 1
         )
-    trace("modified_script:")
-    trace(modified_script)
-    if __trace:
+    debug(modified_script, title="modified_script")
+    if __debug:
         modified_script_path = script_path.with_name(script_path.stem + "_modified.py")
         print(f"{modified_script_path = }")
         modified_script_path.write_text(modified_script)
 
     # Capture output using the modified script
     output = capture_script_output(script_path, modified_script)
-    trace("-" * 60)
-    trace("output:")
-    trace(output)
-    trace("=" * 60)
+    debug(output, title="output")
     output_sections = output.split(output_section_delimiter)
-    if __trace:
+    if __debug:
         for output_section in output_sections:
-            trace(f"{output_section = }")
+            debug(f"{output_section = }")
 
     # Update original script with new outputs
     modified_script = original_script
     for match, new_output in zip(matches, output_sections):
-        trace(f"{match.group(0) = }\n\t{new_output = }")
+        debug(f"{match.group(0) = }\n\t{new_output = }")
         modified_script = modified_script.replace(
             match.group(0), f'console == """\n{new_output.strip()}\n"""', 1
         )
 
-    trace("-" * 20 + " modified_script: " + "-" * 20)
-    trace(modified_script)
+    debug(modified_script, title="modified_script")
 
     if modified_script != original_script:
-        if __trace:
+        if __debug:
             script_path = script_path.with_name(script_path.stem + "_temp.py")
             print("-" * 20 + f" {script_path} " + "-" * 20)
             print(modified_script)
