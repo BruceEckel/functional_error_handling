@@ -11,6 +11,9 @@ import re
 import sys
 from pathlib import Path
 
+console_import_line = "from validate_output import console"
+output_section_delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
+
 __trace = True
 # __trace = False
 
@@ -29,14 +32,18 @@ def capture_script_output(script_path: Path, temp_content: str) -> str:
         result = subprocess.run(
             [sys.executable, str(script_path)], capture_output=True, text=True
         )
+        # Check if the script ran successfully
+        if result.returncode != 0:
+            print(temp_content)
+            print("Temporary script did not run successfully")
+            sys.exit(result.returncode)
         return result.stdout
     finally:  # Always restore original content
         script_path.write_text(original_content)
 
 
 def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
-    "Update the 'console ==' lines with the new outputs"
-    delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
+    "Update 'console ==' lines with the new outputs"
     original_script = script_path.read_text()
     modified_script = original_script
     pattern = re.compile(r'(console\s*==\s*("""|")([\s\S]*?)\2)')
@@ -48,14 +55,22 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
 
     # Replace the console placeholders with delimiter prints in the temp script
     for match in matches:
+        trace(f"{match.group(0) = }")
+        trace(f'print("{output_section_delimiter}")')
         modified_script = modified_script.replace(
-            match.group(0), f'print("{delimiter}")'
+            match.group(0), f'print("{output_section_delimiter}")'
         )
+    trace("modified_script:")
+    trace(modified_script)
+    if __trace:
+        modified_script_path = script_path.with_name(script_path.stem + "_modified.py")
+        print(f"{modified_script_path = }")
+        modified_script_path.write_text(modified_script)
 
     # Capture output using the modified script
     output = capture_script_output(script_path, modified_script)
     trace(f"{output = }")
-    output_sections = output.split(delimiter)
+    output_sections = output.split(output_section_delimiter)
     if __trace:
         for output_section in output_sections:
             trace(f"{output_section = }")
@@ -71,24 +86,25 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
             case '"':
                 new_output_formatted = f'"{new_output.replace("\n", " ").strip()}"'
             case _:
-                raise Exception(f"quotes[{quotes}] Neither single nor triple quotes")
+                raise ValueError(f"quotes[{quotes}] Neither single nor triple quotes")
         trace(f"\t{new_output_formatted = }")
         modified_script = modified_script.replace(
             match.group(0), f"console == {new_output_formatted}"
         )
 
     if modified_script != original_script:
-        if not __trace:
-            script_path.write_text(modified_script)
+        if __trace:
+            script_path = script_path.with_name(script_path.stem + "_temp.py")
+            print(f"{script_path = }")
+        script_path.write_text(modified_script)
         trace("-" * 60)
         trace(modified_script)
-        return True  # Indicate that changes were made
-    return False  # Indicate no changes were made
+        return True  # Changes made
+    return False  # No changes made
 
 
 def main(file_args: List[str]):
     this_script_name = Path(__file__).name
-    console_import_line = "from validate_output import console"
     for file_pattern in file_args:
         for file in Path(".").glob(file_pattern):
             if file.name.endswith(".py") and file.name != this_script_name:
