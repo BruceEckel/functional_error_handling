@@ -15,7 +15,7 @@ console_import_line = "from validate_output import console"
 output_section_delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
 
 __trace = True
-# __trace = False
+__trace = False
 
 
 def trace(msg: str):
@@ -35,7 +35,7 @@ def capture_script_output(script_path: Path, temp_content: str) -> str:
         # Check if the script ran successfully
         if result.returncode != 0:
             print(temp_content)
-            print("Temporary script did not run successfully")
+            print("--- Temporary script did not run successfully ---")
             sys.exit(result.returncode)
         return result.stdout
     finally:  # Always restore original content
@@ -58,7 +58,7 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
         trace(f"{match.group(0) = }")
         trace(f'print("{output_section_delimiter}")')
         modified_script = modified_script.replace(
-            match.group(0), f'print("{output_section_delimiter}")'
+            match.group(0), f'print("{output_section_delimiter}")', 1
         )
     trace("modified_script:")
     trace(modified_script)
@@ -92,7 +92,7 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
         # new_output_formatted = f'"""\n{new_output.strip()}\n"""'
         # trace(f"\t{new_output_formatted = }")
         modified_script = modified_script.replace(
-            match.group(0), f'console == """\n{new_output.strip()}\n"""'
+            match.group(0), f'console == """\n{new_output.strip()}\n"""', 1
         )
 
     trace("-" * 20 + " modified_script: " + "-" * 20)

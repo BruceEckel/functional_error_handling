@@ -12,7 +12,9 @@ def f2(i: int) -> int | str:  # Sum type
 
 
 print(outputs := [f2(i) for i in range(3)])
-console == """[0, 'i cannot be 1', 4]"""
+console == """
+[0, 'i cannot be 1', 4]
+"""
 
 for r in outputs:
     match r:
@@ -20,7 +22,11 @@ for r in outputs:
             print(f"{value = }")
         case str(error):
             print(f"{error = }")
-console == """"""
+console == """
+value = 0
+error = 'i cannot be 1'
+value = 4
+"""
 
 
 # Composition: return type enforced
@@ -30,4 +36,7 @@ def g(i: int) -> int | str:
 
 print(g(1))
 print(g(5))
-console == """X"""
+console == """
+i cannot be 1
+10
+"""
