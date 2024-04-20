@@ -45,17 +45,16 @@ def capture_script_output(script_path: Path, temp_content: str) -> str:
 
 def test_script(script_path: Path) -> bool:
     "Check script to see if it already works"
-    print(f"Checking: {script_path}")
+    print(f"Checking: {script_path} ", end="")
     result = subprocess.run(
         [sys.executable, str(script_path)], capture_output=True, text=True
     )
-    # Check if the script ran successfully
-    # trace(f"{result = }")
-    # if result.returncode != 0:
-    #     trace(f"--- {script_path} did not run successfully: {result.returncode = } ---")
-    #     return False
-    # return True
-    return result.returncode == 0
+    if result.returncode != 0:
+        print(" ... failed")
+        return False
+    else:
+        print(" ... passed")
+        return True
 
 
 def clear_script_output(script_path: Path) -> bool:
@@ -72,8 +71,6 @@ def clear_script_output(script_path: Path) -> bool:
         trace(f'print("{output_section_delimiter}")')
         cleared_script = cleared_script.replace(match.group(0), 'console == """"""', 1)
         script_path.write_text(cleared_script)
-    # print("cleared_script:")
-    # print(cleared_script)
 
 
 def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
@@ -144,7 +141,7 @@ def main(file_args: List[str], clear: bool):
                         print(f"Cleared {file}")
                         continue  # Do not process this file
                     if not test_script(file):
-                        print(f"Processing failing {file}")
+                        print(f"\tProcessing {file} ", end="... ")
                         temp_content = content.replace(
                             console_import_line, "console = ''"
                         )
@@ -153,7 +150,7 @@ def main(file_args: List[str], clear: bool):
                             out.strip() for out in output.split("\n") if out.strip()
                         ]
                         if update_script_with_output(file, outputs):
-                            print(f"\t--> Updated {file} with console outputs.")
+                            print("updated with console outputs.")
                         else:
                             print(f"(No changes to {file})")
 
