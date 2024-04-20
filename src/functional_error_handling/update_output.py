@@ -46,7 +46,7 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     "Update 'console ==' lines with the new outputs"
     original_script = script_path.read_text()
     modified_script = original_script
-    pattern = re.compile(r'(console\s*==\s*("""|")([\s\S]*?)\2)')
+    pattern = re.compile(r'(console\s*==\s*(""")([\s\S]*?)("""))')
     matches = list(pattern.finditer(original_script))
     if __trace:
         for match in matches:
@@ -69,7 +69,10 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
 
     # Capture output using the modified script
     output = capture_script_output(script_path, modified_script)
-    trace(f"{output = }")
+    trace("-" * 60)
+    trace("output:")
+    trace(output)
+    trace("=" * 60)
     output_sections = output.split(output_section_delimiter)
     if __trace:
         for output_section in output_sections:
@@ -78,27 +81,29 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     # Update original script with new outputs
     modified_script = original_script
     for match, new_output in zip(matches, output_sections):
-        quotes = match.group(2)
-        trace(f"{match.group(0) = }\n\tquotes = [{quotes}]\n\t{new_output = }")
-        match quotes:
-            case '"""':
-                new_output_formatted = f'"""\n{new_output.strip()}\n"""'
-            case '"':
-                new_output_formatted = f'"{new_output.replace("\n", " ").strip()}"'
-            case _:
-                raise ValueError(f"quotes[{quotes}] Neither single nor triple quotes")
-        trace(f"\t{new_output_formatted = }")
+        trace(f"{match.group(0) = }\n\t{new_output = }")
+        # match quotes:
+        #     case '"""':
+        #         new_output_formatted = f'"""\n{new_output.strip()}\n"""'
+        #     case '"':
+        #         new_output_formatted = f'"{new_output.replace("\n", " ").strip()}"'
+        #     case _:
+        #         raise ValueError(f"quotes[{quotes}] Neither single nor triple quotes")
+        # new_output_formatted = f'"""\n{new_output.strip()}\n"""'
+        # trace(f"\t{new_output_formatted = }")
         modified_script = modified_script.replace(
-            match.group(0), f"console == {new_output_formatted}"
+            match.group(0), f'console == """\n{new_output.strip()}\n"""'
         )
+
+    trace("-" * 20 + " modified_script: " + "-" * 20)
+    trace(modified_script)
 
     if modified_script != original_script:
         if __trace:
             script_path = script_path.with_name(script_path.stem + "_temp.py")
-            print(f"{script_path = }")
+            print("-" * 20 + f" {script_path} " + "-" * 20)
+            print(modified_script)
         script_path.write_text(modified_script)
-        trace("-" * 60)
-        trace(modified_script)
         return True  # Changes made
     return False  # No changes made
 

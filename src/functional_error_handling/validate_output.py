@@ -1,8 +1,8 @@
 #: validate_output.py
 # Ensure correctness of example output using
-# console == """output string"""
-# Or
-# console == "output string"
+# console == """
+# output string
+# """
 # Update scripts using: python update_output.py *
 import sys
 import atexit
