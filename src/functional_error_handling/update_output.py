@@ -82,15 +82,6 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     modified_script = original_script
     for match, new_output in zip(matches, output_sections):
         trace(f"{match.group(0) = }\n\t{new_output = }")
-        # match quotes:
-        #     case '"""':
-        #         new_output_formatted = f'"""\n{new_output.strip()}\n"""'
-        #     case '"':
-        #         new_output_formatted = f'"{new_output.replace("\n", " ").strip()}"'
-        #     case _:
-        #         raise ValueError(f"quotes[{quotes}] Neither single nor triple quotes")
-        # new_output_formatted = f'"""\n{new_output.strip()}\n"""'
-        # trace(f"\t{new_output_formatted = }")
         modified_script = modified_script.replace(
             match.group(0), f'console == """\n{new_output.strip()}\n"""', 1
         )
