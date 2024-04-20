@@ -163,7 +163,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--clear",
         action="store_true",
-        help="Clear all outputs instead of updating them",
+        help="Clear outputs instead of updating them",
     )
     args = parser.parse_args()
     if args.clear:
