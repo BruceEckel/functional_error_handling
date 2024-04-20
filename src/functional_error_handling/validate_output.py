@@ -7,60 +7,51 @@
 import sys
 import atexit
 from io import StringIO
-from typing import TextIO
-from dataclasses import dataclass, field
 
 
-@dataclass(frozen=True)
 class TeeStream:
-    "Writes to two streams"
-    main_stream: TextIO
-    capture_stream: StringIO
+    def __init__(self, main_stream, capture_stream):
+        self.main_stream = main_stream
+        self.capture_stream = capture_stream
 
-    def write(self, data: str) -> None:
+    def write(self, data: str):
         self.main_stream.write(data)
         self.capture_stream.write(data)
 
-    def flush(self) -> None:
+    def flush(self):
         self.main_stream.flush()
         self.capture_stream.flush()
 
 
-@dataclass
 class OutputValidator:
-    # init=False means do not include this field in the generated __init__ method
-    captured_output: StringIO = field(default_factory=StringIO, init=False)
-    # lambda forces evaluation at instance creation, not class creation:
-    original_stdout: TextIO = field(default_factory=lambda: sys.stdout, init=False)
-    original_stderr: TextIO = field(default_factory=lambda: sys.stderr, init=False)
-
-    def __post_init__(self):
+    def __init__(self):
         self.start()
-        atexit.register(self.stop)  # Ensure cleanup on exit
+        atexit.register(self.stop)
 
     def start(self):
-        "Start capturing and mirroring output"
+        "Capture and mirror output"
+        self.original_stdout = sys.stdout
+        self.original_stderr = sys.stderr
+        self.captured_output = StringIO()
         sys.stdout = TeeStream(self.original_stdout, self.captured_output)
         sys.stderr = TeeStream(self.original_stderr, self.captured_output)
 
     def stop(self):
-        "Restore original stdout and stderr, stop capturing"
+        "Restore original stdout and stderr"
+        sys.stdout.flush()
+        sys.stderr.flush()
         sys.stdout = self.original_stdout
         sys.stderr = self.original_stderr
 
-    def __eq__(self, other: str) -> bool:  # type: ignore
+    def __eq__(self, other: str) -> bool:
         "Compare captured output to expected output"
-        sys.stdout.flush()
-        sys.stderr.flush()
+        self.stop()
         captured_text = self.captured_output.getvalue().strip()
         expected_text = other.strip()
-        if captured_text != expected_text:
-            print(
-                f"--Mismatch--\nExpected:\n{expected_text.strip()}\nGot:\n{captured_text}"
-            )
-        self.captured_output = StringIO()  # Clear buffer for the next capture
-        sys.stdout = TeeStream(self.original_stdout, self.captured_output)
-        sys.stderr = TeeStream(self.original_stderr, self.captured_output)
+        assert (
+            captured_text == expected_text
+        ), f"\nExpected:\n{expected_text}\nGot:\n{captured_text}"
+        self.start()
         return True
 
 

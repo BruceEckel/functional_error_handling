@@ -17,13 +17,13 @@ console == "[0, 'i cannot be 1', 4]"
 for r in outputs:
     match r:
         case int(value):
-            print(value)
+            print(f"{value = }")
         case str(error):
-            print(f"Error: {error}")
+            print(f"{error = }")
 console == """
-0
-Error: i cannot be 1
-4
+value = 0
+error = 'i cannot be 1'
+value = 4
 """
 
 
