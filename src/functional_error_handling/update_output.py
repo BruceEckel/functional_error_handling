@@ -11,9 +11,9 @@ import re
 import sys
 from pathlib import Path
 
+console_pattern = re.compile(r'console\s*==\s*"""[\s\S]*?"""')
 console_import_line = "from validate_output import console"
 output_section_delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
-console_pattern = re.compile(r'console\s*==\s*"""[\s\S]*?"""')
 
 __debug = False
 
@@ -24,25 +24,6 @@ def debug(*msgs: str, title: str | None = None) -> None:
             print((" " + title + " ").center(50, "-"))
         for msg in msgs:
             print(msg)
-
-
-def capture_script_output(script_path: Path, temp_content: str) -> str:
-    "Temporarily rewrite the script for output capture, run it, then restore original"
-    original_content = script_path.read_text()
-    script_path.write_text(temp_content)  # temp_content does not redirect output
-
-    try:
-        result = subprocess.run(
-            [sys.executable, str(script_path)], capture_output=True, text=True
-        )
-        # Check if the script ran successfully
-        if result.returncode != 0:
-            print(temp_content)
-            print("--- Temporary script did not run successfully ---")
-            sys.exit(result.returncode)
-        return result.stdout
-    finally:  # Always restore original
-        script_path.write_text(original_content)
 
 
 def test_script(script_path: Path) -> bool:
@@ -69,6 +50,25 @@ def clear_script_output(script_path: Path) -> None:
         cleared_script = cleared_script.replace(match.group(0), 'console == """"""', 1)
         script_path.write_text(cleared_script)
     print(f"Cleared {script_path}")
+
+
+def capture_script_output(script_path: Path, temp_content: str) -> str:
+    "Temporarily rewrite the script for output capture, run it, then restore original"
+    original_content = script_path.read_text()
+    script_path.write_text(temp_content)  # temp_content does not redirect output
+
+    try:
+        result = subprocess.run(
+            [sys.executable, str(script_path)], capture_output=True, text=True
+        )
+        # Check if the script ran successfully
+        if result.returncode != 0:
+            print(" Temporary script failed ".center(50, "-"))
+            print(temp_content)
+            sys.exit(result.returncode)
+        return result.stdout
+    finally:  # Always restore original
+        script_path.write_text(original_content)
 
 
 def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
@@ -102,7 +102,6 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
         modified_script = modified_script.replace(
             match.group(0), f'console == """\n{new_output.strip()}\n"""', 1
         )
-
     debug(modified_script, title="modified_script")
 
     if modified_script != original_script:
