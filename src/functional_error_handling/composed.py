@@ -38,7 +38,9 @@ def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
 
 inputs = range(-1, 3)
 print(f"inputs = {list(inputs)}")
-console == "inputs = [-1, 0, 1, 2]"
+console == """
+inputs = [-1, 0, 1, 2]
+"""
 
 outputs = [composed(i) for i in inputs]
 console == """
