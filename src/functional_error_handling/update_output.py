@@ -13,7 +13,7 @@ from pathlib import Path
 
 console_import_line = "from validate_output import console"
 output_section_delimiter = "END_OF_CONSOLE_OUTPUT_SECTION"
-console_pattern = re.compile(r'(console\s*==\s*"""[\s\S]*?""")')
+console_pattern = re.compile(r'console\s*==\s*"""[\s\S]*?"""')
 
 __debug = False
 
@@ -41,7 +41,7 @@ def capture_script_output(script_path: Path, temp_content: str) -> str:
             print("--- Temporary script did not run successfully ---")
             sys.exit(result.returncode)
         return result.stdout
-    finally:  # Always restore original content
+    finally:  # Always restore original
         script_path.write_text(original_content)
 
 
@@ -68,6 +68,7 @@ def clear_script_output(script_path: Path) -> None:
         debug(f"{match.group(0) = }")
         cleared_script = cleared_script.replace(match.group(0), 'console == """"""', 1)
         script_path.write_text(cleared_script)
+    print(f"Cleared {script_path}")
 
 
 def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
@@ -91,9 +92,8 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     output = capture_script_output(script_path, modified_script)
     debug(output, title="output")
     output_sections = output.split(output_section_delimiter)
-    if __debug:
-        for output_section in output_sections:
-            debug(f"{output_section = }")
+    for output_section in output_sections:
+        debug(f"{output_section = }")
 
     # Update original script with new outputs
     modified_script = original_script
@@ -106,9 +106,6 @@ def update_script_with_output(script_path: Path, outputs: List[str]) -> bool:
     debug(modified_script, title="modified_script")
 
     if modified_script != original_script:
-        # if __debug:
-        #     script_path = script_path.with_name(script_path.stem + "_temp.py")
-        #     debug(modified_script, title=f"{script_path}")
         script_path.write_text(modified_script)
         return True  # Changes made
     return False  # No changes made
@@ -123,7 +120,6 @@ def main(file_args: List[str], clear: bool):
                 if console_import_line in content:
                     if clear:
                         clear_script_output(file)
-                        print(f"Cleared {file}")
                         continue  # Do not process this file
                     if not test_script(file):
                         print(f"\tProcessing {file} ", end="... ")
