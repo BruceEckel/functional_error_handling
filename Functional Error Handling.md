@@ -17,7 +17,7 @@ Rather than jumping about within a limited program, functions restrict you to a 
 
 My programming training was primarily as a computer engineer and I spent the first few years of my career programming in assembly. Assembly supports subroutine calls and returns, but not the loading of arguments on the stack and passing results back out—the programmer must write this error-prone code by hand.
 
-Higher-level languages handle function arguments and returns for you, which made them a very desirably improvement as the size and complexity of programs grew beyond what the assembly programmer was able to hold in their head.
+Higher-level languages handle function arguments and returns for you, which made them a very desirable improvement as the size and complexity of programs grew beyond what the assembly programmer was able to hold in their head.
 ## Modules
 
 ## Inheritance
