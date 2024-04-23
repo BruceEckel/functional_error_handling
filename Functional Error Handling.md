@@ -4,7 +4,7 @@ Here’s the definition I put forward:
 
 > Composability: the ability to assemble bigger pieces from smaller pieces.
 
-This is less-precise than some definitions; for example, composition in object-oriented programming means “putting objects inside other objects.” However, that fits with my overall definition; it achieves the same goal but in a specific way. When dealing with functions, composability means “calling functions from within other functions.”
+This is less-precise than some definitions; for example, composition in object-oriented programming means “putting objects inside other objects.” However, that fits with my overall definition; it achieves the same goal but in a specific way. When dealing with functions, composability means “calling functions within other functions.”
 
 To enable the easy construction of programs, we need to be able to effortlessly assemble components in the same way that a child assembles Legos—by simply sticking them together, without requiring extra activities to do so. On top of that, such assemblages become their own components that can be stuck together just as easily. This composability scales up regardless of the size of the components.
 
@@ -20,6 +20,23 @@ My programming training was primarily as a computer engineer and I spent the fir
 Higher-level languages handle function arguments and returns for you, which made them a very desirable improvement as the size and complexity of programs grew beyond what the assembly programmer was able to hold in their head.
 ## Modules
 
+Tim Peters’ observation of the value of namespaces (see [The Zen of Python](https://peps.python.org/pep-0020/)) is the core of the idea of modules, which more modern languages incorporate (unfortunately C++ had to inherit C’s messy system, for backwards compatibility). In Python, files are automatically modules which is certainly one of the easiest solutions.
+
+But it wasn’t always this way. Breaking assembly-language programs into pieces was not easy, and early higher-level languages did not consider modularity. When the idea began to surface it was incorporated as a main feature of the Modula-2 language (a descendent of Pascal). The name tells you what a significant shift it was considered at the time.
+
+Modula-2 and similar languages required an explicit declaration of a module:
+```modula-2
+MODULE Hello;
+FROM STextIO IMPORT WriteString;
+BEGIN
+  WriteString("Hello World!")
+END Hello.
+```
+This allowed complete granularity independent of file organization; perhaps this was because programmers were used to thinking in terms of a big file-per-program. Python’s merging of modules with files makes more sense in hindsight and has the benefit of eliminating the extra verbiage.
+
+The main benefit of modules is name control—each module creates a scope for names (a namespace) which allows programmers the freedom to choose any name at will within a module. This prevents name collisions across a project and reduces the cognitive load on the programmer. Prior to this, programs reached scaling limits as they grew larger. Program size in assembly language programs was limited by many different factors, so the need for modules was not seen until systems were able to grow larger because higher-level languages solved enough of these other factors.
+
+In modern languages, modularity is part of the background of a language and we don’t think much about it. At one time, however, the lack of modularity was a significant roadblock to code composability.
 ## Inheritance
 
 ## The History of Error Handling
