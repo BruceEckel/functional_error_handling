@@ -11,7 +11,7 @@ To enable the easy construction of programs, we need to be able to effortlessly 
 Over the years we have encountered numerous roadblocks to this goal. Let’s look at a few of these.
 ## Goto Considered Harmful
 
-[Djikstra’s 1968 note](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) had quite an impact on the programming community, which at the time largely consisted of assembly-language programmers. For these, the goto statement was foundational and denigrating it was a shock. Although he never explicitly mentioned functions in his note, the effect was to push programmers towards functions. [The creator of Structured Concurrency](https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/) makes a strong case for this.
+[Djikstra’s 1968 note](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) had quite an impact on the programming community, which at the time consisted largely of assembly-language programmers. For these, the goto statement was foundational, and denigrating it was a shock. Although he never explicitly mentioned functions in his note, the effect was to push programmers towards functions. [The creator of Structured Concurrency](https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/) provides a clear description of this.
 
 Rather than jumping about within a limited program, functions restrict you to a single entry and single exit point, and this dramatically improves composability because you can no longer leave a section of code at any point using a goto (note that within a function scope you cannot know what’s outside that scope, thus you can’t jump somewhere because you don’t know a destination to jump to). 
 
@@ -32,12 +32,14 @@ BEGIN
   WriteString("Hello World!")
 END Hello.
 ```
-This allowed complete granularity independent of file organization; perhaps this was because programmers were used to thinking in terms of a big file-per-program. Python’s merging of modules with files makes more sense in hindsight and has the benefit of eliminating the extra verbiage.
+This allowed complete granularity independent of file organization; perhaps this was because programmers were used to thinking in terms of a big file-per-program. Python’s merging of modules with files makes more sense in hindsight and has the benefit of eliminating the [(significant) extra verbiage](https://en.wikipedia.org/wiki/Modula-2), only a portion of which is shown here.
 
 The main benefit of modules is name control—each module creates a scope for names (a namespace) which allows programmers the freedom to choose any name at will within a module. This prevents name collisions across a project and reduces the cognitive load on the programmer. Prior to this, programs reached scaling limits as they grew larger. Program size in assembly language programs was limited by many different factors, so the need for modules was not seen until systems were able to grow larger because higher-level languages solved enough of these other factors.
 
 In modern languages, modularity is part of the background of a language and we don’t think much about it. At one time, however, the lack of modularity was a significant roadblock to code composability.
 ## Inheritance
+
+Object-oriented programming has a bit of a tortured history. Although the first OO language was Simula-67 (a compiled language), the OO found its first
 
 ## The History of Error Handling
 
