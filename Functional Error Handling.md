@@ -20,9 +20,9 @@ My programming training was primarily as a computer engineer and I spent the fir
 Higher-level languages handle function arguments and returns for you, which made them a very desirable improvement as the size and complexity of programs grew beyond what the assembly programmer was able to hold in their head.
 ## Modules
 
-Tim Peters’ observation of the value of namespaces (see [The Zen of Python](https://peps.python.org/pep-0020/)) is the core of the idea of modules, which more modern languages incorporate (unfortunately C++ had to inherit C’s messy system, for backwards compatibility). In Python, files are automatically modules which is certainly one of the easiest solutions.
+Tim Peters’ observation of the value of namespaces (see [The Zen of Python](https://peps.python.org/pep-0020/)) is the core of the idea of modules, which more modern languages incorporate (unfortunately C++ had to inherit C’s messy system, for backwards compatibility). In Python, files are automatically modules, which is certainly one of the easiest solutions.
 
-But it wasn’t always this way. Breaking assembly-language programs into pieces was not easy, and early higher-level languages did not consider modularity. When the idea began to surface it was incorporated as a main feature of the Modula-2 language (a descendent of Pascal). The name tells you what a significant shift it was considered at the time.
+It wasn’t always this way. Breaking assembly-language programs into pieces was not easy, and early higher-level languages tended to be single-file programs and did not consider modularity. When the idea began to surface it was incorporated as a main feature of the Modula-2 language (a descendent of Pascal). The name tells you what a significant shift it was considered at the time.
 
 Modula-2 and similar languages required an explicit declaration of a module:
 ```modula-2
@@ -43,16 +43,22 @@ Object-oriented programming has a bit of a tortured history. Although the first 
 
 ## Error Handling
 
-The focus of this paper is a significant impediment to composability.
+Error reporting and handling is a significant impediment to composability.
 ### History
 
-The original programs were small (by present-day standards), written in assembly language (after machine code rapidly became too unwieldy), and tightly coupled to the underlying hardware. If something went wrong, the only way to report it was to turn on a light or a buzzer, or, if you had one, put a message on the console—this might as simple as a dot-matrix display. Such an error message probably wasn’t friendly to the end-user of the system and might require a tech support call to the manufacturer. 
+Original programs were small (by present-day standards), written in assembly language (after machine code rapidly became too unwieldy), and tightly coupled to the underlying hardware. If something went wrong, the only way to report it was to turn on a light or a buzzer, or, if you had one, put a message on the console—this might as simple as a dot-matrix display. Such an error message probably wasn’t friendly to the end-user of the system and usually required a tech support call to the manufacturer. 
 
-Two of my first jobs were building embedded systems that controlled hardware. These systems just had to work right, and the only errors were software bugs. There was no point in reporting errors because any error meant the software was broken.
+Two of my first jobs were building embedded systems that controlled hardware. These systems had to work right. There was no point in reporting errors because any error meant the software was broken.
 
 For business and scientific programming, Fortran and Cobol were batch processed on punch cards. If something went wrong, either the compilation failed or the resulting data was bad. No real-time error-handling was necessary because the program didn’t run in real time.
 
-As time-sharing operating systems like Unix started to become 
+As time-sharing operating systems like Unix became a common way to distribute computing resources, program execution became more immediate. Users began to expect more interactive experiences, so programmers had to begin thinking about how to report and handle errors during the execution of a program, and in ideal cases recovering from those errors so the program could continue without shutting down.
+
+Programmers produced a scattered collection of solutions to the reporting problem:
+
+- Indicate failure by returning a special value from a function call. This only works when there can be a special value that doesn't occur from an ordinary call to that function. For example, if your function returns any `int`, you can't use `0` or `-1` to report an error. A bigger problem is that you rely on the client programmer to pay attention to the return value and know what to do about errors.
+- Indicate failure by setting a global flag. Again, the client programmer must know to watch that flag. If the flag isn't checked right away, it might get overwritten by a different function call in which case the error is lost.
+- 
 ### The Problem with Exceptions
 maybe you can't prove it, things work in the small but don't scale). We only figure it out when scaling composability.
 ### Two Kinds of Errors
