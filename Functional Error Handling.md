@@ -39,16 +39,20 @@ The main benefit of modules is name control—each module creates a scope for na
 In modern languages, modularity is part of the background of a language and we don’t think much about it. At one time, however, the lack of modularity was a significant roadblock to code composability.
 ## Inheritance
 
-Object-oriented programming has a bit of a tortured history. Although the first OO language was Simula-67 (a compiled language), OO found its first real success with Smalltalk. But Smalltalk might be the most dynamic language you’ll ever encounter—literally everything is evaluated at runtime. While this worked well for the kinds of problems Smalltalk was good at solving, it turned out that taking the ideas of Smalltalk and imprinting them into a statically-typed language lost a LOT in translation
+Object-oriented programming has a bit of a tortured history. Although the first OO language was Simula-67 (a compiled language), OO found its first real success with Smalltalk. But Smalltalk might be the most dynamic language you’ll ever encounter—literally everything is evaluated at runtime. While this worked well for the kinds of problems Smalltalk was good at solving, it turned out that taking the ideas of Smalltalk and imprinting them into a statically-typed language lost a *lot* in translation.
 
 ## Error Handling
 
 The focus of this paper is a significant impediment to composability.
 ### History
 
-The original programs were small (by present-day standards), written in assembly language (after machine code rapidly became too unwieldy), and tightly coupled to the underlying hardware.
+The original programs were small (by present-day standards), written in assembly language (after machine code rapidly became too unwieldy), and tightly coupled to the underlying hardware. If something went wrong, the only way to report it was to turn on a light or a buzzer, or, if you had one, put a message on the console—this might as simple as a dot-matrix display. Such an error message probably wasn’t friendly to the end-user of the system and might require a tech support call to the manufacturer. 
 
-Fortran and Cobol were batch processed on punch cards. If something went wrong
+Two of my first jobs were building embedded systems that controlled hardware. These systems just had to work right, and the only errors were software bugs. There was no point in reporting errors because any error meant the software was broken.
+
+For business and scientific programming, Fortran and Cobol were batch processed on punch cards. If something went wrong, either the compilation failed or the resulting data was bad. No real-time error-handling was necessary because the program didn’t run in real time.
+
+As time-sharing operating systems like Unix started to become 
 ### The Problem with Exceptions
 maybe you can't prove it, things work in the small but don't scale). We only figure it out when scaling composability.
 ### Two Kinds of Errors
