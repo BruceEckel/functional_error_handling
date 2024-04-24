@@ -39,7 +39,7 @@ The main benefit of modules is name control—each module creates a scope for na
 In modern languages, modularity is part of the background of a language and we don’t think much about it. At one time, however, the lack of modularity was a significant roadblock to code composability.
 ## Inheritance
 
-Object-oriented programming has a bit of a tortured history. Although the first OO language was Simula-67 (a compiled language), the OO found its first
+Object-oriented programming has a bit of a tortured history. Although the first OO language was Simula-67 (a compiled language), OO found its first real success with Smalltalk. But Smalltalk might be the most dynamic language you’ll ever encounter—literally everything is evaluated at runtime. While this worked well for the kinds of problems Smalltalk was good at solving, it turned out that taking the ideas of Smalltalk and imprinting them into a statically-typed language lost a LOT in translation
 
 ## The History of Error Handling
 
