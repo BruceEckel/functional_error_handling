@@ -41,8 +41,12 @@ In modern languages, modularity is part of the background of a language and we d
 
 Object-oriented programming has a bit of a tortured history. Although the first OO language was Simula-67 (a compiled language), OO found its first real success with Smalltalk. But Smalltalk might be the most dynamic language you’ll ever encounter—literally everything is evaluated at runtime. While this worked well for the kinds of problems Smalltalk was good at solving, it turned out that taking the ideas of Smalltalk and imprinting them into a statically-typed language lost a LOT in translation
 
-## The History of Error Handling
+## Error Handling
 
+The focus of this paper is a significant impediment to composability.
+### History
+
+The original programs were small (by present-day standards), written in assembly language (after machine code rapidly became too unwieldy), and tightly coupled to the underlying hardware.
 ### The Problem with Exceptions
 maybe you can't prove it, things work in the small but don't scale). We only figure it out when scaling composability.
 ### Two Kinds of Errors
