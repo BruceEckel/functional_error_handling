@@ -47,6 +47,8 @@ The focus of this paper is a significant impediment to composability.
 ### History
 
 The original programs were small (by present-day standards), written in assembly language (after machine code rapidly became too unwieldy), and tightly coupled to the underlying hardware.
+
+Fortran and Cobol were batch processed on punch cards. If something went wrong
 ### The Problem with Exceptions
 maybe you can't prove it, things work in the small but don't scale). We only figure it out when scaling composability.
 ### Two Kinds of Errors
