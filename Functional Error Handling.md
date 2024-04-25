@@ -57,8 +57,8 @@ As time-sharing operating systems like Unix became a common way to distribute co
 Programmers produced a scattered collection of solutions to the reporting problem:
 
 - Indicate failure by returning a special value from a function call. This only works when there can be a special value that doesn't occur from an ordinary call to that function. For example, if your function returns any `int`, you can't use `0` or `-1` to report an error. A bigger problem is that you rely on the client programmer to pay attention to the return value and know what to do about errors.
-- Indicate failure by setting a global flag. Again, the client programmer must know to watch that flag. If the flag isn't checked right away, it might get overwritten by a different function call in which case the error is lost.
-- 
+- Indicate failure by [setting a global flag](https://en.wikipedia.org/wiki/Errno.h). This is a single flag shared by all functions in the program. The client programmer must know to watch that flag. If the flag isn't checked right away, it might get overwritten by a different function call in which case the error is lost.
+- Use [signals](https://en.wikipedia.org/wiki/C_signal_handling) if the operating system supports it.
 ### The Problem with Exceptions
 maybe you can't prove it, things work in the small but don't scale). We only figure it out when scaling composability.
 ### Two Kinds of Errors
