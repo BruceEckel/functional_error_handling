@@ -102,11 +102,166 @@ You can’t know what exceptions you must handle when calling other functions (i
 ### Exceptions Destroy Partial Calculations
 (first example)
 ```python
+#: comprehension1.py
+# Exception produces no results, stops everything
 
+
+def f1(i: int) -> int:
+    if i == 1:
+        raise ValueError("i cannot be 1")
+    else:
+        return i * 2
+
+
+print([f1(i) for i in range(3)])
+r"""
+Traceback (most recent call last):
+  File "C:\git\functional_error_handling\src\functional_error_handling\comprehension1.py", line 12, in <module>
+    print([f1(i) for i in range(3)])
+          ^^^^^
+  File "C:\git\functional_error_handling\src\functional_error_handling\comprehension1.py", line 7, in f1
+    raise ValueError("i cannot be 1")
+ValueError: i cannot be 1
+"""
 ```
 # The Functional Solution
 Instead of creating a complex implementation to report and handle errors, the functional approach simply packages the (potential) error together with the result, and returns the package from the function. This package is a new type, with operations that prevent the programmer from simply plucking the result from the package without dealing with error conditions (a failing of the Go language approach).
 
+As a first attempt, we can use *type unions* to create an un-named version of the return package:
+```python
+#: comprehension2.py
+# Type union aka Sum Type
+# Success vs error is not clear
+from validate_output import console
 
 
-(Not considered in earlier solutions because of the overhead of returning)
+def f2(i: int) -> int | str:  # Sum type
+    if i == 1:
+        return "i cannot be 1"
+    else:
+        return i * 2
+
+
+print(outputs := [f2(i) for i in range(3)])
+console == """
+[0, 'i cannot be 1', 4]
+"""
+
+for r in outputs:
+    match r:
+        case int(value):
+            print(f"{value = }")
+        case str(error):
+            print(f"{error = }")
+console == """
+value = 0
+error = 'i cannot be 1'
+value = 4
+"""
+
+
+# Composition: return type enforced
+def g(i: int) -> int | str:
+    return f2(i)
+
+
+print(g(1))
+print(g(5))
+console == """
+i cannot be 1
+10
+"""
+```
+`f2` returns a `str` to indicate an error, and an `int` answer if there is no error. In the pattern match, we are forced to check the result type to determine whether an error occurs and we cannot just assume it is an `int`.
+
+In hindsight, it might seem like this “packaging” approach is much more obvious than the elaborate exception-handling scheme that was adopted for C++, Java and other languages, but at the time the apparent overhead of returning extra bytes seemed unacceptable (I don’t know of any comparisons between that and the overhead of exception-handling mechanisms, but I do know that the goal of C++ exception handling is to have zero execution overhead if no exceptions occur).
+
+## Unifying the Return Type
+
+As you can see in the display of the `outputs` array, we now have the unfortunate situation that `outputs` contains multiple types. The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and, to make it generally useful, define it using generics:
+```python
+#: result.py
+# Result with OK & Err subtypes
+from typing import Generic, TypeVar
+from dataclasses import dataclass
+
+ANSWER = TypeVar("ANSWER")
+ERROR = TypeVar("ERROR")
+
+
+@dataclass(frozen=True)
+class Result(Generic[ANSWER, ERROR]):
+    pass
+
+
+@dataclass(frozen=True)
+class Ok(Result[ANSWER, ERROR]):
+    value: ANSWER  # return Ok(answer)
+
+
+@dataclass(frozen=True)
+class Err(Result[ANSWER, ERROR]):
+    error: ERROR  # return Err(error)
+```
+(description)
+
+Here’s what our example becomes when we incorporate `Result`:
+```python
+#: comprehension3.py
+# Explicit result type
+from result import Result, Err, Ok
+from validate_output import console
+
+
+def f3(i: int) -> Result[int, str]:
+    if i == 1:
+        return Err("i cannot be 1")
+    else:
+        return Ok(i * 2)
+
+
+print(outputs := [f3(i) for i in range(3)])
+console == """
+[Ok(value=0), Err(error='i cannot be 1'), Ok(value=4)]
+"""
+
+for r in outputs:
+    match r:
+        case Ok(value):
+            print(f"{value = }")
+        case Err(error):
+            print(f"{error = }")
+console == """
+value = 0
+error = 'i cannot be 1'
+value = 4
+"""
+
+
+# Composition: return type enforced
+def g(i: int) -> Result[int, str]:
+    return f3(i)
+
+
+print(g(1))
+print(g(5))
+console == """
+Err(error='i cannot be 1')
+Ok(value=10)
+"""
+```
+
+
+## A More Capable Library
+Although `result.py` solves the basic need of returning typed answer + error packages, there’s still a problem that impedes our ultimate goal of composability: every time you call a function, you must write code to unpack and deal with this new returned object. This is not only a lot of extra repetitive work, but it interrupts the flow and readability of the program. We need some way to reduce or eliminate this extra code.
+
+Languages like Rust and Kotlin support these unpacking operations directly (examples):
+
+Languages like Python do not directly support this unpacking, but the mathematical field of *category theory* proves that operations can be created to automatically stop a composed calculation if an error occurs, and return the error from the composition. These operations have multiple names like *bind* and *flatmap*.
+
+The most popular library that includes this extra functionality is [Returns](https://github.com/dry-python/returns), which provides `bind`. `Returns` includes more features than just return package support, but we will only focus on that.
+
+With `Returns`, we can now elegantly solve our list-comprehension problem:
+```python
+
+```
