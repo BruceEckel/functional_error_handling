@@ -79,18 +79,34 @@ If errors are in the language domain, the next question is how to report and han
 Unifying error reporting and recovery
 
 exceptions seemed like a great idea:
-1. There's only one way to report errors
-2. Errors cannot be ignored---the flow upward until caught or displayed on the console with program termination.
-3. Errors can be handled close to the origin, or generalized by catching them "further out" so that multiple error sources can be managed with a single handler.
-4. A standardized way to correct problems so that an operation can recover and retry
+1. A standardized way to correct problems so that an operation can recover and retry
+2. There's only one way to report errors
+3. Errors cannot be ignored---the flow upward until caught or displayed on the console with program termination.
+4. Errors can be handled close to the origin, or generalized by catching them "further out" so that multiple error sources can be managed with a single handler.
+5. Exception hierarchies allow more general exception handlers to handle multiple exception subtypes
 ## The Problem with Exceptions
+
+In the small (and especially when teaching them), exceptions seem to work quite well. 
 
 maybe you can't prove it, things work in the small but don't scale). We only figure it out when scaling composability.
 
 
-### Two Kinds of Errors
+### The Two Kinds of Errors are Conflated
 Recoverable vs panic
 (Recovering/Retrying requires programming)
 With exceptions, the two types are conflated.
 (Link to Error handling article)
 ### Exceptions are not Part of the Type System
+You can’t know what exceptions you must handle when calling other functions (i.e.: composing)
+
+### Exceptions Destroy Partial Calculations
+(first example)
+```python
+
+```
+# The Functional Solution
+Instead of creating a complex implementation to report and handle errors, the functional approach simply packages the (potential) error together with the result, and returns the package from the function. This package is a new type, with operations that prevent the programmer from simply plucking the result from the package without dealing with error conditions (a failing of the Go language approach).
+
+
+
+(Not considered in earlier solutions because of the overhead of returning)
