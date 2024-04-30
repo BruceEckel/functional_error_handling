@@ -1,4 +1,6 @@
-My thesis is that most of what we've been working towards in programming—whether we are aware of it or not—is about composability. And the first question this produces is: “What do you mean by that?” I’d argue that discovering the very definition of composability is part of this path, as we’ve seen different definitions depending on the programming language paradigm under scrutiny.
+> **Thesis**: *Most of what we've been working towards in programming—whether we are aware of it or not—is about composability.* 
+
+The first question this produces is: “What do you mean by that?” Discovering the very definition of composability is part of this path, as we’ve seen different definitions depending on the programming language paradigm under scrutiny.
 
 Here’s the definition I put forward:
 
@@ -41,10 +43,10 @@ In modern languages, modularity is part of the background of a language and we d
 
 Object-oriented programming has a bit of a tortured history. Although the first OO language was Simula-67 (a compiled language), OO found its first real success with Smalltalk. But Smalltalk might be the most dynamic language you’ll ever encounter—literally everything is evaluated at runtime. While this worked well for the kinds of problems Smalltalk was good at solving, it turned out that taking the ideas of Smalltalk and imprinting them into a statically-typed language lost a *lot* in translation.
 
-## Error Handling
+# Error Handling
 
 Error reporting and handling is a significant impediment to composability.
-### History
+## History
 
 Original programs were small (by present-day standards), written in assembly language (after machine code rapidly became too unwieldy), and tightly coupled to the underlying hardware. If something went wrong, the only way to report it was to turn on a light or a buzzer, or, if you had one, put a message on the console—this might as simple as a dot-matrix display. Such an error message probably wasn’t friendly to the end-user of the system and usually required a tech support call to the manufacturer. 
 
@@ -59,7 +61,26 @@ Programmers produced a scattered collection of solutions to the reporting proble
 - Indicate failure by returning a special value from a function call. This only works when there can be a special value that doesn't occur from an ordinary call to that function. For example, if your function returns any `int`, you can't use `0` or `-1` to report an error. A bigger problem is that you rely on the client programmer to pay attention to the return value and know what to do about errors.
 - Indicate failure by [setting a global flag](https://en.wikipedia.org/wiki/Errno.h). This is a single flag shared by all functions in the program. The client programmer must know to watch that flag. If the flag isn't checked right away, it might get overwritten by a different function call in which case the error is lost.
 - Use [signals](https://en.wikipedia.org/wiki/C_signal_handling) if the operating system supports it.
-### The Problem with Exceptions
+
+# Exceptions
+
+Who is responsible for error handling, the OS or the language? The experiments that evolved toward "the language." (stay close to the problem)
+
+Unifying error reporting and recovery
+
+exceptions seemed like a great idea:
+1. There's only one way to report errors
+2. Errors cannot be ignored---the flow upward until caught or displayed on the console with program termination.
+3. Errors can be handled close to the origin, or generalized by catching them "further out" so that multiple error sources can be managed with a single handler.
+4. A standardized way to correct problems so that an operation can recover and retry
+## The Problem with Exceptions
+
 maybe you can't prove it, things work in the small but don't scale). We only figure it out when scaling composability.
+
+
 ### Two Kinds of Errors
 Recoverable vs panic
+(Recovering/Retrying requires programming)
+With exceptions, the two types are conflated.
+(Link to Error handling article)
+### Exceptions are not Part of the Type System
