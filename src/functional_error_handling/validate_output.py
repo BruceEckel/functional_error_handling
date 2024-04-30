@@ -43,8 +43,10 @@ class OutputValidator:
         sys.stdout = self.original_stdout
         sys.stderr = self.original_stderr
 
-    def __eq__(self, other: str) -> bool:
+    def __eq__(self, other: object) -> bool:
         "Compare captured output to expected output"
+        # Standard __eq__ requires `other` to be an object:
+        assert isinstance(other, str), f"{other} must be str for console =="
         self.stop()
         captured_text = self.captured_output.getvalue().strip()
         expected_text = other.strip()
