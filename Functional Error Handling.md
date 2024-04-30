@@ -1,14 +1,14 @@
 > **Thesis**: *Most of what we've been working towards in programming—whether we are aware of it or not—is about composability.* 
 
-The first question this produces is: “What do you mean by that?” Discovering the very definition of composability is part of this path, as we’ve seen different definitions depending on the programming language paradigm under scrutiny.
+The first question this produces is: “What do you mean by that?” Discovering the definition of composability is part of this path—there are different definitions depending on the programming language paradigm under scrutiny.
 
-Here’s the definition I put forward:
+Here’s what I think composability is:
 
-> Composability: the ability to assemble bigger pieces from smaller pieces.
+> The ability to assemble bigger pieces from smaller pieces.
 
-This is less-precise than some definitions; for example, composition in object-oriented programming means “putting objects inside other objects.” However, that fits with my overall definition; it achieves the same goal but in a specific way. When dealing with functions, composability means “calling functions within other functions.”
+This is less-precise than some definitions. For example, composition in object-oriented programming means “putting objects inside other objects.” When dealing with functions, composability means “calling functions within other functions.” Both definitions fit my overall definition; they achieve the same goal but in different specific ways. 
 
-To enable the easy construction of programs, we need to be able to effortlessly assemble components in the same way that a child assembles Legos—by simply sticking them together, without requiring extra activities to do so. On top of that, such assemblages become their own components that can be stuck together just as easily. This composability scales up regardless of the size of the components.
+To enable the easy construction of programs, we need to be able to effortlessly assemble components in the same way that a child assembles Legos—by simply sticking them together, without requiring extra activities. On top of that, such assemblages become their own components that can be stuck together just as easily. This composability scales up regardless of the size of the components.
 
 Over the years we have encountered numerous roadblocks to this goal. Let’s look at a few of these.
 ## Goto Considered Harmful
@@ -48,9 +48,9 @@ Object-oriented programming has a bit of a tortured history. Although the first 
 Error reporting and handling is a significant impediment to composability.
 ## History
 
-Original programs were small (by present-day standards), written in assembly language (after machine code rapidly became too unwieldy), and tightly coupled to the underlying hardware. If something went wrong, the only way to report it was to turn on a light or a buzzer, or, if you had one, put a message on the console—this might as simple as a dot-matrix display. Such an error message probably wasn’t friendly to the end-user of the system and usually required a tech support call to the manufacturer. 
+Original programs were small (by present-day standards), written in assembly language (machine code quickly became too unwieldy), and tightly coupled to the underlying hardware. If something went wrong, the only way to report it was to change the output on a wire, to turn on a light or a buzzer. If you had one, you put a message on the console—this might as simple as a dot-matrix display. Such an error message probably wasn’t friendly to the end-user of the system and usually required a tech support call to the manufacturer. 
 
-Two of my first jobs were building embedded systems that controlled hardware. These systems had to work right. There was no point in reporting errors because any error meant the software was broken.
+Two of my first jobs were building embedded systems that controlled hardware. These systems had to work right. There was no point in reporting most errors because  an error normally meant the software was broken.
 
 For business and scientific programming, Fortran and Cobol were batch processed on punch cards. If something went wrong, either the compilation failed or the resulting data was bad. No real-time error-handling was necessary because the program didn’t run in real time.
 
@@ -58,13 +58,23 @@ As time-sharing operating systems like Unix became a common way to distribute co
 
 Programmers produced a scattered collection of solutions to the reporting problem:
 
-- Indicate failure by returning a special value from a function call. This only works when there can be a special value that doesn't occur from an ordinary call to that function. For example, if your function returns any `int`, you can't use `0` or `-1` to report an error. A bigger problem is that you rely on the client programmer to pay attention to the return value and know what to do about errors.
+- Indicate failure by returning a special value from a function call. This only works when the special value doesn't occur from an ordinary call to that function. For example, if your function returns any `int`, you can't use `0` or `-1` to report an error. A bigger problem is that you rely on the client programmer to pay attention to the return value and know what to do about errors.
 - Indicate failure by [setting a global flag](https://en.wikipedia.org/wiki/Errno.h). This is a single flag shared by all functions in the program. The client programmer must know to watch that flag. If the flag isn't checked right away, it might get overwritten by a different function call in which case the error is lost.
 - Use [signals](https://en.wikipedia.org/wiki/C_signal_handling) if the operating system supports it.
 
-# Exceptions
+The operating system was something that needed to be discovered. As programmers found themselves rewriting the same basic code over and over again, and much of that repeated code involved manipulating hardware and the attendant specialized knowledge required, it became clear that we needed a layer to eliminate this extra work, work that to some degree every program required.
 
-Who is responsible for error handling, the OS or the language? The experiments that evolved toward "the language." (stay close to the problem)
+A fundamental question that designers were trying to understand during this evolution was:
+
+> *Who is responsible for error handling, the OS or the language?*
+
+Since every program has the potential for errors, it initially seemed obvious that this activity should be the domain of the operating system. Some early operating systems allowed the program to invoke an error which would then jump to the operating system, and a few OSes even experimented with the ability to “resume” back to the point where the error occurred, so the handler could fix the problem and continue processing. Notably, these systems did not find success and resumption was removed. 
+
+Further experiments eventually made it clear that the language needed primary responsibility for error reporting and handling (there are a few special cases, such as out-of-memory errors, which must still be handled by the OS). This is because an OS is designed to be general-purpose, and thus cannot know the specific situation that caused an error, whereas language code can be close to the problem. Customization is normally the domain of the language. You could imagine calling the OS to install custom error-handling routines, and you can also imagine how quickly that would become overwhelmingly messy.
+
+If errors are in the language domain, the next question is how to report and handle them. 
+
+# Exceptions
 
 Unifying error reporting and recovery
 
