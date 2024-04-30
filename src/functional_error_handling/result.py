@@ -14,9 +14,9 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Ok(Result[ANSWER, ERROR]):
-    value: ANSWER  # return Ok(answer)
+    value: ANSWER  # Return Ok(answer)
 
 
 @dataclass(frozen=True)
 class Err(Result[ANSWER, ERROR]):
-    error: ERROR  # return Err(error)
+    error: ERROR  # Return Err(error)

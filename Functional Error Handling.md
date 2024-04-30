@@ -1,8 +1,8 @@
-> **Thesis**: *Most of what we've been working towards in programming—whether we are aware of it or not—is about composability.* 
+> **Thesis**: *Most of what we've been working towards in programming—whether we are aware of it or not—is composability.* 
 
 The first question this produces is: “What do you mean by that?” Discovering the definition of composability is part of this path—there are different definitions depending on the programming language paradigm under scrutiny.
 
-Here’s what I think composability is:
+Here’s my definition of composability:
 
 > The ability to assemble bigger pieces from smaller pieces.
 
@@ -34,7 +34,7 @@ BEGIN
   WriteString("Hello World!")
 END Hello.
 ```
-This allowed complete granularity independent of file organization; perhaps this was because programmers were used to thinking in terms of a big file-per-program. Python’s merging of modules with files makes more sense in hindsight and has the benefit of eliminating the [(significant) extra verbiage](https://en.wikipedia.org/wiki/Modula-2), only a portion of which is shown here.
+This allowed complete granularity independent of file organization; perhaps this was because programmers were used to thinking in terms of one big file-per-program. Python’s merging of modules with files makes more sense in hindsight and has the benefit of eliminating the [(significant) extra verbiage](https://en.wikipedia.org/wiki/Modula-2), only a portion of which is shown here.
 
 The main benefit of modules is name control—each module creates a scope for names (a namespace) which allows programmers the freedom to choose any name at will within a module. This prevents name collisions across a project and reduces the cognitive load on the programmer. Prior to this, programs reached scaling limits as they grew larger. Program size in assembly language programs was limited by many different factors, so the need for modules was not seen until systems were able to grow larger because higher-level languages solved enough of these other factors.
 
@@ -81,7 +81,7 @@ Unifying error reporting and recovery
 exceptions seemed like a great idea:
 1. A standardized way to correct problems so that an operation can recover and retry
 2. There's only one way to report errors
-3. Errors cannot be ignored---the flow upward until caught or displayed on the console with program termination.
+3. Errors cannot be ignored—they flow upward until caught or displayed on the console with program termination.
 4. Errors can be handled close to the origin, or generalized by catching them "further out" so that multiple error sources can be managed with a single handler.
 5. Exception hierarchies allow more general exception handlers to handle multiple exception subtypes
 ## The Problem with Exceptions
@@ -91,15 +91,15 @@ In the small (and especially when teaching them), exceptions seem to work quite 
 maybe you can't prove it, things work in the small but don't scale). We only figure it out when scaling composability.
 
 
-### The Two Kinds of Errors are Conflated
+### 1. The Two Kinds of Errors are Conflated
 Recoverable vs panic
 (Recovering/Retrying requires programming)
 With exceptions, the two types are conflated.
 (Link to Error handling article)
-### Exceptions are not Part of the Type System
+### 2. Exceptions are not Part of the Type System
 You can’t know what exceptions you must handle when calling other functions (i.e.: composing)
 
-### Exceptions Destroy Partial Calculations
+### 3. Exceptions Destroy Partial Calculations
 (first example)
 ```python
 #: comprehension1.py
@@ -125,9 +125,9 @@ ValueError: i cannot be 1
 """
 ```
 # The Functional Solution
-Instead of creating a complex implementation to report and handle errors, the functional approach simply packages the (potential) error together with the result, and returns the package from the function. This package is a new type, with operations that prevent the programmer from simply plucking the result from the package without dealing with error conditions (a failing of the Go language approach).
+Instead of creating a complex implementation to report and handle errors, the functional approach simply packages the (potential) error together with the result, and returns that package from the function. This package is a new type, with operations that prevent the programmer from simply plucking the result from the package without dealing with error conditions (a failing of the Go language approach).
 
-As a first attempt, we can use *type unions* to create an un-named version of the return package:
+As a first attempt, we can use *type unions* to create a nameless return package:
 ```python
 #: comprehension2.py
 # Type union aka Sum Type
@@ -174,11 +174,15 @@ i cannot be 1
 ```
 `f2` returns a `str` to indicate an error, and an `int` answer if there is no error. In the pattern match, we are forced to check the result type to determine whether an error occurs and we cannot just assume it is an `int`.
 
+An important problem with this approach is that it is not clear which type is the success value and which type represents the error condition—because we are trying to repurpose existing built-in types to represent new meanings.
+
 In hindsight, it might seem like this “packaging” approach is much more obvious than the elaborate exception-handling scheme that was adopted for C++, Java and other languages, but at the time the apparent overhead of returning extra bytes seemed unacceptable (I don’t know of any comparisons between that and the overhead of exception-handling mechanisms, but I do know that the goal of C++ exception handling is to have zero execution overhead if no exceptions occur).
+
+Note that in the definition of `g`, the type checker requires that you return `int | str` because `f2` returns those types. Thus, when composing, type-safety is preserved. This means you won’t lose error type information during composition, so composability automatically scales.
 
 ## Unifying the Return Type
 
-As you can see in the display of the `outputs` array, we now have the unfortunate situation that `outputs` contains multiple types. The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and, to make it generally useful, define it using generics:
+As you can see in the display of the `outputs` array, we now have the unfortunate situation that `outputs` contains multiple types (both `int` and `str`). The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it generally useful:
 ```python
 #: result.py
 # Result with OK & Err subtypes
@@ -196,16 +200,16 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Ok(Result[ANSWER, ERROR]):
-    value: ANSWER  # return Ok(answer)
+    value: ANSWER  # Return Ok(answer)
 
 
 @dataclass(frozen=True)
 class Err(Result[ANSWER, ERROR]):
-    error: ERROR  # return Err(error)
+    error: ERROR  # Return Err(error)
 ```
 (description)
 
-Here’s what our example becomes when we incorporate `Result`:
+The modified version of the example using `Result` is now:
 ```python
 #: comprehension3.py
 # Explicit result type
@@ -253,15 +257,16 @@ Ok(value=10)
 
 
 ## A More Capable Library
-Although `result.py` solves the basic need of returning typed answer + error packages, there’s still a problem that impedes our ultimate goal of composability: every time you call a function, you must write code to unpack and deal with this new returned object. This is not only a lot of extra repetitive work, but it interrupts the flow and readability of the program. We need some way to reduce or eliminate this extra code.
+
+Although `result.py` creates typed “answer + error” packages, there’s still a problem that impedes our ultimate goal of composability: every time you call a function, you must write code to unpack and deal with this new `Result` object. This is not only a lot of extra repetitive work, but it interrupts the flow and readability of the program. We need some way to reduce or eliminate this extra code.
 
 Languages like Rust and Kotlin support these unpacking operations directly (examples):
 
 Languages like Python do not directly support this unpacking, but the mathematical field of *category theory* proves that operations can be created to automatically stop a composed calculation if an error occurs, and return the error from the composition. These operations have multiple names like *bind* and *flatmap*.
 
-The most popular library that includes this extra functionality is [Returns](https://github.com/dry-python/returns), which provides `bind`. `Returns` includes more features than just return package support, but we will only focus on that.
+The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns), which provides `bind`. `Returns` includes more features than just return package support, but we will only focus on that.
 
-With `Returns`, we can now elegantly solve our list-comprehension problem:
+`Returns` elegantly solves the list-comprehension problem:
 ```python
 #: composed.py
 # Using https://github.com/dry-python/returns
