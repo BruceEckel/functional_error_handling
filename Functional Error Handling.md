@@ -262,7 +262,7 @@ Although `result.py` creates typed “answer + error” packages, there’s stil
 
 Languages like Rust and Kotlin support these unpacking operations directly (examples):
 
-Languages like Python do not directly support this unpacking, but the mathematical field of *category theory* proves that operations can be created to automatically stop a composed calculation if an error occurs, and return the error from the composition. These operations have multiple names like *bind* and *flatmap*.
+Languages like Python do not directly support this unpacking, but the mathematical field of *category theory* proves that operations can be created to automatically stop a composed calculation if an error occurs, returning the error from the composition. These operations have multiple names such as *bind* and *flatmap*.
 
 The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns), which provides `bind`. `Returns` includes more features than just return package support, but we will only focus on that.
 

@@ -1,6 +1,5 @@
 #: composed.py
 # Using https://github.com/dry-python/returns
-# Is there a way to have multiple arguments to composed()? (tuples?)
 from returns.result import Result, Success, Failure, safe
 from returns.pipeline import flow, is_successful
 from returns.pointfree import bind
