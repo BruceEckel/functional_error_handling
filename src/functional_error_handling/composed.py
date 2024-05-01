@@ -23,7 +23,7 @@ def b(i: int) -> int:
 # Use an exception as info (but don't raise it):
 def c(i: int) -> Result[str, ValueError]:
     if i == -1:
-        return Failure(ValueError(f"c({i = })"))
+        return Failure(ValueError(i))
     return Success(f"{i}#")
 
 
@@ -48,7 +48,7 @@ b(2): 0.5
 for inp, outp in zip(inputs, outputs):
     print(f"{inp:>2}: {outp}")
 console == """
--1: <Failure: c(i = -1)>
+-1: <Failure: -1>
  0: <Failure: division by zero>
  1: <Failure: a(i = 1)>
  2: <Success: 2#>
@@ -71,7 +71,7 @@ for r in outputs:
     else:
         print(f"{r.failure() = }")
 console == """
-r.failure() = ValueError('c(i = -1)')
+r.failure() = ValueError(-1)
 r.failure() = ZeroDivisionError('division by zero')
 r.failure() = 'a(i = 1)'
 r.unwrap() = '2#'
