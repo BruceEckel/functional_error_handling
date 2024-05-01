@@ -1,0 +1,6 @@
+Tabnine: https://docs.tabnine.com/saas/install/vs-code?utm_medium=email&utm_campaign=welcome-pro-user&utm_source=cio&utm_content=text-link-vscode
+
+Extensions:
+    Ruff
+    Black
+    Pylance

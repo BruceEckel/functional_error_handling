@@ -1,7 +1,7 @@
 #: composed.py
 # Using https://github.com/dry-python/returns
 from returns.result import Result, Success, Failure, safe
-from returns.pipeline import flow, is_successful
+from returns.pipeline import is_successful, pipe
 from returns.pointfree import bind
 from validate_output import console
 
@@ -27,14 +27,11 @@ def c(i: int) -> Result[str, ValueError]:
     return Success(f"{i}#")
 
 
-def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
-    return flow(
-        i,
-        a,
-        bind(b),
-        bind(c),
-    )
-
+composed = pipe(  # type: ignore
+    a,
+    bind(b),
+    bind(c),
+)
 
 inputs = range(-1, 3)
 print(f"inputs = {list(inputs)}")

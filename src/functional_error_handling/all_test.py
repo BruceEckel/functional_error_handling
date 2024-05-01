@@ -48,6 +48,10 @@ def test_composed():
     run_script("composed.py")
 
 
+def test_composed_tuples():
+    run_script("composed_tuples.py")
+
+
 def test_do_notation():
     run_script("do_notation.py")
 

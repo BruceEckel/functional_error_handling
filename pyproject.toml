@@ -2,14 +2,8 @@
 name = "functional-error-handling"
 version = "0.1.0"
 description = "Add your description here"
-authors = [
-    { name = "Bruce Eckel", email = "MindviewInc@gmail.com" }
-]
-dependencies = [
-    "pretty_errors>=1.2.25",
-    "returns>=0.22.0",
-    "pytest>=8.1.1",
-]
+authors = [{ name = "Bruce Eckel", email = "MindviewInc@gmail.com" }]
+dependencies = ["pretty_errors>=1.2.25", "returns>=0.22.0", "pytest>=8.1.1"]
 readme = "README.md"
 requires-python = ">= 3.8"
 
@@ -19,10 +13,7 @@ build-backend = "hatchling.build"
 
 [tool.rye]
 managed = true
-dev-dependencies = [
-    "pytest>=8.1.1",
-    "returns>=0.22.0",
-]
+dev-dependencies = ["pytest>=8.1.1", "returns>=0.22.0"]
 
 [tool.hatch.metadata]
 allow-direct-references = true
@@ -33,6 +24,7 @@ reportUnusedExpression = false
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
-testpaths = [
-    "src/functional_error_handling"
-]
+testpaths = ["src/functional_error_handling"]
+
+[tool.mypy]
+plugins = ["returns.contrib.mypy.returns_plugin"]
