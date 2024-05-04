@@ -1,3 +1,4 @@
+#: multiple_arguments_curry.py
 from returns.pipeline import flow
 from returns.curry import curry
 from returns.maybe import Some
