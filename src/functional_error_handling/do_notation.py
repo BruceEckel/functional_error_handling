@@ -1,7 +1,7 @@
 #: do_notation.py
 # Alternative to flow/bind
 from returns.result import Result
-from composed import a, b, c, composed
+from comprehension5 import a, b, c, composed
 from test import test
 
 

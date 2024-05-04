@@ -45,11 +45,11 @@ def test_comprehension3():
 
 
 def test_composed():
-    run_script("composed.py")
+    run_script("comprehension5.py")
 
 
 def test_composed_tuples():
-    run_script("composed_tuples.py")
+    run_script("multiple_arguments_tuples.py")
 
 
 def test_do_notation():

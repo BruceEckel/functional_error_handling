@@ -1,4 +1,4 @@
-#: composed_tuples.py
+#: multiple_arguments_tuples.py
 # Multiple arguments within composed function using tuples
 from returns.result import Result, Success, Failure
 from returns.pipeline import flow
@@ -8,8 +8,7 @@ from typing import Tuple
 
 
 def first(t: Tuple[int, int]) -> Result[Tuple[int, int], str]:
-    i, j = t
-    # print(f"first {i = }, {j = }")
+    i, j = t  # Unpack tuple
     if i == j:
         return Failure(f"first({i = }, {j = })")
     return Success((i, j))
@@ -17,10 +16,8 @@ def first(t: Tuple[int, int]) -> Result[Tuple[int, int], str]:
 
 def second(t: Tuple[int, int]) -> Result[int, str]:
     u, v = t
-    # print(f"second {u = }, {v = }")
     if v == u + 1:
         return Failure(f"second({u = }, {v = })")
-    # print(f"second Success({u = } + {v = })")
     return Success(u + v)
 
 

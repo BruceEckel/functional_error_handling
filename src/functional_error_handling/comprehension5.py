@@ -1,4 +1,4 @@
-#: composed.py
+#: comprehension5.py
 # Using https://github.com/dry-python/returns
 from returns.result import Result, Success, Failure, safe
 from returns.pipeline import is_successful, pipe
@@ -33,12 +33,7 @@ composed = pipe(  # type: ignore
     bind(c),
 )
 
-inputs = range(-1, 3)
-print(f"inputs = {list(inputs)}")
-console == """
-inputs = [-1, 0, 1, 2]
-"""
-
+inputs = range(-1, 3)  # [-1, 0, 1, 2]
 outputs = [composed(i) for i in inputs]
 console == """
 b(-1): -1.0
@@ -56,7 +51,6 @@ console == """
 
 # Extract results, converting failure to None:
 with_nones = [r.value_or(None) for r in outputs]
-
 print(str(with_nones))
 print(str(list(filter(None, with_nones))))
 console == """
