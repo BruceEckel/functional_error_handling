@@ -44,21 +44,22 @@ def test_comprehension3():
     run_script("comprehension3.py")
 
 
-def test_composed():
+def test_comprehension4():
+    run_script("comprehension4.py")
+
+
+def test_comprehension5():
     run_script("comprehension5.py")
 
 
-def test_composed_tuples():
-    run_script("multiple_arguments_tuples.py")
-
-
-def test_do_notation():
-    run_script("do_notation.py")
+def test_multiple_arguments():
+    run_script("multiple_arguments.py")
 
 
 if __name__ == "__main__":
     test_comprehension1()
     test_comprehension2()
     test_comprehension3()
-    test_composed()
-    test_do_notation()
+    test_comprehension4()
+    test_comprehension5()
+    test_multiple_arguments()
