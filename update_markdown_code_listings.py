@@ -4,6 +4,7 @@ import sys
 from typing import List
 from dataclasses import dataclass
 from pathlib import Path
+from pprint import pformat
 
 
 @dataclass
@@ -18,31 +19,35 @@ def find_python_files_and_listings(markdown_content: str) -> List[Listing]:
     Find all #[code_location] paths in the markdown content and
     return associated Python files and listings.
     """
-    python_files = []
     listings = []
-    code_location_pattern = re.compile(
-        r"<!--\s*#[code_location]\s*(.*?)\s*-->", re.MULTILINE
-    )
-    # If slug line doesn't exist group(1) returns None:
-    listing_pattern = re.compile(r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL)
+    python_files = []
+
+    code_location_pattern = re.compile(r"#\[code_location\]\s*(.*)\s*-->")
 
     for match in re.finditer(code_location_pattern, markdown_content):
         code_location = match.group(1)
+        print(f"{code_location = }")
         path = Path(code_location)
         if path.is_absolute():
             python_files.extend(list(path.glob("**/*.py")))
         else:
             python_files.extend(list((Path.cwd() / path).resolve().glob("**/*.py")))
+    available_python_files = [p.name for p in python_files]
+    print(f"python_files = {pformat(available_python_files)}")
+
+    # If slug line doesn't exist group(1) returns None:
+    listing_pattern = re.compile(r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL)
     for match in re.finditer(listing_pattern, markdown_content):
         listing_content = match.group(1).strip()
         filename = match.group(2).strip() if match.group(2) else None
         assert filename, f"filename not found in {match}"
-        print(f"filename is [[[{filename}]]]")
-        sys.exit()
+        print(f"{filename = }")
         source_file = next(
             (file for file in python_files if file.name == filename), None
         )
-        assert source_file, f"{filename = } not found in {match}"
+        if not source_file:
+            print(f"{filename = } not found in {pformat(available_python_files)}")
+            sys.exit(1)
         listings.append(Listing(filename, listing_content, source_file))
     return listings
 
