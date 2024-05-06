@@ -13,6 +13,16 @@ class Listing:
     content: str
     source_file: Path
 
+    def __str__(self):
+        return f"""
+Filename from slugline: {self.filename}
+Source File: {self.source_file.absolute() if self.source_file else ""}
+Markdown Content:
+{self.content}
+{'-' * 60}
+"""
+        # Source File: {self.source_file.name if self.source_file else ""}
+
 
 def find_python_files_and_listings(markdown_content: str) -> List[Listing]:
     """
@@ -38,10 +48,10 @@ def find_python_files_and_listings(markdown_content: str) -> List[Listing]:
     # If slug line doesn't exist group(1) returns None:
     listing_pattern = re.compile(r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL)
     for match in re.finditer(listing_pattern, markdown_content):
-        listing_content = match.group(1).strip()
+        listing_content = (match.group(1) or "") + match.group(3)
         filename = match.group(2).strip() if match.group(2) else None
         assert filename, f"filename not found in {match}"
-        print(f"{filename = }")
+        # print(f"{filename = }")
         source_file = next(
             (file for file in python_files if file.name == filename), None
         )
@@ -81,6 +91,9 @@ def main():
     markdown_file = Path(markdown_file_path)
     markdown_content = markdown_file.read_text(encoding="utf-8")
     listings = find_python_files_and_listings(markdown_content)
+    for listing in listings:
+        print(listing)
+    sys.exit(0)
 
     updated_content = []
     for listing in listings:
