@@ -11,13 +11,13 @@ def a(i: int) -> Result[int, str]:
         return Ok(i)
 
 
+# Use an exception as info (but don't raise it):
 def b(i: int) -> Result[int, ZeroDivisionError]:
     if i == 0:
         return Err(ZeroDivisionError())
     return Ok(i)
 
 
-# Use an exception as info (but don't raise it):
 def c(i: int) -> Result[str, ValueError]:
     if i == -1:
         return Err(ValueError(i))

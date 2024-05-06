@@ -20,11 +20,10 @@ def b(i: int) -> int:
     return i
 
 
-# Use an exception as info (but don't raise it):
 def c(i: int) -> Result[str, ValueError]:
     if i == -1:
-        return Failure(ValueError(i))
-    return Success(f"{i}#")
+        return Failure(ValueError(f"c({i =})"))
+    return Success(f"c({i})")
 
 
 composed = pipe(  # type: ignore
@@ -43,10 +42,10 @@ b(2): 0.5
 for inp, outp in zip(inputs, outputs):
     print(f"{inp:>2}: {outp}")
 console == """
--1: <Failure: -1>
+-1: <Failure: c(i =-1)>
  0: <Failure: division by zero>
  1: <Failure: a(i = 1)>
- 2: <Success: 2#>
+ 2: <Success: c(2)>
 """
 
 # Extract results, converting failure to None:
@@ -54,8 +53,8 @@ with_nones = [r.value_or(None) for r in outputs]
 print(str(with_nones))
 print(str(list(filter(None, with_nones))))
 console == """
-[None, None, None, '2#']
-['2#']
+[None, None, None, 'c(2)']
+['c(2)']
 """
 
 # Another way to extract results:
@@ -65,8 +64,8 @@ for r in outputs:
     else:
         print(f"{r.failure() = }")
 console == """
-r.failure() = ValueError(-1)
+r.failure() = ValueError('c(i =-1)')
 r.failure() = ZeroDivisionError('division by zero')
 r.failure() = 'a(i = 1)'
-r.unwrap() = '2#'
+r.unwrap() = 'c(2)'
 """

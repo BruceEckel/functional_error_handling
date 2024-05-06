@@ -1,8 +1,8 @@
 > **Thesis**: *Most of what we've been working towards in programming—whether we are aware of it or not—is composability.* 
 
-The first question this produces is: “What do you mean by that?” Discovering the definition of composability is part of this path—there are different definitions depending on the programming language paradigm under scrutiny.
-
-Here’s my definition of composability:
+Discovering the meaning of composability is part of this path—there are different definitions depending on the programming language paradigm under scrutiny.
+<!-- This is a comment and will not be visible in the rendered Markdown output -->
+Here’s my definition:
 
 > The ability to assemble bigger pieces from smaller pieces.
 
@@ -10,7 +10,7 @@ This is less-precise than some definitions. For example, composition in object-o
 
 To enable the easy construction of programs, we need to be able to effortlessly assemble components in the same way that a child assembles Legos—by simply sticking them together, without requiring extra activities. On top of that, such assemblages become their own components that can be stuck together just as easily. This composability scales up regardless of the size of the components.
 
-Over the years we have encountered numerous roadblocks to this goal. Let’s look at a few of these.
+Over the years we have encountered numerous roadblocks to this goal.
 ## Goto Considered Harmful
 
 [Djikstra’s 1968 note](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) had quite an impact on the programming community, which at the time consisted largely of assembly-language programmers. For these, the goto statement was foundational, and denigrating it was a shock. Although he never explicitly mentioned functions in his note, the effect was to push programmers towards functions. [The creator of Structured Concurrency](https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/) provides a clear description of this.
