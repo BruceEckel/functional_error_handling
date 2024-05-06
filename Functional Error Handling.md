@@ -1,7 +1,7 @@
+<!-- #[code_location] ./src/functional_error_handling -->
 > **Thesis**: *Most of what we've been working towards in programming—whether we are aware of it or not—is composability.* 
 
 Discovering the meaning of composability is part of this path—there are different definitions depending on the programming language paradigm under scrutiny.
-<!-- #[code_location] ./src/functional_error_handling -->
 Here’s my definition:
 
 > The ability to assemble bigger pieces from smaller pieces.
