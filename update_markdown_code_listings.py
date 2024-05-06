@@ -1,5 +1,6 @@
 import argparse
 import re
+import sys
 from typing import List
 from dataclasses import dataclass
 from pathlib import Path
@@ -22,7 +23,9 @@ def find_python_files_and_listings(markdown_content: str) -> List[Listing]:
     code_location_pattern = re.compile(
         r"<!--\s*#[code_location]\s*(.*?)\s*-->", re.MULTILINE
     )
-    listing_pattern = re.compile(r"```python(.*?)(?:#\:(.*?)\n)?```", re.DOTALL)
+    # If slug line doesn't exist group(1) returns None:
+    listing_pattern = re.compile(r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL)
+
     for match in re.finditer(code_location_pattern, markdown_content):
         code_location = match.group(1)
         path = Path(code_location)
@@ -34,10 +37,12 @@ def find_python_files_and_listings(markdown_content: str) -> List[Listing]:
         listing_content = match.group(1).strip()
         filename = match.group(2).strip() if match.group(2) else None
         assert filename, f"filename not found in {match}"
+        print(f"filename is [[[{filename}]]]")
+        sys.exit()
         source_file = next(
             (file for file in python_files if file.name == filename), None
         )
-        assert source_file, f"source_file not found in {match}"
+        assert source_file, f"{filename = } not found in {match}"
         listings.append(Listing(filename, listing_content, source_file))
     return listings
 
@@ -69,7 +74,7 @@ def main():
 
     markdown_file_path = args.markdown_file
     markdown_file = Path(markdown_file_path)
-    markdown_content = markdown_file.read_text()
+    markdown_content = markdown_file.read_text(encoding="utf-8")
     listings = find_python_files_and_listings(markdown_content)
 
     updated_content = []
@@ -87,7 +92,7 @@ def main():
     updated_markdown_content = update_markdown_content(
         markdown_content, listings, updated_content
     )
-    markdown_file.write_text(updated_markdown_content)
+    markdown_file.write_text(updated_markdown_content, encoding="utf-8")
     print("Markdown file updated successfully!")
 
 
