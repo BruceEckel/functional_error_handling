@@ -255,6 +255,63 @@ Ok(value=10)
 """
 ```
 
+## Composing with Error Handling
+
+```python
+#: comprehension4.py
+# Composing functions
+from result import Result, Err, Ok
+from validate_output import console
+
+
+def a(i: int) -> Result[int, str]:
+    if i == 1:
+        return Err("i cannot be 1")
+    else:
+        return Ok(i)
+
+
+# Use an exception as info (but don't raise it):
+def b(i: int) -> Result[int, ZeroDivisionError]:
+    if i == 0:
+        return Err(ZeroDivisionError())
+    return Ok(i)
+
+
+def c(i: int) -> Result[str, ValueError]:
+    if i == -1:
+        return Err(ValueError(i))
+    return Ok(f"{i}#")
+
+
+def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
+    result_a = a(i)
+    if isinstance(result_a, Err):
+        return result_a
+
+    result_b = b(result_a.unwrap())  # unwrap gets the value from Ok
+    if isinstance(result_b, Err):
+        return result_b
+
+    result_c = c(result_b.unwrap())
+    return result_c
+
+
+inputs = range(-1, 3)
+print(outputs := [composed(i) for i in inputs])
+console == """
+[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i cannot be 1'), Ok(value='2#')]
+"""
+
+for inp, outp in zip(inputs, outputs):
+    print(f"{inp:>2}: {outp}")
+console == """
+-1: Err(error=ValueError(-1))
+ 0: Err(error=ZeroDivisionError())
+ 1: Err(error='i cannot be 1')
+ 2: Ok(value='2#')
+"""
+```
 
 ## A More Capable Library
 
@@ -268,11 +325,10 @@ The most popular Python library that includes this extra functionality is [Retur
 
 `Returns` elegantly solves the list-comprehension problem:
 ```python
-#: composed.py
+#: comprehension5.py
 # Using https://github.com/dry-python/returns
-# Is there a way to have multiple arguments to composed()? (tuples?)
 from returns.result import Result, Success, Failure, safe
-from returns.pipeline import flow, is_successful
+from returns.pipeline import is_successful, pipe
 from returns.pointfree import bind
 from validate_output import console
 
@@ -291,28 +347,19 @@ def b(i: int) -> int:
     return i
 
 
-# Use an exception as info (but don't raise it):
 def c(i: int) -> Result[str, ValueError]:
     if i == -1:
-        return Failure(ValueError(f"c({i = })"))
-    return Success(f"{i}#")
+        return Failure(ValueError(f"c({i =})"))
+    return Success(f"c({i})")
 
 
-def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
-    return flow(
-        i,
-        a,
-        bind(b),
-        bind(c),
-    )
+composed = pipe(  # type: ignore
+    a,
+    bind(b),
+    bind(c),
+)
 
-
-inputs = range(-1, 3)
-print(f"inputs = {list(inputs)}")
-console == """
-inputs = [-1, 0, 1, 2]
-"""
-
+inputs = range(-1, 3)  # [-1, 0, 1, 2]
 outputs = [composed(i) for i in inputs]
 console == """
 b(-1): -1.0
@@ -322,20 +369,19 @@ b(2): 0.5
 for inp, outp in zip(inputs, outputs):
     print(f"{inp:>2}: {outp}")
 console == """
--1: <Failure: c(i = -1)>
+-1: <Failure: c(i =-1)>
  0: <Failure: division by zero>
  1: <Failure: a(i = 1)>
- 2: <Success: 2#>
+ 2: <Success: c(2)>
 """
 
 # Extract results, converting failure to None:
 with_nones = [r.value_or(None) for r in outputs]
-
 print(str(with_nones))
 print(str(list(filter(None, with_nones))))
 console == """
-[None, None, None, '2#']
-['2#']
+[None, None, None, 'c(2)']
+['c(2)']
 """
 
 # Another way to extract results:
@@ -345,9 +391,53 @@ for r in outputs:
     else:
         print(f"{r.failure() = }")
 console == """
-r.failure() = ValueError('c(i = -1)')
+r.failure() = ValueError('c(i =-1)')
 r.failure() = ZeroDivisionError('division by zero')
 r.failure() = 'a(i = 1)'
-r.unwrap() = '2#'
+r.unwrap() = 'c(2)'
+"""
+```
+
+## Handling Multiple Arguments
+
+```python
+#: multiple_arguments.py
+from returns.result import Result, Success, Failure
+from validate_output import console
+
+
+def not_one(i: int) -> Result[int, ValueError]:
+    if i == 1:
+        return Failure(ValueError(f"not_one: {i = }"))
+    return Success(i * 10)
+
+
+def not_two(j: int) -> Result[int, ValueError]:
+    if j == 2:
+        return Failure(ValueError(f"not_two: {j = }"))
+    return Success(j * 100)
+
+
+def add(first: int, second: int) -> int:
+    return first + second
+
+
+def do_add(i: int, j: int) -> Result[int, ValueError]:
+    # fmt: off
+    return Result.do(
+        add(first, second) 
+        for first in not_one(i) 
+        for second in not_two(j)
+    )
+
+
+inputs = [(1, 5), (7, 2), (3, 4)]
+outputs = [do_add(*inp) for inp in inputs]
+for inp, outp in zip(inputs, outputs):
+    print(f"{inp}: {outp}")
+console == """
+(1, 5): <Failure: not_one: i = 1>
+(7, 2): <Failure: not_two: j = 2>
+(3, 4): <Success: 430>
 """
 ```
