@@ -13,3 +13,11 @@ And add:
 - The biggest thing that "introductory" functional programming tutorials assume you know is "why are we doing this." These tutorials most commonly devolve into a list of disparate features, without giving any unifying idea behind these features.
 
 - Coconut seems to skip error handling altogether (it just uses exceptions)
+
+
+----------------------------
+
+Here's the markdown document I'm writing. Notice the information in the markdown comment:
+<!-- #[code_location] ./src/functional_error_handling -->
+This indicates that the source code examples are located relative to the current directory (./)
+Can you create a python script that goes through my document and updates the python source-code listings from the python files in the code_location directory?
