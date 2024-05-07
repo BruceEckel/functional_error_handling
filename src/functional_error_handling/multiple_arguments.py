@@ -1,5 +1,5 @@
 #: multiple_arguments.py
-from returns.result import Result, Success, Failure
+from returns.result import Failure, Result, Success
 from validate_output import console
 
 

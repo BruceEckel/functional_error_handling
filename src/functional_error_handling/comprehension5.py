@@ -1,8 +1,8 @@
 #: comprehension5.py
 # Using https://github.com/dry-python/returns
-from returns.result import Result, Success, Failure, safe
 from returns.pipeline import is_successful, pipe
 from returns.pointfree import bind
+from returns.result import Failure, Result, Success, safe
 from validate_output import console
 
 

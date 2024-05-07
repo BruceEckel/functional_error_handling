@@ -1,7 +1,7 @@
 #: result.py
 # Result with OK & Err subtypes
-from typing import Generic, TypeVar
 from dataclasses import dataclass
+from typing import Generic, TypeVar
 
 ANSWER = TypeVar("ANSWER")
 ERROR = TypeVar("ERROR")

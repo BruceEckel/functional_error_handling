@@ -1,6 +1,6 @@
 #: comprehension4.py
 # Composing functions
-from result import Result, Err, Ok
+from result import Err, Ok, Result
 from validate_output import console
 
 

@@ -4,8 +4,8 @@
 # output string
 # """
 # Update scripts using: python update_output.py *
-import sys
 import atexit
+import sys
 from io import StringIO
 
 

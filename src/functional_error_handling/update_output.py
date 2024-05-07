@@ -4,12 +4,12 @@
 # python update_output.py *
 # Update foo.py and bar.py:
 # python update_output.py foo.py bar.py
-from typing import List
 import argparse
-import subprocess
 import re
+import subprocess
 import sys
 from pathlib import Path
+from typing import List
 
 console_pattern = re.compile(r'console\s*==\s*"""[\s\S]*?"""')
 console_import_line = "from validate_output import console"
