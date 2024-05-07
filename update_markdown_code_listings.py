@@ -2,11 +2,11 @@
 import argparse
 import difflib
 import re
-import sys
-from typing import List
 from dataclasses import dataclass, field
 from pathlib import Path
 from pprint import pformat
+from typing import List
+
 from rich.console import Console
 
 width = 65
@@ -85,7 +85,6 @@ def find_python_files_and_listings(markdown_content: str) -> List[MarkdownListin
     # If slug line doesn't exist group(1) returns None:
     listing_pattern = re.compile(r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL)
     for match in re.finditer(listing_pattern, markdown_content):
-        # listing_content = (match.group(1) or "") + match.group(3)
         listing_content = match.group(0)  # Include markdown tags
         filename = match.group(2).strip() if match.group(2) else None
         assert filename, f"filename not found in {match}"
@@ -99,35 +98,22 @@ def find_python_files_and_listings(markdown_content: str) -> List[MarkdownListin
 def update_markdown_listings(
     markdown_content: str, listings: List[MarkdownListing]
 ) -> str:
+    updated_markdown = markdown_content
     for listing in listings:
         if not listing.changed:
             console.print(f"[bold green]{listing.slugname}")
         if listing.changed:
             console.print(f"[bold red]{listing.slugname}")
-            # Perform update:
-            # ...
             console.print(f"[bright_cyan]{listing}")
-
-
-# def update_markdown_content(
-#     markdown_content: str, listings: List[MarkdownListing], updated_content: List[str]
-# ) -> str:
-#     """Update the markdown content with the updated content."""
-#     updated_markdown_content = markdown_content
-#     for index, listing in enumerate(listings):
-#         updated_markdown_content = re.sub(
-#             r"```python(.*?)```",
-#             f"```python\n{updated_content[index]}```",
-#             updated_markdown_content,
-#             count=1,
-#             flags=re.DOTALL,
-#         )
-#     return updated_markdown_content
+            updated_markdown = updated_markdown.replace(
+                listing.markdown_listing, listing.source_file_contents
+            )
+    return updated_markdown
 
 
 def main():
     parser = argparse.ArgumentParser(
-        description="Update Python source-code listings within a markdown file."
+        description="Update Python slugline-marked source-code listings within a markdown file."
     )
     parser.add_argument(
         "markdown_file", help="Path to the markdown file to be updated."
@@ -140,24 +126,9 @@ def main():
     # for listing in listings:
     #     print(listing)
     updated_markdown = update_markdown_listings(markdown_content, listings)
-    sys.exit(0)
-
-    # updated_content = []
-    # for listing in listings:
-    #     if listing.source_file:
-    #         python_content = listing.source_file.read_text()
-    #         if python_content != listing.content:
-    #             updated_content.append(python_content)
-    #         else:
-    #             updated_content.append(listing.content)
-    #     else:
-    #         updated_content.append(listing.content)
-
-    # updated_markdown_content = update_markdown_content(
-    #     markdown_content, listings, updated_content
-    # )
+    # sys.exit(0)
     markdown_file.write_text(updated_markdown, encoding="utf-8")
-    console.print("Markdown file updated successfully!")
+    console.print(f"{markdown_file} updated")
 
 
 if __name__ == "__main__":
