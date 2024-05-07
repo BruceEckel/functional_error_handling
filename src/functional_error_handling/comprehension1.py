@@ -9,7 +9,8 @@ def f1(i: int) -> int:
         return i * 2
 
 
-print([f1(i) for i in range(3)])
+result = [f1(i) for i in range(3)]
+print(result)
 r"""
 Traceback (most recent call last):
   ...

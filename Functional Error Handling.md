@@ -1,3 +1,5 @@
+*This document, code examples, and presentation slides are in a [GitHub repository](https://github.com/BruceEckel/functional_error_handling)*.
+
 <!-- #[code_location] ./src/functional_error_handling -->
 > **Thesis**: *Most of what we've been working towards in programming—whether we are aware of it or not—is composability.* 
 
@@ -45,7 +47,7 @@ Object-oriented programming has a bit of a tortured history. Although the first 
 
 # Error Handling
 
-Error reporting and handling is a significant impediment to composability.
+Error reporting and handling has been a significant impediment to composability.
 ## History
 
 Original programs were small (by present-day standards), written in assembly language (machine code quickly became too unwieldy), and tightly coupled to the underlying hardware. If something went wrong, the only way to report it was to change the output on a wire, to turn on a light or a buzzer. If you had one, you put a message on the console—this might as simple as a dot-matrix display. Such an error message probably wasn’t friendly to the end-user of the system and usually required a tech support call to the manufacturer. 
@@ -100,7 +102,9 @@ With exceptions, the two types are conflated.
 You can’t know what exceptions you must handle when calling other functions (i.e.: composing)
 
 ### 3. Exceptions Destroy Partial Calculations
-(first example)
+
+Let’s start with a very simple example where we populate a `List` with the results of a sequence of calls to the function `f1`:
+
 ```python
 #: comprehension1.py
 # Exception produces no results, stops everything
@@ -113,17 +117,25 @@ def f1(i: int) -> int:
         return i * 2
 
 
-print([f1(i) for i in range(3)])
+result = [f1(i) for i in range(3)]
+print(result)
 r"""
 Traceback (most recent call last):
   ...
 ValueError: i cannot be 1
 """
 ```
+
+`f1` throws a `ValueError` exception if its argument is `1`. The `range(3)` is 0, 1, and 2; only one of these values causes the exception—`result` contains only one problem; the other two values are fine. However, we lose everything that we were calculating when the exception is thrown. This:
+1. Is computationally wasteful, especially with large calculations.
+2. Makes debugging harder. It would be quite valuable to see in `result` which parts succeeded and which parts failed.
 # The Functional Solution
-Instead of creating a complex implementation to report and handle errors, the functional approach simply packages the (potential) error together with the result, and returns that package from the function. This package is a new type, with operations that prevent the programmer from simply plucking the result from the package without dealing with error conditions (a failing of the Go language approach).
+Instead of creating a complex implementation to report and handle errors, the functional approach creates a “return package” containing the answer along with the (potential) error information. Instead of only returning the answer, we return this package from the function. 
+
+This package is a new type, with operations that prevent the programmer from simply plucking the result from the package without dealing with error conditions (a failing of the Go language approach).
 
 As a first attempt, we can use *type unions* to create a nameless return package:
+
 ```python
 #: comprehension2.py
 # Type union aka Sum Type
@@ -168,6 +180,8 @@ i cannot be 1
 10
 """
 ```
+`console` is a tool in the GitHub repository that validates the correctness of the `console ==` expressions. If you run the program you’ll see the same output as you see in the `console ==` strings.
+
 `f2` returns a `str` to indicate an error, and an `int` answer if there is no error. In the pattern match, we are forced to check the result type to determine whether an error occurs and we cannot just assume it is an `int`.
 
 An important problem with this approach is that it is not clear which type is the success value and which type represents the error condition—because we are trying to repurpose existing built-in types to represent new meanings.
@@ -182,8 +196,8 @@ As you can see in the display of the `outputs` array, we now have the unfortunat
 ```python
 #: result.py
 # Result with OK & Err subtypes
-from typing import Generic, TypeVar
 from dataclasses import dataclass
+from typing import Generic, TypeVar
 
 ANSWER = TypeVar("ANSWER")
 ERROR = TypeVar("ERROR")
@@ -212,7 +226,7 @@ The modified version of the example using `Result` is now:
 ```python
 #: comprehension3.py
 # Explicit result type
-from result import Result, Err, Ok
+from result import Err, Ok, Result
 from validate_output import console
 
 
@@ -259,7 +273,7 @@ Ok(value=10)
 ```python
 #: comprehension4.py
 # Composing functions
-from result import Result, Err, Ok
+from result import Err, Ok, Result
 from validate_output import console
 
 
@@ -326,9 +340,9 @@ The most popular Python library that includes this extra functionality is [Retur
 ```python
 #: comprehension5.py
 # Using https://github.com/dry-python/returns
-from returns.result import Result, Success, Failure, safe
 from returns.pipeline import is_successful, pipe
 from returns.pointfree import bind
+from returns.result import Failure, Result, Success, safe
 from validate_output import console
 
 
@@ -401,7 +415,7 @@ r.unwrap() = 'c(2)'
 
 ```python
 #: multiple_arguments.py
-from returns.result import Result, Success, Failure
+from returns.result import Failure, Result, Success
 from validate_output import console
 
 
