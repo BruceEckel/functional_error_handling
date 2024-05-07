@@ -9,6 +9,7 @@ from pathlib import Path
 from pprint import pformat
 from rich.console import Console
 
+width = 65
 console = Console()
 python_files = []
 
@@ -51,14 +52,13 @@ class MarkdownListing:
 Filename from slugline: {self.slugname}
 Source File: {self.source_file_path.absolute() if self.source_file_path else ""}
 {self.changed = }
-Markdown Code Listing:[chartreuse4]
+{"  Markdown Code Listing  ".center(width, "-")}[chartreuse4]
 {self.markdown_listing}[/chartreuse4]
-{'-' * 60}
-Source File Code Listing:[chartreuse4]
+{"  Source File Code Listing  ".center(width, "-")}[chartreuse4]
 {self.source_file_contents}[/chartreuse4]
-{"  diffs  ".center(60,"v")}[chartreuse4]
+{"  diffs  ".center(width,"v")}[chartreuse4]
 {self.diffs}[/chartreuse4]
-{'=' * 60}
+{'=' * width}
 """
 
 
