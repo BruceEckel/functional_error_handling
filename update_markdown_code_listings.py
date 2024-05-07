@@ -1,3 +1,4 @@
+#: update_markdown_code_listings.py
 import argparse
 import re
 import sys
