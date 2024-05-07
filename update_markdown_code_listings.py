@@ -1,5 +1,6 @@
 #: update_markdown_code_listings.py
 import argparse
+import difflib
 import re
 import sys
 from typing import List
@@ -19,7 +20,8 @@ class MarkdownListing:
     source_file_path: Path | None
     # Exclude field from constructor arguments:
     source_file_contents: str = field(init=False)
-    unchanged: bool = field(init=False)
+    changed: bool = field(init=False)
+    diffs: str = field(init=False)
 
     def __post_init__(self):
         if self.source_file_path is None:
@@ -28,19 +30,34 @@ class MarkdownListing:
             )
             console.print(pformat(python_files))
             raise ValueError("source_file cannot be None")
-        self.source_file_contents = self.source_file_path.read_text(encoding="utf-8")
-        self.unchanged = self.markdown_listing == self.source_file_contents
+        self.source_file_contents = (
+            "```python\n" + self.source_file_path.read_text(encoding="utf-8") + "```"
+        )
+        self.changed = self.markdown_listing != self.source_file_contents
+        if self.changed:
+            # Compute the differences between markdown_listing and source_file_contents
+            differ = difflib.Differ()
+            diff_lines = list(
+                differ.compare(
+                    self.markdown_listing.splitlines(keepends=True),
+                    self.source_file_contents.splitlines(keepends=True),
+                )
+            )
+            # Format the differences for display
+            self.diffs = "".join(diff_lines)
 
     def __str__(self):
         return f"""
 Filename from slugline: {self.slugname}
 Source File: {self.source_file_path.absolute() if self.source_file_path else ""}
-{self.unchanged = }
-Markdown Code Listing:
-{self.markdown_listing}
+{self.changed = }
+Markdown Code Listing:[chartreuse4]
+{self.markdown_listing}[/chartreuse4]
 {'-' * 60}
-Source File Code Listing:
-{self.source_file_contents}
+Source File Code Listing:[chartreuse4]
+{self.source_file_contents}[/chartreuse4]
+{"  diffs  ".center(60,"v")}[chartreuse4]
+{self.diffs}[/chartreuse4]
 {'=' * 60}
 """
 
@@ -68,7 +85,8 @@ def find_python_files_and_listings(markdown_content: str) -> List[MarkdownListin
     # If slug line doesn't exist group(1) returns None:
     listing_pattern = re.compile(r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL)
     for match in re.finditer(listing_pattern, markdown_content):
-        listing_content = (match.group(1) or "") + match.group(3)
+        # listing_content = (match.group(1) or "") + match.group(3)
+        listing_content = match.group(0)  # Include markdown tags
         filename = match.group(2).strip() if match.group(2) else None
         assert filename, f"filename not found in {match}"
         source_file = next(
@@ -82,28 +100,29 @@ def update_markdown_listings(
     markdown_content: str, listings: List[MarkdownListing]
 ) -> str:
     for listing in listings:
-        if listing.unchanged:
+        if not listing.changed:
             console.print(f"[bold green]{listing.slugname}")
-        if not listing.unchanged:
+        if listing.changed:
             console.print(f"[bold red]{listing.slugname}")
             # Perform update:
             # ...
+            console.print(f"[bright_cyan]{listing}")
 
 
-def update_markdown_content(
-    markdown_content: str, listings: List[MarkdownListing], updated_content: List[str]
-) -> str:
-    """Update the markdown content with the updated content."""
-    updated_markdown_content = markdown_content
-    for index, listing in enumerate(listings):
-        updated_markdown_content = re.sub(
-            r"```python(.*?)```",
-            f"```python\n{updated_content[index]}```",
-            updated_markdown_content,
-            count=1,
-            flags=re.DOTALL,
-        )
-    return updated_markdown_content
+# def update_markdown_content(
+#     markdown_content: str, listings: List[MarkdownListing], updated_content: List[str]
+# ) -> str:
+#     """Update the markdown content with the updated content."""
+#     updated_markdown_content = markdown_content
+#     for index, listing in enumerate(listings):
+#         updated_markdown_content = re.sub(
+#             r"```python(.*?)```",
+#             f"```python\n{updated_content[index]}```",
+#             updated_markdown_content,
+#             count=1,
+#             flags=re.DOTALL,
+#         )
+#     return updated_markdown_content
 
 
 def main():
@@ -120,24 +139,24 @@ def main():
     listings = find_python_files_and_listings(markdown_content)
     # for listing in listings:
     #     print(listing)
-    update_markdown_listings(markdown_content, listings)
+    updated_markdown = update_markdown_listings(markdown_content, listings)
     sys.exit(0)
 
-    updated_content = []
-    for listing in listings:
-        if listing.source_file:
-            python_content = listing.source_file.read_text()
-            if python_content != listing.content:
-                updated_content.append(python_content)
-            else:
-                updated_content.append(listing.content)
-        else:
-            updated_content.append(listing.content)
+    # updated_content = []
+    # for listing in listings:
+    #     if listing.source_file:
+    #         python_content = listing.source_file.read_text()
+    #         if python_content != listing.content:
+    #             updated_content.append(python_content)
+    #         else:
+    #             updated_content.append(listing.content)
+    #     else:
+    #         updated_content.append(listing.content)
 
-    updated_markdown_content = update_markdown_content(
-        markdown_content, listings, updated_content
-    )
-    markdown_file.write_text(updated_markdown_content, encoding="utf-8")
+    # updated_markdown_content = update_markdown_content(
+    #     markdown_content, listings, updated_content
+    # )
+    markdown_file.write_text(updated_markdown, encoding="utf-8")
     console.print("Markdown file updated successfully!")
 
 
