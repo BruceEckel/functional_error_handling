@@ -123,10 +123,7 @@ def main():
     markdown_file = Path(args.markdown_file)
     markdown_content = markdown_file.read_text(encoding="utf-8")
     listings = find_python_files_and_listings(markdown_content)
-    # for listing in listings:
-    #     print(listing)
     updated_markdown = update_markdown_listings(markdown_content, listings)
-    # sys.exit(0)
     markdown_file.write_text(updated_markdown, encoding="utf-8")
     console.print(f"{markdown_file} updated")
 
