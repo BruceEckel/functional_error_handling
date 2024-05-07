@@ -116,11 +116,7 @@ def f1(i: int) -> int:
 print([f1(i) for i in range(3)])
 r"""
 Traceback (most recent call last):
-  File "C:\git\functional_error_handling\src\functional_error_handling\comprehension1.py", line 12, in <module>
-    print([f1(i) for i in range(3)])
-          ^^^^^
-  File "C:\git\functional_error_handling\src\functional_error_handling\comprehension1.py", line 7, in f1
-    raise ValueError("i cannot be 1")
+  ...
 ValueError: i cannot be 1
 """
 ```
@@ -200,12 +196,15 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Ok(Result[ANSWER, ERROR]):
-    value: ANSWER  # Return Ok(answer)
+    value: ANSWER  # Usage: return Ok(answer)
+
+    def unwrap(self) -> ANSWER:
+        return self.value
 
 
 @dataclass(frozen=True)
 class Err(Result[ANSWER, ERROR]):
-    error: ERROR  # Return Err(error)
+    error: ERROR  # Usage: return Err(error)
 ```
 (description)
 
