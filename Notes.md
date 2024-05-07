@@ -1,3 +1,5 @@
+https://sobolevn.me/2019/02/python-exceptions-considered-an-antipattern
+
 To turn off hovering for presentation, go to:
 C:\Users\bruce\AppData\Roaming\Code\User\settings.json
 And add:

@@ -80,7 +80,9 @@ def find_python_files_and_listings(markdown_content: str) -> List[MarkdownListin
             python_files.extend(
                 list((Path.cwd() / code_location).resolve().glob("**/*.py"))
             )
-    console.print(f"python_files = {pformat([p.name for p in python_files])}\n")
+    console.print(f"[orange3]{"  Available Python Files  ".center(width, "-")}[/orange3]")
+    for pyfile in [pf.name for pf in python_files]:
+        console.print(f"\t[sea_green2]{pyfile}[/sea_green2]")
 
     # If slug line doesn't exist group(1) returns None:
     listing_pattern = re.compile(r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL)
@@ -101,10 +103,10 @@ def update_markdown_listings(
     updated_markdown = markdown_content
     for listing in listings:
         if not listing.changed:
-            console.print(f"[bold green]{listing.slugname}")
+            console.print(f"[bold green]{listing.slugname}[/bold green]")
         if listing.changed:
-            console.print(f"[bold red]{listing.slugname}")
-            console.print(f"[bright_cyan]{listing}")
+            console.print(f"[bold red]{listing.slugname}[/bold red]")
+            console.print(f"[bright_cyan]{listing}[/bright_cyan]")
             updated_markdown = updated_markdown.replace(
                 listing.markdown_listing, listing.source_file_contents
             )
@@ -123,9 +125,13 @@ def main():
     markdown_file = Path(args.markdown_file)
     markdown_content = markdown_file.read_text(encoding="utf-8")
     listings = find_python_files_and_listings(markdown_content)
-    updated_markdown = update_markdown_listings(markdown_content, listings)
-    markdown_file.write_text(updated_markdown, encoding="utf-8")
-    console.print(f"{markdown_file} updated")
+    changes = [True for listing in listings if listing.changed]
+    if any(changes):
+        updated_markdown = update_markdown_listings(markdown_content, listings)
+        markdown_file.write_text(updated_markdown, encoding="utf-8")
+    console.print(
+        f"\n[orange3]{changes.count(True)} changes made to {markdown_file}[/orange3]"
+    )
 
 
 if __name__ == "__main__":
