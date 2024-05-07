@@ -13,15 +13,23 @@ colorama==0.4.6
     # via pytest
 iniconfig==2.0.0
     # via pytest
+markdown-it-py==3.0.0
+    # via rich
+mdurl==0.1.2
+    # via markdown-it-py
 packaging==24.0
     # via pytest
 pluggy==1.4.0
     # via pytest
 pretty-errors==1.2.25
     # via functional-error-handling
+pygments==2.18.0
+    # via rich
 pytest==8.1.1
     # via functional-error-handling
 returns==0.22.0
+    # via functional-error-handling
+rich==13.7.1
     # via functional-error-handling
 typing-extensions==4.10.0
     # via returns

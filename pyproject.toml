@@ -3,7 +3,12 @@ name = "functional-error-handling"
 version = "0.1.0"
 description = "Add your description here"
 authors = [{ name = "Bruce Eckel", email = "MindviewInc@gmail.com" }]
-dependencies = ["pretty_errors>=1.2.25", "returns>=0.22.0", "pytest>=8.1.1"]
+dependencies = [
+    "pretty_errors>=1.2.25",
+    "returns>=0.22.0",
+    "pytest>=8.1.1",
+    "rich>=13.7.1",
+]
 readme = "README.md"
 requires-python = ">= 3.8"
 

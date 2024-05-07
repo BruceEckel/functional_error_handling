@@ -2,48 +2,67 @@ import argparse
 import re
 import sys
 from typing import List
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from pprint import pformat
+from rich.console import Console
+
+console = Console()
+python_files = []
 
 
 @dataclass
-class Listing:
-    filename: str
-    content: str
-    source_file: Path
+class MarkdownListing:
+    slugname: str
+    markdown_listing: str
+    source_file_path: Path | None
+    # Exclude field from constructor arguments:
+    source_file_contents: str = field(init=False)
+    unchanged: bool = field(init=False)
+
+    def __post_init__(self):
+        if self.source_file_path is None:
+            console.print(
+                "[bold red] MarkdownListing: source_file_path not found among:[/bold red]"
+            )
+            console.print(pformat(python_files))
+            raise ValueError("source_file cannot be None")
+        self.source_file_contents = self.source_file_path.read_text(encoding="utf-8")
+        self.unchanged = self.markdown_listing == self.source_file_contents
 
     def __str__(self):
         return f"""
-Filename from slugline: {self.filename}
-Source File: {self.source_file.absolute() if self.source_file else ""}
-Markdown Content:
-{self.content}
+Filename from slugline: {self.slugname}
+Source File: {self.source_file_path.absolute() if self.source_file_path else ""}
+{self.unchanged = }
+Markdown Code Listing:
+{self.markdown_listing}
 {'-' * 60}
+Source File Code Listing:
+{self.source_file_contents}
+{'=' * 60}
 """
-        # Source File: {self.source_file.name if self.source_file else ""}
 
 
-def find_python_files_and_listings(markdown_content: str) -> List[Listing]:
+def find_python_files_and_listings(markdown_content: str) -> List[MarkdownListing]:
     """
     Find all #[code_location] paths in the markdown content and
     return associated Python files and listings.
     """
+    global python_files
     listings = []
-    python_files = []
 
     code_location_pattern = re.compile(r"#\[code_location\]\s*(.*)\s*-->")
 
     for match in re.finditer(code_location_pattern, markdown_content):
-        code_location = match.group(1)
-        print(f"{code_location = }")
-        path = Path(code_location)
-        if path.is_absolute():
-            python_files.extend(list(path.glob("**/*.py")))
-        else:
-            python_files.extend(list((Path.cwd() / path).resolve().glob("**/*.py")))
-    available_python_files = [p.name for p in python_files]
-    print(f"python_files = {pformat(available_python_files)}")
+        code_location = Path(match.group(1))
+        if code_location.is_absolute():
+            python_files.extend(list(code_location.glob("**/*.py")))
+        else:  # Relative path:
+            python_files.extend(
+                list((Path.cwd() / code_location).resolve().glob("**/*.py"))
+            )
+    console.print(f"python_files = {pformat([p.name for p in python_files])}\n")
 
     # If slug line doesn't exist group(1) returns None:
     listing_pattern = re.compile(r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL)
@@ -51,19 +70,27 @@ def find_python_files_and_listings(markdown_content: str) -> List[Listing]:
         listing_content = (match.group(1) or "") + match.group(3)
         filename = match.group(2).strip() if match.group(2) else None
         assert filename, f"filename not found in {match}"
-        # print(f"{filename = }")
         source_file = next(
             (file for file in python_files if file.name == filename), None
         )
-        if not source_file:
-            print(f"{filename = } not found in {pformat(available_python_files)}")
-            sys.exit(1)
-        listings.append(Listing(filename, listing_content, source_file))
+        listings.append(MarkdownListing(filename, listing_content, source_file))
     return listings
 
 
+def update_markdown_listings(
+    markdown_content: str, listings: List[MarkdownListing]
+) -> str:
+    for listing in listings:
+        if listing.unchanged:
+            console.print(f"[bold green]{listing.slugname}")
+        if not listing.unchanged:
+            console.print(f"[bold red]{listing.slugname}")
+            # Perform update:
+            # ...
+
+
 def update_markdown_content(
-    markdown_content: str, listings: List[Listing], updated_content: List[str]
+    markdown_content: str, listings: List[MarkdownListing], updated_content: List[str]
 ) -> str:
     """Update the markdown content with the updated content."""
     updated_markdown_content = markdown_content
@@ -87,19 +114,18 @@ def main():
     )
     args = parser.parse_args()
 
-    markdown_file_path = args.markdown_file
-    markdown_file = Path(markdown_file_path)
+    markdown_file = Path(args.markdown_file)
     markdown_content = markdown_file.read_text(encoding="utf-8")
     listings = find_python_files_and_listings(markdown_content)
-    for listing in listings:
-        print(listing)
+    # for listing in listings:
+    #     print(listing)
+    update_markdown_listings(markdown_content, listings)
     sys.exit(0)
 
     updated_content = []
     for listing in listings:
         if listing.source_file:
-            with open(listing.source_file, "r") as file:
-                python_content = file.read()
+            python_content = listing.source_file.read_text()
             if python_content != listing.content:
                 updated_content.append(python_content)
             else:
@@ -111,7 +137,7 @@ def main():
         markdown_content, listings, updated_content
     )
     markdown_file.write_text(updated_markdown_content, encoding="utf-8")
-    print("Markdown file updated successfully!")
+    console.print("Markdown file updated successfully!")
 
 
 if __name__ == "__main__":
