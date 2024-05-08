@@ -360,10 +360,14 @@ console == """
 
 ## Simplifying Composition with `and_then`
 
+Although `Result` is a typed “answer + error” package, there’s still a problem that impedes our ultimate goal of composability: every time you call a function, you must write the extra code to check the `Result` type and extract the success value with `unwrap`. This is extra repetitive work that interrupts the flow and readability of the program. We need some way to reduce or eliminate the extra code.
+
+The `and_then` method in `Result` (with the comment in `result.py` that said “Ignore this method for now”) solves this exact problem:
+
 ```python
 #: comprehension5.py
 # Simplifying composition with and_then
-from result import Err, Ok, Result
+from result import Result
 from validate_output import console
 from comprehension4 import a, b, c
 
@@ -387,11 +391,22 @@ console == """
  2: Ok(value='2#')
 """
 ```
+
+In `composed`, we call `a(i)` which returns a `Result`. The `and_then` method is called on that `Result`, passing it the next function we want to call (`b`) as an argument. The return value of `and_then` is *also* a `Result`, so we can call `and_then` again upon that `Result`, passing it the third function we want to call (`c`).
+
+To understand what’s happening, here’s the definition of `and_then` taken from `result.py`:
+
+```python
+    def and_then(self, func: Callable[[ANSWER], "Result"]) -> "Result[ANSWER, ERROR]":
+        if isinstance(self, Ok):
+            return func(self.value)
+        return self  # Just pass the Err forward
+```
+
+
 ## A More Capable Library
 
-[Not exactly relevant because of the previous example] Although `result.py` creates typed “answer + error” packages, there’s still a problem that impedes our ultimate goal of composability: every time you call a function, you must write code to unpack and deal with this new `Result` object. This is not only a lot of extra repetitive work, but it interrupts the flow and readability of the program. We need some way to reduce or eliminate this extra code.
-
-We could continue adding features to our library, but at some point it makes more sense to let someone else do the work…
+We could continue adding features to our `Result` library until it becomes a complete solution. However, others have already worked on this problem and at some point it makes more sense to reuse their work.
 
 Languages like Rust and Kotlin (new C++) support these unpacking operations directly (examples):
 
