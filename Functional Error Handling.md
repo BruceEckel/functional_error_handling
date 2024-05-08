@@ -80,12 +80,14 @@ If errors are in the language domain, the next question is how to report and han
 
 Unifying error reporting and recovery
 
-exceptions seemed like a great idea:
+Exceptions seemed like a great idea:
 1. A standardized way to correct problems so that an operation can recover and retry
 2. There's only one way to report errors
 3. Errors cannot be ignored—they flow upward until caught or displayed on the console with program termination.
 4. Errors can be handled close to the origin, or generalized by catching them "further out" so that multiple error sources can be managed with a single handler.
 5. Exception hierarchies allow more general exception handlers to handle multiple exception subtypes
+
+To be clear, exceptions were a big improvement over all of the previous (non) solutions to the error reporting problem. Exceptions moved us forward for awhile (and became entrenched in programming culture) until folks started discovering pain points. As is often the case, this happened as we tried to scale up to create larger and more complex systems. And once again, the underlying issue was composability.
 ## The Problem with Exceptions
 
 In the small (and especially when teaching them), exceptions seem to work quite well. 
@@ -99,7 +101,13 @@ Recoverable vs panic
 With exceptions, the two types are conflated.
 (Link to Error handling article)
 ### 2. Exceptions are not Part of the Type System
-You can’t know what exceptions you must handle when calling other functions (i.e.: composing)
+
+You can’t know what exceptions you must handle when calling other functions (i.e.: composing).
+Even if you track down all the possible exceptions thrown explicitly in the code (by hunting for them in their source code!), built-in exceptions can still happen without evidence in the code: divide-by-zero is a great example of this.
+
+You can be using a library and handling all the exceptions from it (or perhaps just the ones you found in the documentation), and a newer version of that library can quietly add a new exception, and suddenly you are no longer detecting and/or handling all the exceptions. Even though you made no changes to your code.
+
+If exceptions are part of the type system, you can know all the errors that can occur just by looking at the type information. If a library component adds a new error then that must be reflected in that component’s type signature, which means that the code using it immediately knows that it is no longer covering all the error conditions, and will produce type errors until it is fixed.
 
 ### 3. Exceptions Destroy Partial Calculations
 
