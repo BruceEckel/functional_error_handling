@@ -52,6 +52,10 @@ def test_comprehension5():
     run_script("comprehension5.py")
 
 
+def test_comprehension6():
+    run_script("comprehension6.py")
+
+
 def test_multiple_arguments():
     run_script("multiple_arguments.py")
 
@@ -62,4 +66,5 @@ if __name__ == "__main__":
     test_comprehension3()
     test_comprehension4()
     test_comprehension5()
+    test_comprehension6()
     test_multiple_arguments()
