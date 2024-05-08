@@ -327,6 +327,11 @@ console == """
 """
 ```
 
+## Simplifying Composition with `and_then`
+
+```python
+#: comprehension5.py
+```
 ## A More Capable Library
 
 Although `result.py` creates typed “answer + error” packages, there’s still a problem that impedes our ultimate goal of composability: every time you call a function, you must write code to unpack and deal with this new `Result` object. This is not only a lot of extra repetitive work, but it interrupts the flow and readability of the program. We need some way to reduce or eliminate this extra code.
@@ -339,7 +344,7 @@ The most popular Python library that includes this extra functionality is [Retur
 
 `Returns` elegantly solves the list-comprehension problem:
 ```python
-#: comprehension5.py
+#: comprehension6.py
 # Using https://github.com/dry-python/returns
 from returns.pipeline import is_successful, pipe
 from returns.pointfree import bind
