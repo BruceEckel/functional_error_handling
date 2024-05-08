@@ -1,6 +1,6 @@
 #: comprehension5.py
 # Simplifying composition with and_then
-from result import Err, Ok, Result
+from result import Result
 from validate_output import console
 from comprehension4 import a, b, c
 
