@@ -10,7 +10,9 @@ ERROR = TypeVar("ERROR")
 @dataclass(frozen=True)
 class Result(Generic[ANSWER, ERROR]):
     # Ignore this method for now:
-    def and_then(self, func: Callable[[ANSWER], "Result"]) -> "Result[ANSWER, ERROR]":
+    def and_then(
+        self, func: Callable[[ANSWER], "Result"]
+    ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Ok):
             return func(self.value)
         return self  # Just pass the Err forward

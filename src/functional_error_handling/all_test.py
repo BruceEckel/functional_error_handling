@@ -5,10 +5,10 @@
 # python -m pytest
 # or
 # python all_test.py
-import subprocess
-from pathlib import Path
-import sys
 import os
+import subprocess
+import sys
+from pathlib import Path
 
 
 def run_script(file_name, throws_exception=False):
@@ -19,7 +19,10 @@ def run_script(file_name, throws_exception=False):
     #     Path(__file__).parent
     # )  # Ensure local modules can be imported
     result = subprocess.run(
-        [sys.executable, str(script_path)], capture_output=True, text=True, env=env
+        [sys.executable, str(script_path)],
+        capture_output=True,
+        text=True,
+        env=env,
     )
     if throws_exception:
         assert (

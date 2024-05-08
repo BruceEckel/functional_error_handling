@@ -1,8 +1,8 @@
 #: comprehension5.py
 # Simplifying composition with and_then
+from comprehension4 import a, b, c
 from result import Result
 from validate_output import console
-from comprehension4 import a, b, c
 
 
 def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
