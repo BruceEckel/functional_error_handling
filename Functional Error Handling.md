@@ -208,6 +208,7 @@ i is 1
 10
 """
 ```
+
 `validate_output` is a tool in the GitHub repository that validates the correctness of the `console ==` strings. If you run the program you’ll see the same output as you see in the `console ==` strings.
 
 `f2` returns a `str` to indicate an error, and an `int` answer if there is no error. In the pattern match, we are forced to check the result type to determine whether an error occurs and we cannot just assume it is an `int`.
@@ -410,15 +411,16 @@ To understand what’s happening, here’s the definition of `and_then` taken fr
 
 ## A More Capable Library
 
-We could continue adding features to our `Result` library until it becomes a complete solution. However, others have already worked on this problem and at some point it makes more sense to reuse their work.
+We could continue adding features to our `Result` library until it becomes a complete solution. However, others have already created solutions to this problem so it makes more sense to reuse their work.
 
 Languages like Rust and Kotlin (new C++) support these unpacking operations directly (examples):
 
-Languages like Python do not directly support this unpacking, but the mathematical field of *category theory* proves that operations can be created to automatically stop a composed calculation if an error occurs, returning the error from the composition. These operations have multiple names such as *bind* and *flatmap*.
+Languages like Python do not directly support this unpacking, but the mathematical field of *category theory* proves that operations can be created to automatically stop a composed calculation if an error occurs, returning the error from the composition. These operations have a variety of names such as *and_then*, *bind* and *flatmap*.
 
-The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns), which provides `bind`. `Returns` includes more features than just return package support, but we will only focus on that.
+The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns), which provides `bind`. `Returns` includes more features than just `Result` support, but we will only focus on that.
 
-`Returns` elegantly solves the list-comprehension problem:
+`Returns` provides elegant composition using *pipes*:
+
 ```python
 #: comprehension6.py
 # Using https://github.com/dry-python/returns
@@ -513,6 +515,7 @@ def not_two(j: int) -> Result[int, ValueError]:
     return Success(j * 100)
 
 
+# Ordinary function:
 def add(first: int, second: int) -> int:
     return first + second
 

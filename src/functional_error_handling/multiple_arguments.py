@@ -15,6 +15,7 @@ def not_two(j: int) -> Result[int, ValueError]:
     return Success(j * 100)
 
 
+# Ordinary function:
 def add(first: int, second: int) -> int:
     return first + second
 
