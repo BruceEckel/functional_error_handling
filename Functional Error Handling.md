@@ -80,6 +80,13 @@ If errors are in the language domain, the next question is how to report and han
 
 Unifying error reporting and recovery
 
+There were different language implementations of exceptions:
+- Lisp (was this the origin of language-based exceptions?). Possibly ironic as Lisp is the first functional language.
+- BASIC had “On Error Go To”
+- Pascal
+- C++, which tried exception specifications. Originally these were optional and not type-checked. More recent versions of the language enforce correct exception specifications.
+- Java, which created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored
+
 Exceptions seemed like a great idea:
 1. A standardized way to correct problems so that an operation can recover and retry
 2. There's only one way to report errors
