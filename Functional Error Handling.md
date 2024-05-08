@@ -198,7 +198,7 @@ As you can see in the display of the `outputs` array, we now have the unfortunat
 #: result.py
 # Result with OK & Err subtypes
 from dataclasses import dataclass
-from typing import Generic, TypeVar
+from typing import Callable, Generic, TypeVar
 
 ANSWER = TypeVar("ANSWER")
 ERROR = TypeVar("ERROR")
@@ -206,7 +206,11 @@ ERROR = TypeVar("ERROR")
 
 @dataclass(frozen=True)
 class Result(Generic[ANSWER, ERROR]):
-    pass
+    # Ignore this method for now:
+    def and_then(self, func: Callable[[ANSWER], "Result"]) -> "Result[ANSWER, ERROR]":
+        if isinstance(self, Ok):
+            return func(self.value)
+        return self  # Just pass the Err forward
 
 
 @dataclass(frozen=True)
@@ -331,6 +335,30 @@ console == """
 
 ```python
 #: comprehension5.py
+# Simplifying composition with and_then
+from result import Err, Ok, Result
+from validate_output import console
+from comprehension4 import a, b, c
+
+
+def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
+    return a(i).and_then(b).and_then(c)
+
+
+inputs = range(-1, 3)
+print(outputs := [composed(i) for i in inputs])
+console == """
+[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i cannot be 1'), Ok(value='2#')]
+"""
+
+for inp, outp in zip(inputs, outputs):
+    print(f"{inp:>2}: {outp}")
+console == """
+-1: Err(error=ValueError(-1))
+ 0: Err(error=ZeroDivisionError())
+ 1: Err(error='i cannot be 1')
+ 2: Ok(value='2#')
+"""
 ```
 ## A More Capable Library
 
