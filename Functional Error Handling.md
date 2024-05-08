@@ -539,3 +539,6 @@ console == """
 (3, 4): <Success: 430>
 """
 ```
+
+
+# The Promise of Functional Error Handling
