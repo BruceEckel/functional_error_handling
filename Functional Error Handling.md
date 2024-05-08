@@ -234,7 +234,9 @@ ERROR = TypeVar("ERROR")
 @dataclass(frozen=True)
 class Result(Generic[ANSWER, ERROR]):
     # Ignore this method for now:
-    def and_then(self, func: Callable[[ANSWER], "Result"]) -> "Result[ANSWER, ERROR]":
+    def and_then(
+        self, func: Callable[[ANSWER], "Result"]
+    ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Ok):
             return func(self.value)
         return self  # Just pass the Err forward
@@ -367,9 +369,9 @@ The `and_then` method in `Result` (with the comment in `result.py` that said “
 ```python
 #: comprehension5.py
 # Simplifying composition with and_then
+from comprehension4 import a, b, c
 from result import Result
 from validate_output import console
-from comprehension4 import a, b, c
 
 
 def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
@@ -397,7 +399,9 @@ In `composed`, we call `a(i)` which returns a `Result`. The `and_then` method is
 To understand what’s happening, here’s the definition of `and_then` taken from `result.py`:
 
 ```python
-    def and_then(self, func: Callable[[ANSWER], "Result"]) -> "Result[ANSWER, ERROR]":
+    def and_then(
+        self, func: Callable[[ANSWER], "Result"]
+    ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Ok):
             return func(self.value)
         return self  # Just pass the Err forward

@@ -12,7 +12,7 @@ def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
 inputs = range(-1, 3)
 print(outputs := [composed(i) for i in inputs])
 console == """
-[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i cannot be 1'), Ok(value='2#')]
+[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i is 1'), Ok(value='2#')]
 """
 
 for inp, outp in zip(inputs, outputs):
@@ -20,6 +20,6 @@ for inp, outp in zip(inputs, outputs):
 console == """
 -1: Err(error=ValueError(-1))
  0: Err(error=ZeroDivisionError())
- 1: Err(error='i cannot be 1')
+ 1: Err(error='i is 1')
  2: Ok(value='2#')
 """

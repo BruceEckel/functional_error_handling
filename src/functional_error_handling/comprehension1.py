@@ -4,7 +4,7 @@
 
 def f1(i: int) -> int:
     if i == 1:
-        raise ValueError("i cannot be 1")
+        raise ValueError("i is 1")
     else:
         return i * 2
 
@@ -14,5 +14,5 @@ print(result)
 """
 Traceback (most recent call last):
   ...
-ValueError: i cannot be 1
+ValueError: i is 1
 """

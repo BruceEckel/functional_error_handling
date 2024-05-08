@@ -6,14 +6,14 @@ from validate_output import console
 
 def f3(i: int) -> Result[int, str]:
     if i == 1:
-        return Err("i cannot be 1")
+        return Err("i is 1")
     else:
         return Ok(i * 2)
 
 
 print(outputs := [f3(i) for i in range(3)])
 console == """
-[Ok(value=0), Err(error='i cannot be 1'), Ok(value=4)]
+[Ok(value=0), Err(error='i is 1'), Ok(value=4)]
 """
 
 for r in outputs:
@@ -24,7 +24,7 @@ for r in outputs:
             print(f"{error = }")
 console == """
 value = 0
-error = 'i cannot be 1'
+error = 'i is 1'
 value = 4
 """
 
@@ -37,6 +37,6 @@ def g(i: int) -> Result[int, str]:
 print(g(1))
 print(g(5))
 console == """
-Err(error='i cannot be 1')
+Err(error='i is 1')
 Ok(value=10)
 """
