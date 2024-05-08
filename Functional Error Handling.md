@@ -140,7 +140,7 @@ Let’s start with a very simple example where we populate a `List` with the res
 
 def f1(i: int) -> int:
     if i == 1:
-        raise ValueError("i cannot be 1")
+        raise ValueError("i is 1")
     else:
         return i * 2
 
@@ -150,7 +150,7 @@ print(result)
 """
 Traceback (most recent call last):
   ...
-ValueError: i cannot be 1
+ValueError: i is 1
 """
 ```
 
@@ -173,14 +173,14 @@ from validate_output import console
 
 def f2(i: int) -> int | str:  # Sum type
     if i == 1:
-        return "i cannot be 1"
+        return "i is 1"
     else:
         return i * 2
 
 
 print(outputs := [f2(i) for i in range(3)])
 console == """
-[0, 'i cannot be 1', 4]
+[0, 'i is 1', 4]
 """
 
 for r in outputs:
@@ -191,7 +191,7 @@ for r in outputs:
             print(f"{error = }")
 console == """
 value = 0
-error = 'i cannot be 1'
+error = 'i is 1'
 value = 4
 """
 
@@ -204,7 +204,7 @@ def g(i: int) -> int | str:
 print(g(1))
 print(g(5))
 console == """
-i cannot be 1
+i is 1
 10
 """
 ```
@@ -266,14 +266,14 @@ from validate_output import console
 
 def f3(i: int) -> Result[int, str]:
     if i == 1:
-        return Err("i cannot be 1")
+        return Err("i is 1")
     else:
         return Ok(i * 2)
 
 
 print(outputs := [f3(i) for i in range(3)])
 console == """
-[Ok(value=0), Err(error='i cannot be 1'), Ok(value=4)]
+[Ok(value=0), Err(error='i is 1'), Ok(value=4)]
 """
 
 for r in outputs:
@@ -284,7 +284,7 @@ for r in outputs:
             print(f"{error = }")
 console == """
 value = 0
-error = 'i cannot be 1'
+error = 'i is 1'
 value = 4
 """
 
@@ -297,7 +297,7 @@ def g(i: int) -> Result[int, str]:
 print(g(1))
 print(g(5))
 console == """
-Err(error='i cannot be 1')
+Err(error='i is 1')
 Ok(value=10)
 """
 ```
@@ -313,7 +313,7 @@ from validate_output import console
 
 def a(i: int) -> Result[int, str]:
     if i == 1:
-        return Err("i cannot be 1")
+        return Err("i is 1")
     else:
         return Ok(i)
 
@@ -347,7 +347,7 @@ def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
 inputs = range(-1, 3)
 print(outputs := [composed(i) for i in inputs])
 console == """
-[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i cannot be 1'), Ok(value='2#')]
+[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i is 1'), Ok(value='2#')]
 """
 
 for inp, outp in zip(inputs, outputs):
@@ -355,7 +355,7 @@ for inp, outp in zip(inputs, outputs):
 console == """
 -1: Err(error=ValueError(-1))
  0: Err(error=ZeroDivisionError())
- 1: Err(error='i cannot be 1')
+ 1: Err(error='i is 1')
  2: Ok(value='2#')
 """
 ```
@@ -381,7 +381,7 @@ def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
 inputs = range(-1, 3)
 print(outputs := [composed(i) for i in inputs])
 console == """
-[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i cannot be 1'), Ok(value='2#')]
+[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i is 1'), Ok(value='2#')]
 """
 
 for inp, outp in zip(inputs, outputs):
@@ -389,7 +389,7 @@ for inp, outp in zip(inputs, outputs):
 console == """
 -1: Err(error=ValueError(-1))
  0: Err(error=ZeroDivisionError())
- 1: Err(error='i cannot be 1')
+ 1: Err(error='i is 1')
  2: Ok(value='2#')
 """
 ```
