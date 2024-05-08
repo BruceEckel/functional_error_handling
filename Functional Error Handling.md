@@ -84,7 +84,7 @@ There were different language implementations of exceptions:
 - Lisp (was this the origin of language-based exceptions?). Possibly ironic as Lisp is the first functional language.
 - BASIC had “On Error Go To”
 - Pascal
-- C++, which tried exception specifications. Originally these were optional and not type-checked. More recent versions of the language enforce correct exception specifications.
+- C++, which tried exception specifications. Originally these were optional and not type-checked. Then they were enforced, and finally they were deprecated.
 - Java, which created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored
 
 Exceptions seemed like a great idea:
@@ -95,7 +95,7 @@ Exceptions seemed like a great idea:
 5. Exception hierarchies allow more general exception handlers to handle multiple exception subtypes
 
 To be clear, exceptions were a big improvement over all of the previous (non) solutions to the error reporting problem. Exceptions moved us forward for awhile (and became entrenched in programming culture) until folks started discovering pain points. As is often the case, this happened as we tried to scale up to create larger and more complex systems. And once again, the underlying issue was composability.
-## The Problem with Exceptions
+## The Problems with Exceptions
 
 In the small (and especially when teaching them), exceptions seem to work quite well. 
 
@@ -109,14 +109,22 @@ With exceptions, the two types are conflated.
 (Link to Error handling article)
 ### 2. Exceptions are not Part of the Type System
 
-You can’t know what exceptions you must handle when calling other functions (i.e.: composing).
-Even if you track down all the possible exceptions thrown explicitly in the code (by hunting for them in their source code!), built-in exceptions can still happen without evidence in the code: divide-by-zero is a great example of this.
+If the type system doesn’t include exceptions as part of a function signature, you can’t know what exceptions you must handle when calling other functions (i.e.: composing). Even if you track down all the possible exceptions thrown explicitly in the code (by hunting for them in their source code!), built-in exceptions can still happen without evidence in the code: divide-by-zero is a great example of this.
 
 You can be using a library and handling all the exceptions from it (or perhaps just the ones you found in the documentation), and a newer version of that library can quietly add a new exception, and suddenly you are no longer detecting and/or handling all the exceptions. Even though you made no changes to your code.
 
+Languages like C++ and Java attempted to solve this problem by adding *exception specifications,* a notation that allows you to add the exception types that may be thrown, as part of the function’s type signature.
+
+Object-oriented languages that enforce exception specifications (C++, Java) and create exception hierarchies introduce another problem. Exception hierarchies allow the library programmer to use an exception base type in the exception specification. This obscures important details; if the exception specification just uses a base type, there’s no way for the compiler to enforce coverage of specific exceptions.
+
 If exceptions are part of the type system, you can know all the errors that can occur just by looking at the type information. If a library component adds a new error then that must be reflected in that component’s type signature, which means that the code using it immediately knows that it is no longer covering all the error conditions, and will produce type errors until it is fixed.
 
-### 3. Exceptions Destroy Partial Calculations
+### 3. Exception Specifications Create a “Shadow Type System”
+
+Languages like C++ and Java attempted to add notation indicating the exceptions that might emerge from a function call. This was well-intentioned and seems to produce the necessary information the client programmer needs to handle errors. The fundamental problem was that this created an alternate or “shadow” type system that doesn’t follow the same rules as the primary type system. To make the shadow type system work, its rules were warped to the point where it became effectively useless (a discovery that has taken years to realize).
+
+C++ exception specifications were originally these were optional and not type-checked. Then they were enforced, and finally they were deprecated. Java created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored. Eventually they added a feature that allows checked exceptions to be easily converted into runtime exceptions. Functions can always return `null` without any warning. Both systems had too many holes, and it was too difficult (IMO) to effectively support both the main and shadow type systems.
+### 4. Exceptions Destroy Partial Calculations
 
 Let’s start with a very simple example where we populate a `List` with the results of a sequence of calls to the function `f1`:
 
