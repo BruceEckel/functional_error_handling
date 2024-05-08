@@ -11,7 +11,7 @@ def f1(i: int) -> int:
 
 result = [f1(i) for i in range(3)]
 print(result)
-r"""
+"""
 Traceback (most recent call last):
   ...
 ValueError: i cannot be 1

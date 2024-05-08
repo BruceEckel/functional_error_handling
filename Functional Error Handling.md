@@ -1,6 +1,6 @@
-*This document, code examples, and presentation slides are in a [GitHub repository](https://github.com/BruceEckel/functional_error_handling)*.
-
+*This document, code examples, and presentation slides are in a [GitHub repository](https://github.com/BruceEckel/functional_error_handling)*. This paper assumes full usage of Python’s type system.
 <!-- #[code_location] ./src/functional_error_handling -->
+
 > **Thesis**: *Most of what we've been working towards in programming—whether we are aware of it or not—is composability.* 
 
 Discovering the meaning of composability is part of this path—there are different definitions depending on the programming language paradigm under scrutiny.
@@ -84,7 +84,7 @@ There were different language implementations of exceptions:
 - Lisp (was this the origin of language-based exceptions?). Possibly ironic as Lisp is the first functional language.
 - BASIC had “On Error Go To”
 - Pascal
-- C++, which tried exception specifications. Originally these were optional and not type-checked. Then they were enforced, and finally they were deprecated.
+- C++
 - Java, which created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored
 
 Exceptions seemed like a great idea:
@@ -123,7 +123,11 @@ If exceptions are part of the type system, you can know all the errors that can 
 
 Languages like C++ and Java attempted to add notation indicating the exceptions that might emerge from a function call. This was well-intentioned and seems to produce the necessary information the client programmer needs to handle errors. The fundamental problem was that this created an alternate or “shadow” type system that doesn’t follow the same rules as the primary type system. To make the shadow type system work, its rules were warped to the point where it became effectively useless (a discovery that has taken years to realize).
 
-C++ exception specifications were originally these were optional and not type-checked. Then they were enforced, and finally they were deprecated. Java created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored. Eventually they added a feature that allows checked exceptions to be easily converted into runtime exceptions. Functions can always return `null` without any warning. Both systems had too many holes, and it was too difficult (IMO) to effectively support both the main and shadow type systems.
+C++ exception specifications were originally optional and not statically type-checked. After many years these were deprecated in favor of the statically-typed [`expected` specification](https://en.cppreference.com/w/cpp/utility/expected) (which takes the functional approached described in this paper). 
+
+Java created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored. Eventually they added a feature that allows checked exceptions to be easily converted into runtime exceptions. Java functions can always return `null` without any warning.
+
+Both systems (the original C++ dynamic exception specifications, and Java exception specifications) had too many holes, and it was too difficult to effectively support both the main and shadow type systems.
 ### 4. Exceptions Destroy Partial Calculations
 
 Let’s start with a very simple example where we populate a `List` with the results of a sequence of calls to the function `f1`:
@@ -142,22 +146,22 @@ def f1(i: int) -> int:
 
 result = [f1(i) for i in range(3)]
 print(result)
-r"""
+"""
 Traceback (most recent call last):
   ...
 ValueError: i cannot be 1
 """
 ```
 
-`f1` throws a `ValueError` exception if its argument is `1`. The `range(3)` is 0, 1, and 2; only one of these values causes the exception—`result` contains only one problem; the other two values are fine. However, we lose everything that we were calculating when the exception is thrown. This:
+`f1` throws a `ValueError` if its argument is `1`. The `range(3)` is 0, 1, and 2; only one of these values causes the exception. So `result` contains only one problem; the other two values are fine. However, we lose everything that we were calculating when the exception is thrown. This:
 1. Is computationally wasteful, especially with large calculations.
-2. Makes debugging harder. It would be quite valuable to see in `result` which parts succeeded and which parts failed.
+2. Makes debugging harder. It would be quite valuable to see in `result` the parts that succeeded and those that failed.
 # The Functional Solution
 Instead of creating a complex implementation to report and handle errors, the functional approach creates a “return package” containing the answer along with the (potential) error information. Instead of only returning the answer, we return this package from the function. 
 
 This package is a new type, with operations that prevent the programmer from simply plucking the result from the package without dealing with error conditions (a failing of the Go language approach).
 
-As a first attempt, we can use *type unions* to create a nameless return package:
+A first attempt uses *type unions* to create a nameless return package:
 
 ```python
 #: comprehension2.py
@@ -203,7 +207,7 @@ i cannot be 1
 10
 """
 ```
-`console` is a tool in the GitHub repository that validates the correctness of the `console ==` strings. If you run the program you’ll see the same output as you see in the `console ==` strings.
+`validate_output` is a tool in the GitHub repository that validates the correctness of the `console ==` strings. If you run the program you’ll see the same output as you see in the `console ==` strings.
 
 `f2` returns a `str` to indicate an error, and an `int` answer if there is no error. In the pattern match, we are forced to check the result type to determine whether an error occurs and we cannot just assume it is an `int`.
 

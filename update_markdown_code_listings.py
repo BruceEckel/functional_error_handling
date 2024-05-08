@@ -83,6 +83,7 @@ def find_python_files_and_listings(markdown_content: str) -> List[MarkdownListin
     console.print(f"[orange3]{"  Available Python Files  ".center(width, "-")}[/orange3]")
     for pyfile in [pf.name for pf in python_files]:
         console.print(f"\t[sea_green2]{pyfile}[/sea_green2]")
+    console.print(f"[orange3]{"-" * width}[/orange3]")
 
     # If slug line doesn't exist group(1) returns None:
     listing_pattern = re.compile(r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL)
