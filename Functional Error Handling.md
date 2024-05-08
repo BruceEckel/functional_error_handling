@@ -82,17 +82,18 @@ Unifying error reporting and recovery
 
 There were different language implementations of exceptions:
 - Lisp (was this the origin of language-based exceptions?). Possibly ironic as Lisp is the first functional language.
-- BASIC had “On Error Go To”
+- BASIC had “On Error Go To” (and “resume”?)
 - Pascal
 - C++
-- Java, which created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored
+- Java created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored.
+- Python has exceptions but doesn’t provide any type annotation or other mechanism to indicate what exceptions might emerge from a function call.
 
 Exceptions seemed like a great idea:
-1. A standardized way to correct problems so that an operation can recover and retry
-2. There's only one way to report errors
+1. A standardized way to correct problems so that an operation can recover and retry.
+2. There's only one way to report errors.
 3. Errors cannot be ignored—they flow upward until caught or displayed on the console with program termination.
 4. Errors can be handled close to the origin, or generalized by catching them "further out" so that multiple error sources can be managed with a single handler.
-5. Exception hierarchies allow more general exception handlers to handle multiple exception subtypes
+5. Exception hierarchies allow more general exception handlers to handle multiple exception subtypes.
 
 To be clear, exceptions were a big improvement over all of the previous (non) solutions to the error reporting problem. Exceptions moved us forward for awhile (and became entrenched in programming culture) until folks started discovering pain points. As is often the case, this happened as we tried to scale up to create larger and more complex systems. And once again, the underlying issue was composability.
 ## The Problems with Exceptions
@@ -216,7 +217,6 @@ An important problem with this approach is that it is not clear which type is th
 In hindsight, it might seem like this “return package” approach is much more obvious than the elaborate exception-handling scheme that was adopted for C++, Java and other languages, but at the time the apparent overhead of returning extra bytes seemed unacceptable (I don’t know of any comparisons between that and the overhead of exception-handling mechanisms, but I do know that the goal of C++ exception handling is to have zero execution overhead if no exceptions occur).
 
 Note that in the definition of `g`, the type checker requires that you return `int | str` because `f2` returns those types. Thus, when composing, type-safety is preserved. This means you won’t lose error type information during composition, so composability automatically scales.
-
 ## Unifying the Return Type
 
 As you can see in the display of the `outputs` array, we now have the unfortunate situation that `outputs` contains multiple types (both `int` and `str`). The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it generally useful:
@@ -389,9 +389,11 @@ console == """
 ```
 ## A More Capable Library
 
-Although `result.py` creates typed “answer + error” packages, there’s still a problem that impedes our ultimate goal of composability: every time you call a function, you must write code to unpack and deal with this new `Result` object. This is not only a lot of extra repetitive work, but it interrupts the flow and readability of the program. We need some way to reduce or eliminate this extra code.
+[Not exactly relevant because of the previous example] Although `result.py` creates typed “answer + error” packages, there’s still a problem that impedes our ultimate goal of composability: every time you call a function, you must write code to unpack and deal with this new `Result` object. This is not only a lot of extra repetitive work, but it interrupts the flow and readability of the program. We need some way to reduce or eliminate this extra code.
 
-Languages like Rust and Kotlin support these unpacking operations directly (examples):
+We could continue adding features to our library, but at some point it makes more sense to let someone else do the work…
+
+Languages like Rust and Kotlin (new C++) support these unpacking operations directly (examples):
 
 Languages like Python do not directly support this unpacking, but the mathematical field of *category theory* proves that operations can be created to automatically stop a composed calculation if an error occurs, returning the error from the composition. These operations have multiple names such as *bind* and *flatmap*.
 
