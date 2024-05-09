@@ -420,7 +420,7 @@ To understand what’s happening, here’s the definition of `and_then` taken fr
         return self  # Just pass the Err forward
 ```
 
-At each “chaining point” in `a(i).and_then(b).and_then(c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next call in the chain. If not, that means `self` is an `Err` object (containing specific error information), so all it need to do is `return self`. The next call in the chain sees that the returned type is `Err`, so it doesn’t try to apply the next function but just (again) returns the `Err`. Once you produce an `Err`, no more function calls occur (that is, it short-circuits) and the `Err` result gets passed all the way out of the composed function so the caller can see the specific failure.
+At each “chaining point” in `a(i).and_then(b).and_then(c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next function in the chain. If not, that means `self` is an `Err` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Err`, so it doesn’t try to apply the next function but just (again) returns the `Err`. Once you produce an `Err`, no more function calls occur (that is, it short-circuits) and the `Err` result gets passed all the way out of the composed function so the caller can see the specific failure.
 ## A More Capable Library
 
 We could continue adding features to our `Result` library until it becomes a complete solution. However, others have already created solutions to this problem so it makes more sense to reuse their work.
