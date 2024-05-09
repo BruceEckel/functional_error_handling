@@ -209,9 +209,9 @@ i is 1
 """
 ```
 
-`validate_output` is a tool in the GitHub repository that validates the correctness of the `console ==` strings. If you run the program you’ll see the same output as you see in the `console ==` strings.
+`validate_output` is a tool in the [GitHub repository](https://github.com/BruceEckel/functional_error_handling) that validates the correctness of the `console ==` strings. If you run the program you’ll see the same output as you see in the `console ==` strings.
 
-`f2` returns a `str` to indicate an error, and an `int` answer if there is no error. In the pattern match, we are forced to check the result type to determine whether an error occurs and we cannot just assume it is an `int`.
+`f2` returns a `str` to indicate an error, and an `int` answer if there is no error. In the pattern match, we are forced to check the result type to determine whether an error occurs; we cannot just assume it is an `int`.
 
 An important problem with this approach is that it is not clear which type is the success value and which type represents the error condition—because we are trying to repurpose existing built-in types to represent new meanings.
 
@@ -255,9 +255,13 @@ class Ok(Result[ANSWER, ERROR]):
 class Err(Result[ANSWER, ERROR]):
     error: ERROR  # Usage: return Err(error)
 ```
-(description)
+
+A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Ok` calculation, and `error` for a failure (`Err`).
+
+To use `Result`, you `return Ok(answer)` when you’ve successfully created an answer, and `return Err(error)` to indicate a failure. `unwrap` is a convenience method which is only available for an `Ok` (we’ll look at `and_then` a little later).
 
 The modified version of the example using `Result` is now:
+
 ```python
 #: comprehension3.py
 # Explicit result type
@@ -303,7 +307,10 @@ Ok(value=10)
 """
 ```
 
+Now `f3` returns a single type, `Result`. The first type parameter to `Result` is the type returned by `Ok` and the second type parameter is the type returned by `Err`. The `outputs` from the comprehension are all of type `Result`, and we have preserved the successful calculations even though there is a failing call. We can also pattern-match on the outputs, and it is crystal-clear which match is for the success and which is for the failure.
 ## Composing with Error Handling
+
+The previous examples included very simple composition in the `g` functions which just called a single other function. What if you need to compose a more complex function from multiple other functions? The `Result` type ensures that the `composed` function properly represents both the `Answer` type but also the various different errors that can occur:
 
 ```python
 #: comprehension4.py
@@ -361,11 +368,16 @@ console == """
 """
 ```
 
+The `a`, `b` and `c` functions each have argument values that are unacceptable. Notice that `b` and `c` both use built-in exception types as arguments to `Err`, but those exceptions are never raised—they are simply used to convey information, just like the `str` in `a`.
+
+In `composed`, we call `a`, `b` and `c` in sequence. After each call, we check to see if the result type is `Err`. If so, the calculation has failed and we can’t continue, so we return the current result, which is an `Err` object containing the reason for the failure. If it succeeds, it is an `Ok` which contains an `unwrap` method that is used to extract the answer from that calculation—if you look back at `Result`, you’ll see that it returns the `ANSWER` type so its use can be properly type-checked.
+
+This means that any failure during a sequence of composed function calls will short-circuit out of `composed`, returning an `Err` that tells you exactly what happened, and that you must decide what to do with. You can’t just ignore it and assume that it will “bubble up” until it finds an appropriate handler. You are forced to deal with it at the point of origin, which is typically when you know the most about an error.
 ## Simplifying Composition with `and_then`
 
-Although `Result` is a typed “answer + error” package, there’s still a problem that impedes our ultimate goal of composability: every time you call a function, you must write the extra code to check the `Result` type and extract the success value with `unwrap`. This is extra repetitive work that interrupts the flow and readability of the program. We need some way to reduce or eliminate the extra code.
+There’s still a problem that impedes our ultimate goal of composability: every time you call a function within a composed function, you must write code to check the `Result` type and extract the success value with `unwrap`. This is extra repetitive work that interrupts the flow and readability of the program. We need some way to reduce or eliminate the extra code.
 
-The `and_then` method in `Result` (with the comment in `result.py` that said “Ignore this method for now”) solves this exact problem:
+The `and_then` method in `Result` (see the comment in `result.py` that said “Ignore this method for now”) solves this exact problem:
 
 ```python
 #: comprehension5.py
@@ -408,7 +420,7 @@ To understand what’s happening, here’s the definition of `and_then` taken fr
         return self  # Just pass the Err forward
 ```
 
-
+At each “chaining point” in `a(i).and_then(b).and_then(c)`,  [[got here]]
 ## A More Capable Library
 
 We could continue adding features to our `Result` library until it becomes a complete solution. However, others have already created solutions to this problem so it makes more sense to reuse their work.
