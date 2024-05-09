@@ -418,13 +418,9 @@ To understand what’s happening, here’s the definition of `and_then` taken fr
 At each “chaining point” in `a(i).and_then(b).and_then(c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next function in the chain. If not, that means `self` is an `Err` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Err`, so it doesn’t try to apply the next function but just (again) returns the `Err`. Once you produce an `Err`, no more function calls occur (that is, it short-circuits) and the `Err` result gets passed all the way out of the composed function so the caller can see the specific failure.
 ## A More Capable Library
 
-We could continue adding features to our `Result` library until it becomes a complete solution. However, others have already created solutions to this problem so it makes more sense to reuse their work.
+We could continue adding features to our `Result` library until it becomes a complete solution. However, others have already created solutions to this problem so it makes more sense to reuse their work. The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns). `Returns` includes other features, but we will only focus on  `Result`.
 
-Languages like Python do not directly support this unpacking, but the mathematical field of *category theory* proves that operations can be created to automatically stop a composed calculation if an error occurs, returning the error from the composition. These operations have a variety of names such as *and_then*, *bind* and *flatmap*.
-
-The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns), which provides `bind`. `Returns` includes more features than `Result`, but we will only focus on that.
-
-`Returns` provides elegant composition using *pipes*:
+`Returns` provides elegant composition using *pipes* and the `bind` function:
 
 ```python
 #: comprehension6.py
@@ -437,7 +433,7 @@ from validate_output import console
 
 def reject_1(i: int) -> Result[int, str]:
     if i == 1:
-        return Failure(f"a({i = })")
+        return Failure(f"reject_1({i = })")
     return Success(i)
 
 
@@ -445,14 +441,14 @@ def reject_1(i: int) -> Result[int, str]:
 # Return type becomes Result[int, ZeroDivisionError]
 @safe
 def reject_0(i: int) -> int:
-    print(f"b({i}): {1 / i}")
+    print(f"reject_0({i}) succeeded: {1 / i}")
     return i
 
 
 def reject_minus_1(i: int) -> Result[str, ValueError]:
     if i == -1:
         return Failure(ValueError(f"c({i =})"))
-    return Success(f"c({i})")
+    return Success(f"reject_minus_1({i})")
 
 
 composed = pipe(  # type: ignore
@@ -464,8 +460,8 @@ composed = pipe(  # type: ignore
 inputs = range(-1, 3)  # [-1, 0, 1, 2]
 outputs = [composed(i) for i in inputs]
 console == """
-b(-1): -1.0
-b(2): 0.5
+reject_0(-1) succeeded: -1.0
+reject_0(2) succeeded: 0.5
 """
 
 for inp, outp in zip(inputs, outputs):
@@ -473,8 +469,8 @@ for inp, outp in zip(inputs, outputs):
 console == """
 -1: <Failure: c(i =-1)>
  0: <Failure: division by zero>
- 1: <Failure: a(i = 1)>
- 2: <Success: c(2)>
+ 1: <Failure: reject_1(i = 1)>
+ 2: <Success: reject_minus_1(2)>
 """
 
 # Extract results, converting failure to None:
@@ -482,8 +478,8 @@ with_nones = [r.value_or(None) for r in outputs]
 print(str(with_nones))
 print(str(list(filter(None, with_nones))))
 console == """
-[None, None, None, 'c(2)']
-['c(2)']
+[None, None, None, 'reject_minus_1(2)']
+['reject_minus_1(2)']
 """
 
 # Another way to extract results:
@@ -495,11 +491,20 @@ for r in outputs:
 console == """
 r.failure() = ValueError('c(i =-1)')
 r.failure() = ZeroDivisionError('division by zero')
-r.failure() = 'a(i = 1)'
-r.unwrap() = 'c(2)'
+r.failure() = 'reject_1(i = 1)'
+r.unwrap() = 'reject_minus_1(2)'
 """
 ```
 
+The definition of `reject_1` looks the same as previous versions, except that we now return `Failure` instead of `Err` and `Success` instead of ‘Ok’.
+
+`Returns` provides a `@safe` decorator that you see applied to the “plain” function `reject_0`. This changes the normal `int` return type into a `Result` that includes `int` for the `Success` type but is also somehow able to recognize that the division might produce a `ZeroDivisionError` and include that in the `Failure` type. In addition, `@safe` is apparently catching the exception and converting it to the `ZeroDivisionError` returned as the information object in the `Failure` object. `@safe` is a helpful tool when converting exception-throwing code into error-returning code.
+
+`reject_minus_1` adds some variety by rejecting `-1` and producing a `str` result. We can now produce `composed` using a `pipe` and `bind`. All the previous error-checking and short-circuiting behaviors happen as before, but the syntax is now more straightforward and readable.
+
+Notice that when the `outputs` list is created, the output from `reject0` only happens for the values `-1` and `2`, because the other values cause errors in the `composed` chain of operations. The value `1` never gets to `reject_0` because it is intercepted by the prior `composed` call to `reject_1`. The value `0` causes `reject_0` to produce a `ZeroDivisionError` when it tries to perform the division inside the `print`.
+
+[Explain rest of example]
 ## Handling Multiple Arguments
 
 ```python
