@@ -308,7 +308,7 @@ Ok(value=10)
 ```
 
 Now `f3` returns a single type, `Result`. The first type parameter to `Result` is the type returned by `Ok` and the second type parameter is the type returned by `Err`. The `outputs` from the comprehension are all of type `Result`, and we have preserved the successful calculations even though there is a failing call. We can also pattern-match on the outputs, and it is crystal-clear which match is for the success and which is for the failure.
-## Composing with Error Handling
+## Composing with `Result`
 
 The previous examples included very simple composition in the `g` functions which just called a single other function. What if you need to compose a more complex function from multiple other functions? The `Result` type ensures that the `composed` function properly represents both the `Answer` type but also the various different errors that can occur:
 
