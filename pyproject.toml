@@ -27,7 +27,7 @@ allow-direct-references = true
 reportUnusedExpression = false
 
 [tool.ruff]
-line-length = 80
+line-length = 70
 
 [tool.pytest.ini_options]
 minversion = "6.0"

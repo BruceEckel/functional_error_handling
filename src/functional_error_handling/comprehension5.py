@@ -12,9 +12,7 @@ def composed(
     return reject_1(i).and_then(reject_0).and_then(reject_minus_1)
 
 
-inputs = range(-1, 3)
-outputs = [composed(i) for i in inputs]
-display(inputs, outputs)
+display(inputs := range(-1, 3), [composed(i) for i in inputs])
 console == """
 -1: Err(error=ValueError(-1))
 0: Err(error=ZeroDivisionError())

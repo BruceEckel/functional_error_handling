@@ -24,12 +24,16 @@ def reject_minus_1(i: int) -> Result[str, ValueError]:
     return Ok(f"{i}#")
 
 
-def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
+def composed(
+    i: int,
+) -> Result[str, str | ZeroDivisionError | ValueError]:
     result_a = reject_1(i)
     if isinstance(result_a, Err):
         return result_a
 
-    result_b = reject_0(result_a.unwrap())  # unwrap gets the value from Ok
+    result_b = reject_0(
+        result_a.unwrap()  # unwrap gets the value from Ok
+    )
     if isinstance(result_b, Err):
         return result_b
 

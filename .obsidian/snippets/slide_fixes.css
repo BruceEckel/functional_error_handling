@@ -1,27 +1,19 @@
-/* .slides {
-  height: 100% !important;
-  width: 100% !important;
-} */
+.slides {
+    height: 100% !important;
+    width: 75% !important;
+}
 
 
 
 /* font size */
-.reveal {
+/* .reveal {
     font-size: 1em;
-    /* for mobile use 1.5em */
-}
-
-/* zoom level for (mobile) landscape mode */
-/* @media screen and (orientation:landscape) {
-  .slides {
-    zoom: 1.1 !important;
-  }
 } */
-
 
 /* ---------------------------------------------------- */
 
 /* adds scrollbar */
+/* Needs two spaces above and below each code listing */
 .slides {
     overflow-x: hidden !important;
     overflow-y: auto !important;
@@ -30,26 +22,26 @@
 
 
 /* hide scroll bar */
-.slide ::-webkit-scrollbar {
+/* .slide ::-webkit-scrollbar {
     display: none !important;
-}
+} */
 
 
 
 /* ---------------------------------------------------- */
 
 /* fixes padding for heading after list. e.g. see padding of this
-
-- item1
-## heading 2
-*/
-.reveal ul {
+  
+  - item1
+  ## heading 2
+  */
+/* .reveal ul {
     padding-bottom: 1.5%;
 }
 
 .reveal ol {
     padding-bottom: 1.5%;
-}
+} */
 
 
 
@@ -58,8 +50,9 @@
 /* code styles */
 .reveal code {
     max-height: fit-content !important;
+    /* max-height: max-content; */
     /* disable this if you want scrollable code blocks */
-    color: #ffad00;
+    /* color: #ffad00; */
 }
 
 
@@ -68,20 +61,22 @@
 .reveal pre {
     font-size: 0.8em;
     min-height: 1em;
+    /* max-height: min-content; */
     padding: 0.5em;
     /* margin-left: -2.5%; */
     /* width: 105%; */
-    /* max-width: 70%; */
+    /* max-width: 100%; */
 }
 
 
 
 /* move copy button to top right corner */
 .slide .copy-code-button {
-    position: absolute;
+    /* position: absolute;
     top: 4px;
-    right: 4px;
-    /* display: none !important; // hides the copy button */
+    right: 4px; */
+    display: none !important;
+    /* hides the copy button */
 }
 
 
@@ -89,7 +84,7 @@
 /* ---------------------------------------------------- */
 
 /* blockquotes */
-.reveal blockquote {
+/* .reveal blockquote {
     border-left: 5px solid var(--background-modifier-border);
     padding: 0 0 0 15px;
     font-size: 0.9em;
@@ -97,14 +92,14 @@
 
 .reveal blockquote>p {
     margin: 0.5em 0;
-}
+} */
 
 /* ---------------------------------------------------- */
 
 /* adds border to table */
 
-.reveal table {
-    /* font-size: 2em;   */
+/* .reveal table {
+    font-size: 2em;  
     width: 80%;
 }
 
@@ -127,18 +122,18 @@ td {
 td {
     min-width: 90px;
     line-height: 1.5;
-}
+} */
 
 
 /* ---------------------------------------------------- */
 
 /* move left and right arrow button */
-.navigate-right {
-    /* bottom: 1.4em !important; */
+/* .navigate-right {
+    bottom: 1.4em !important;
     right: 8em !important;
 }
 
 .navigate-left {
-    /* bottom: 1.4em !important; */
+    bottom: 1.4em !important;
     right: 15em !important;
-}
+} */

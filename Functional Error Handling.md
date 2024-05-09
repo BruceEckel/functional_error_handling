@@ -340,12 +340,16 @@ def reject_minus_1(i: int) -> Result[str, ValueError]:
     return Ok(f"{i}#")
 
 
-def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
+def composed(
+    i: int,
+) -> Result[str, str | ZeroDivisionError | ValueError]:
     result_a = reject_1(i)
     if isinstance(result_a, Err):
         return result_a
 
-    result_b = reject_0(result_a.unwrap())  # unwrap gets the value from Ok
+    result_b = reject_0(
+        result_a.unwrap()  # unwrap gets the value from Ok
+    )
     if isinstance(result_b, Err):
         return result_b
 
@@ -389,9 +393,7 @@ def composed(
     return reject_1(i).and_then(reject_0).and_then(reject_minus_1)
 
 
-inputs = range(-1, 3)
-outputs = [composed(i) for i in inputs]
-display(inputs, outputs)
+display(inputs := range(-1, 3), [composed(i) for i in inputs])
 console == """
 -1: Err(error=ValueError(-1))
 0: Err(error=ZeroDivisionError())
