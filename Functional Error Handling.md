@@ -420,16 +420,14 @@ To understand what’s happening, here’s the definition of `and_then` taken fr
         return self  # Just pass the Err forward
 ```
 
-At each “chaining point” in `a(i).and_then(b).and_then(c)`,  [[got here]]
+At each “chaining point” in `a(i).and_then(b).and_then(c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next call in the chain. If not, that means `self` is an `Err` object (containing specific error information), so all it need to do is `return self`. The next call in the chain sees that the returned type is `Err`, so it doesn’t try to apply the next function but just (again) returns the `Err`. Once you produce an `Err`, no more function calls occur (that is, it short-circuits) and the `Err` result gets passed all the way out of the composed function so the caller can see the specific failure.
 ## A More Capable Library
 
 We could continue adding features to our `Result` library until it becomes a complete solution. However, others have already created solutions to this problem so it makes more sense to reuse their work.
 
-Languages like Rust and Kotlin (new C++) support these unpacking operations directly (examples):
-
 Languages like Python do not directly support this unpacking, but the mathematical field of *category theory* proves that operations can be created to automatically stop a composed calculation if an error occurs, returning the error from the composition. These operations have a variety of names such as *and_then*, *bind* and *flatmap*.
 
-The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns), which provides `bind`. `Returns` includes more features than just `Result` support, but we will only focus on that.
+The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns), which provides `bind`. `Returns` includes more features than `Result`, but we will only focus on that.
 
 `Returns` provides elegant composition using *pipes*:
 
@@ -554,3 +552,8 @@ console == """
 
 
 # The Promise of Functional Error Handling
+
+The move toward functional error handling has already been happening. Languages like Rust, Kotlin, and recent versions of C++ support these combined answer-error result types, with associated unpacking operations. Because of this, in these languages errors become part of the type system and it becomes far more difficult for an error to “slip through the cracks.”
+
+Python has only been able to support functional error handling since the advent of typing and type checkers, and it doesn’t provide any direct language or library constructs for this. The benefits of better error handling and robust composability make it worth adopting a library like `Results`.
+
