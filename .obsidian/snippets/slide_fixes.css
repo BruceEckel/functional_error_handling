@@ -52,7 +52,6 @@
     max-height: fit-content !important;
     /* max-height: max-content; */
     /* disable this if you want scrollable code blocks */
-    /* color: #ffad00; */
 }
 
 
@@ -62,19 +61,16 @@
     font-size: 0.8em;
     min-height: 1em;
     /* max-height: min-content; */
-    padding: 0.5em;
-    /* margin-left: -2.5%; */
+    padding-top: 4.5em;
+    padding-left: 1em;
+    margin-left: 5%;
     /* width: 105%; */
     /* max-width: 100%; */
 }
 
 
 
-/* move copy button to top right corner */
 .slide .copy-code-button {
-    /* position: absolute;
-    top: 4px;
-    right: 4px; */
     display: none !important;
     /* hides the copy button */
 }

@@ -12,8 +12,6 @@ You can use regular Markdown formatting, like *emphasized* and **bold** text.
 ---
 
 ```python
-
-
 #: comprehension5.py
 
 def composed(
@@ -28,6 +26,4 @@ console == """
 1: Err(error='i is 1')
 2: Ok(value='2#')
 """
-
-
 ```
