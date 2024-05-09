@@ -1,5 +1,33 @@
 {
-    "python.analysis.extraPaths": [
-        "./src/functional_error_handling"
-    ]
+    "window.zoomLevel": 2,
+    "files.insertFinalNewline": true,
+    "files.trimFinalNewlines": true,
+    "editor.formatOnSave": true,
+    "[python]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+        },
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    // "python.formatting.provider": "none",
+    "editor.multiCursorModifier": "ctrlCmd",
+    "security.workspace.trust.untrustedFiles": "open",
+    "git.openRepositoryInParentFolders": "never",
+    "explorer.confirmDragAndDrop": false,
+    "workbench.activityBar.location": "hidden",
+    "mypy-type-checker.importStrategy": "fromEnvironment",
+    "powershell.promptToUpdatePowerShell": false,
+    "ruff.interpreter": [
+        "C:\\Users\\bruce\\.rye\\shims\\python.exe"
+    ],
+    "tabnine.experimentalAutoImports": true,
+    // "editor.quickSuggestions": {
+    //     "other": false,
+    //     "comments": false,
+    //     "strings": false
+    // },
+    // "editor.hover.enabled": false,
+    // "editor.hover.enabled": true
 }

@@ -131,7 +131,7 @@ Java created checked exceptions, which must be explicitly dealt with in your cod
 Both systems (the original C++ dynamic exception specifications, and Java exception specifications) had too many holes, and it was too difficult to effectively support both the main and shadow type systems.
 ### 4. Exceptions Destroy Partial Calculations
 
-Let’s start with a very simple example where we populate a `List` with the results of a sequence of calls to the function `f1`:
+Let’s start with a very simple example where we populate a `List` with the results of a sequence of calls to the function `reject_1`:
 
 ```python
 #: comprehension1.py
@@ -153,7 +153,7 @@ ValueError: i is 1
 """
 ```
 
-`f1` throws a `ValueError` if its argument is `1`. The `range(3)` is 0, 1, and 2; only one of these values causes the exception. So `result` contains only one problem; the other two values are fine. However, we lose everything that we were calculating when the exception is thrown. This:
+`reject_1` throws a `ValueError` if its argument is `1`. The `range(3)` is 0, 1, and 2; only one of these values causes the exception. So `result` contains only one problem; the other two values are fine. However, we lose everything that we were calculating when the exception is thrown. This:
 1. Is computationally wasteful, especially with large calculations.
 2. Makes debugging harder. It would be quite valuable to see in `result` the parts that succeeded and those that failed.
 # The Functional Solution
@@ -167,6 +167,7 @@ A first attempt uses *type unions* to create a nameless return package:
 #: comprehension2.py
 # Type union aka Sum Type
 # Success vs error is not clear
+from util import display
 from validate_output import console
 
 
@@ -176,9 +177,13 @@ def reject_1(i: int) -> int | str:  # Sum type
     return i * 2
 
 
-print(outputs := [reject_1(i) for i in range(3)])
+inputs = range(3)  # [0, 1, 2]
+outputs = [reject_1(i) for i in inputs]
+display(inputs, outputs)
 console == """
-[0, 'i is 1', 4]
+0: 0
+1: i is 1
+2: 4
 """
 
 for r in outputs:
@@ -194,13 +199,13 @@ value = 4
 """
 
 
-# Composition: return type enforced
-def g(i: int) -> int | str:
+# Return type enforced
+def composed(i: int) -> int | str:
     return reject_1(i)
 
 
-print(g(1))
-print(g(5))
+print(composed(1))
+print(composed(5))
 console == """
 i is 1
 10
@@ -209,16 +214,16 @@ i is 1
 
 `validate_output` is a tool in the [GitHub repository](https://github.com/BruceEckel/functional_error_handling) that validates the correctness of the `console ==` strings. If you run the program you’ll see the same output as you see in the `console ==` strings.
 
-`f2` returns a `str` to indicate an error, and an `int` answer if there is no error. In the pattern match, we are forced to check the result type to determine whether an error occurs; we cannot just assume it is an `int`.
+`reject_1` returns a `str` to indicate an error, and an `int` answer if there is no error. In the pattern match, we are forced to check the result type to determine whether an error occurs; we cannot just assume it is an `int`.
 
 An important problem with this approach is that it is not clear which type is the success value and which type represents the error condition—because we are trying to repurpose existing built-in types to represent new meanings.
 
 In hindsight, it might seem like this “return package” approach is much more obvious than the elaborate exception-handling scheme that was adopted for C++, Java and other languages, but at the time the apparent overhead of returning extra bytes seemed unacceptable (I don’t know of any comparisons between that and the overhead of exception-handling mechanisms, but I do know that the goal of C++ exception handling is to have zero execution overhead if no exceptions occur).
 
-Note that in the definition of `g`, the type checker requires that you return `int | str` because `f2` returns those types. Thus, when composing, type-safety is preserved. This means you won’t lose error type information during composition, so composability automatically scales.
+Note that in the definition of `composed`, the type checker requires that you return `int | str` because `reject_1` returns those types. Thus, when composing, type-safety is preserved. This means you won’t lose error type information during composition, so composability automatically scales.
 ## Unifying the Return Type
 
-As you can see in the display of the `outputs` array, we now have the unfortunate situation that `outputs` contains multiple types (both `int` and `str`). The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it generally useful:
+We now have the unfortunate situation that `outputs` contains multiple types: both `int` and `str`. The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it universally applicable:
 
 ```python
 #: result.py
@@ -238,7 +243,7 @@ class Result(Generic[ANSWER, ERROR]):
     ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Ok):
             return func(self.value)
-        return self  # Just pass the Err forward
+        return self  # Pass the Err forward
 
 
 @dataclass(frozen=True)
@@ -256,7 +261,7 @@ class Err(Result[ANSWER, ERROR]):
 
 A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Ok` calculation, and `error` for a failure (`Err`). Thus, if an `Err` is returned, the client programmer cannot simply reach in and grab the `value` field because it doesn’t exist. The client programmer is forced to properly analyze the `Result`.
 
-To use `Result`, you `return Ok(answer)` when you’ve successfully created an answer, and `return Err(error)` to indicate a failure. `unwrap` is a convenience method which is only available for an `Ok` (we’ll look at `and_then` a little later).
+To use `Result`, you `return Ok(answer)` when you’ve successfully created an answer, and `return Err(error)` to indicate a failure. `unwrap` is a convenience method which is only available for an `Ok` (we’ll look at `and_then` later).
 
 The modified version of the example using `Result` is now:
 
@@ -291,28 +296,28 @@ value = 4
 """
 
 
-# Composition: return type enforced
-def g(i: int) -> Result[int, str]:
+def composed(i: int) -> Result[int, str]:
     return reject_1(i)
 
 
-print(g(1))
-print(g(5))
+print(composed(1))
+print(composed(5))
 console == """
 Err(error='i is 1')
 Ok(value=10)
 """
 ```
 
-Now `f3` returns a single type, `Result`. The first type parameter to `Result` is the type returned by `Ok` and the second type parameter is the type returned by `Err`. The `outputs` from the comprehension are all of type `Result`, and we have preserved the successful calculations even though there is a failing call. We can also pattern-match on the outputs, and it is crystal-clear which match is for the success and which is for the failure.
+Now `reject_1` returns a single type, `Result`. The first type parameter to `Result` is the type returned by `Ok` and the second type parameter is the type returned by `Err`. The `outputs` from the comprehension are all of type `Result`, and we have preserved the successful calculations even though there is a failing call. We can also pattern-match on the outputs, and it is crystal-clear which match is for the success and which is for the failure.
 ## Composing with `Result`
 
-The previous examples included very simple composition in the `g` functions which just called a single other function. What if you need to compose a more complex function from multiple other functions? The `Result` type ensures that the `composed` function properly represents both the `Answer` type but also the various different errors that can occur:
+The previous examples included very simple composition in the `compsed` functions which just called a single other function. What if you need to compose a more complex function from multiple other functions? The `Result` type ensures that the `composed` function properly represents both the `Answer` type but also the various different errors that can occur:
 
 ```python
 #: comprehension4.py
 # Composing functions
 from result import Err, Ok, Result
+from util import display
 from validate_output import console
 
 
@@ -348,19 +353,13 @@ def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
     return result_c
 
 
-inputs = range(-1, 3)
-print(outputs := [composed(i) for i in inputs])
-console == """
-[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i is 1'), Ok(value='2#')]
-"""
-
-for inp, outp in zip(inputs, outputs):
-    print(f"{inp:>2}: {outp}")
-console == """
+if __name__ == "__main__":
+    display(inputs := range(-1, 3), [composed(i) for i in inputs])
+    console == """
 -1: Err(error=ValueError(-1))
- 0: Err(error=ZeroDivisionError())
- 1: Err(error='i is 1')
- 2: Ok(value='2#')
+0: Err(error=ZeroDivisionError())
+1: Err(error='i is 1')
+2: Ok(value='2#')
 """
 ```
 
@@ -380,26 +379,24 @@ The `and_then` method in `Result` (see the comment in `result.py` that said “I
 # Simplifying composition with and_then
 from comprehension4 import reject_0, reject_1, reject_minus_1
 from result import Result
+from util import display
 from validate_output import console
 
 
-def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
+def composed(
+    i: int,
+) -> Result[str, str | ZeroDivisionError | ValueError]:
     return reject_1(i).and_then(reject_0).and_then(reject_minus_1)
 
 
 inputs = range(-1, 3)
-print(outputs := [composed(i) for i in inputs])
-console == """
-[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i is 1'), Ok(value='2#')]
-"""
-
-for inp, outp in zip(inputs, outputs):
-    print(f"{inp:>2}: {outp}")
+outputs = [composed(i) for i in inputs]
+display(inputs, outputs)
 console == """
 -1: Err(error=ValueError(-1))
- 0: Err(error=ZeroDivisionError())
- 1: Err(error='i is 1')
- 2: Ok(value='2#')
+0: Err(error=ZeroDivisionError())
+1: Err(error='i is 1')
+2: Ok(value='2#')
 """
 ```
 
@@ -413,19 +410,15 @@ To understand what’s happening, here’s the definition of `and_then` taken fr
     ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Ok):
             return func(self.value)
-        return self  # Just pass the Err forward
+        return self  # Pass the Err forward
 ```
 
-At each “chaining point” in `a(i).and_then(b).and_then(c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next function in the chain. If not, that means `self` is an `Err` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Err`, so it doesn’t try to apply the next function but just (again) returns the `Err`. Once you produce an `Err`, no more function calls occur (that is, it short-circuits) and the `Err` result gets passed all the way out of the composed function so the caller can see the specific failure.
+At each “chaining point” in `reject_1(i).and_then(reject_0).and_then(reject_minus_1)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next function in the chain. If not, that means `self` is an `Err` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Err`, so it doesn’t try to apply the next function but just (again) returns the `Err`. Once you produce an `Err`, no more function calls occur (that is, it short-circuits) and the `Err` result gets passed all the way out of the composed function so the caller can deal with the specific failure.
 ## A More Capable Library
 
-We could continue adding features to our `Result` library until it becomes a complete solution. However, others have already created solutions to this problem so it makes more sense to reuse their work.
+We could continue adding features to our `Result` library until it becomes a complete solution. However, others have worked on this problem so it makes more sense to reuse their libraries. The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns). `Returns` includes other features, but we will only focus on  `Result`.
 
-Languages like Python do not directly support this unpacking, but the mathematical field of *category theory* proves that operations can be created to automatically stop a composed calculation if an error occurs, returning the error from the composition. These operations have a variety of names such as *and_then*, *bind* and *flatmap*.
-
-The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns), which provides `bind`. `Returns` includes more features than `Result`, but we will only focus on that.
-
-`Returns` provides elegant composition using *pipes*:
+`Returns` provides elegant composition using *pipes* and the `bind` function:
 
 ```python
 #: comprehension6.py
@@ -433,12 +426,13 @@ The most popular Python library that includes this extra functionality is [Retur
 from returns.pipeline import is_successful, pipe
 from returns.pointfree import bind
 from returns.result import Failure, Result, Success, safe
+from util import display
 from validate_output import console
 
 
 def reject_1(i: int) -> Result[int, str]:
     if i == 1:
-        return Failure(f"a({i = })")
+        return Failure(f"reject_1({i = })")
     return Success(i)
 
 
@@ -446,14 +440,14 @@ def reject_1(i: int) -> Result[int, str]:
 # Return type becomes Result[int, ZeroDivisionError]
 @safe
 def reject_0(i: int) -> int:
-    print(f"b({i}): {1 / i}")
+    print(f"reject_0({i}) succeeded: {1 / i}")
     return i
 
 
 def reject_minus_1(i: int) -> Result[str, ValueError]:
     if i == -1:
         return Failure(ValueError(f"c({i =})"))
-    return Success(f"c({i})")
+    return Success(f"reject_minus_1({i})")
 
 
 composed = pipe(  # type: ignore
@@ -465,17 +459,16 @@ composed = pipe(  # type: ignore
 inputs = range(-1, 3)  # [-1, 0, 1, 2]
 outputs = [composed(i) for i in inputs]
 console == """
-b(-1): -1.0
-b(2): 0.5
+reject_0(-1) succeeded: -1.0
+reject_0(2) succeeded: 0.5
 """
 
-for inp, outp in zip(inputs, outputs):
-    print(f"{inp:>2}: {outp}")
+display(inputs, outputs)
 console == """
 -1: <Failure: c(i =-1)>
- 0: <Failure: division by zero>
- 1: <Failure: a(i = 1)>
- 2: <Success: c(2)>
+0: <Failure: division by zero>
+1: <Failure: reject_1(i = 1)>
+2: <Success: reject_minus_1(2)>
 """
 
 # Extract results, converting failure to None:
@@ -483,8 +476,8 @@ with_nones = [r.value_or(None) for r in outputs]
 print(str(with_nones))
 print(str(list(filter(None, with_nones))))
 console == """
-[None, None, None, 'c(2)']
-['c(2)']
+[None, None, None, 'reject_minus_1(2)']
+['reject_minus_1(2)']
 """
 
 # Another way to extract results:
@@ -496,16 +489,30 @@ for r in outputs:
 console == """
 r.failure() = ValueError('c(i =-1)')
 r.failure() = ZeroDivisionError('division by zero')
-r.failure() = 'a(i = 1)'
-r.unwrap() = 'c(2)'
+r.failure() = 'reject_1(i = 1)'
+r.unwrap() = 'reject_minus_1(2)'
 """
 ```
 
+The definition of `reject_1` looks the same as previous versions, except that we now return `Failure` instead of `Err` and `Success` instead of ‘Ok’.
+
+`Returns` provides a `@safe` decorator that you see applied to the “plain” function `reject_0`. This changes the normal `int` return type into a `Result` that includes `int` for the `Success` type but is also somehow able to recognize that the division might produce a `ZeroDivisionError` and include that in the `Failure` type. In addition, `@safe` is apparently catching the exception and converting it to the `ZeroDivisionError` returned as the information object in the `Failure` object. `@safe` is a helpful tool when converting exception-throwing code into error-returning code.
+
+`reject_minus_1` adds some variety by rejecting `-1` and producing a `str` result. We can now produce `composed` using a `pipe` and `bind`. All the previous error-checking and short-circuiting behaviors happen as before, but the syntax is now more straightforward and readable.
+
+Notice that when the `outputs` list is created, the output from `reject0` only happens for the values `-1` and `2`, because the other values cause errors in the `composed` chain of operations. The value `1` never gets to `reject_0` because it is intercepted by the prior `composed` call to `reject_1`. The value `0` causes `reject_0` to produce a `ZeroDivisionError` when it tries to perform the division inside the `print`.
+
+[Explain rest of example]
+
+Note that there may be an issue with the `Returns` library, which is that for proper type checking it requires using a MyPy extension. So far I have been unable to get that extension to work (however, I have no experience with MyPy extensions).
 ## Handling Multiple Arguments
+
+The `pipe` is limiting because it assumes a single argument. What if you need to create a `composed` function that takes multiple arguments? For this, we use something called “do notation,” which you access using `Result.do`:
 
 ```python
 #: multiple_arguments.py
 from returns.result import Failure, Result, Success
+from util import display
 from validate_output import console
 
 
@@ -526,19 +533,18 @@ def add(first: int, second: int) -> int:
     return first + second
 
 
-def do_add(i: int, j: int) -> Result[int, ValueError]:
+def composed(i: int, j: int) -> Result[int, ValueError]:
     # fmt: off
     return Result.do(
-        add(first, second) 
-        for first in reject_1(i) 
+        add(first, second)
+        for first in reject_1(i)
         for second in reject_2(j)
     )
 
 
 inputs = [(1, 5), (7, 2), (3, 4)]
-outputs = [do_add(*inp) for inp in inputs]
-for inp, outp in zip(inputs, outputs):
-    print(f"{inp}: {outp}")
+outputs = [composed(*args) for args in inputs]
+display(inputs, outputs)
 console == """
 (1, 5): <Failure: not_one: i = 1>
 (7, 2): <Failure: not_two: j = 2>
@@ -547,9 +553,15 @@ console == """
 ```
 
 
-# Functional Error Handling is Already Happening
+# Functional Error Handling is Happening
 
-The move toward functional error handling has already been happening. Languages like Rust, Kotlin, and recent versions of C++ support these combined answer-error result types, with associated unpacking operations. In these languages, errors become part of the type system and it becomes far more difficult for an error to “slip through the cracks.”
+Functional error handling has already appeared in languages like Rust, Kotlin, and recent versions of C++ support these combined answer-error result types, with associated unpacking operations. In these languages, errors become part of the type system and it is far more difficult for an error to “slip through the cracks.”
 
 Python has only been able to support functional error handling since the advent of typing and type checkers, and it doesn’t provide any direct language or library constructs for this. The benefits of better error handling and robust composability make it worth adopting a library like `Results`.
+
+#### Acknowledgements
+
+Most of the understanding I needed to explain this topic came from my attempts to help on the book by Bill Frasure and James Ward, probably titled “Effect-Oriented Programming,” that we’ve been working on for over three years. I’ve also learned a lot from some of the interviews that James and I have done for the [Happy Path Programming podcast](https://happypathprogramming.com/).
+
+Despite its unreliability, I have found ChatGPT exceptionally useful for speeding up and improving my programming.
 
