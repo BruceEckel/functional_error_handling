@@ -20,17 +20,17 @@ def add(first: int, second: int) -> int:
     return first + second
 
 
-def do_add(i: int, j: int) -> Result[int, ValueError]:
+def composed(i: int, j: int) -> Result[int, ValueError]:
     # fmt: off
     return Result.do(
-        add(first, second) 
-        for first in reject_1(i) 
+        add(first, second)
+        for first in reject_1(i)
         for second in reject_2(j)
     )
 
 
 inputs = [(1, 5), (7, 2), (3, 4)]
-outputs = [do_add(*inp) for inp in inputs]
+outputs = [composed(*inp) for inp in inputs]
 for inp, outp in zip(inputs, outputs):
     print(f"{inp}: {outp}")
 console == """

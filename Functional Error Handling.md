@@ -194,13 +194,13 @@ value = 4
 """
 
 
-# Composition: return type enforced
-def g(i: int) -> int | str:
+# Return type enforced
+def composed(i: int) -> int | str:
     return reject_1(i)
 
 
-print(g(1))
-print(g(5))
+print(composed(1))
+print(composed(5))
 console == """
 i is 1
 10
@@ -215,10 +215,10 @@ An important problem with this approach is that it is not clear which type is th
 
 In hindsight, it might seem like this “return package” approach is much more obvious than the elaborate exception-handling scheme that was adopted for C++, Java and other languages, but at the time the apparent overhead of returning extra bytes seemed unacceptable (I don’t know of any comparisons between that and the overhead of exception-handling mechanisms, but I do know that the goal of C++ exception handling is to have zero execution overhead if no exceptions occur).
 
-Note that in the definition of `g`, the type checker requires that you return `int | str` because `f2` returns those types. Thus, when composing, type-safety is preserved. This means you won’t lose error type information during composition, so composability automatically scales.
+Note that in the definition of `composed`, the type checker requires that you return `int | str` because `f2` returns those types. Thus, when composing, type-safety is preserved. This means you won’t lose error type information during composition, so composability automatically scales.
 ## Unifying the Return Type
 
-As you can see in the display of the `outputs` array, we now have the unfortunate situation that `outputs` contains multiple types (both `int` and `str`). The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it generally useful:
+As you can see in the display of the `outputs` array, we now have the unfortunate situation that `outputs` contains multiple types (both `int` and `str`). The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it universally applicable:
 
 ```python
 #: result.py
@@ -256,7 +256,7 @@ class Err(Result[ANSWER, ERROR]):
 
 A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Ok` calculation, and `error` for a failure (`Err`). Thus, if an `Err` is returned, the client programmer cannot simply reach in and grab the `value` field because it doesn’t exist. The client programmer is forced to properly analyze the `Result`.
 
-To use `Result`, you `return Ok(answer)` when you’ve successfully created an answer, and `return Err(error)` to indicate a failure. `unwrap` is a convenience method which is only available for an `Ok` (we’ll look at `and_then` a little later).
+To use `Result`, you `return Ok(answer)` when you’ve successfully created an answer, and `return Err(error)` to indicate a failure. `unwrap` is a convenience method which is only available for an `Ok` (we’ll look at `and_then` later).
 
 The modified version of the example using `Result` is now:
 
@@ -291,13 +291,12 @@ value = 4
 """
 
 
-# Composition: return type enforced
-def g(i: int) -> Result[int, str]:
+def composed(i: int) -> Result[int, str]:
     return reject_1(i)
 
 
-print(g(1))
-print(g(5))
+print(composed(1))
+print(composed(5))
 console == """
 Err(error='i is 1')
 Ok(value=10)
@@ -307,7 +306,7 @@ Ok(value=10)
 Now `f3` returns a single type, `Result`. The first type parameter to `Result` is the type returned by `Ok` and the second type parameter is the type returned by `Err`. The `outputs` from the comprehension are all of type `Result`, and we have preserved the successful calculations even though there is a failing call. We can also pattern-match on the outputs, and it is crystal-clear which match is for the success and which is for the failure.
 ## Composing with `Result`
 
-The previous examples included very simple composition in the `g` functions which just called a single other function. What if you need to compose a more complex function from multiple other functions? The `Result` type ensures that the `composed` function properly represents both the `Answer` type but also the various different errors that can occur:
+The previous examples included very simple composition in the `compsed` functions which just called a single other function. What if you need to compose a more complex function from multiple other functions? The `Result` type ensures that the `composed` function properly represents both the `Answer` type but also the various different errors that can occur:
 
 ```python
 #: comprehension4.py
@@ -526,17 +525,17 @@ def add(first: int, second: int) -> int:
     return first + second
 
 
-def do_add(i: int, j: int) -> Result[int, ValueError]:
+def composed(i: int, j: int) -> Result[int, ValueError]:
     # fmt: off
     return Result.do(
-        add(first, second) 
-        for first in reject_1(i) 
+        add(first, second)
+        for first in reject_1(i)
         for second in reject_2(j)
     )
 
 
 inputs = [(1, 5), (7, 2), (3, 4)]
-outputs = [do_add(*inp) for inp in inputs]
+outputs = [composed(*inp) for inp in inputs]
 for inp, outp in zip(inputs, outputs):
     print(f"{inp}: {outp}")
 console == """
@@ -552,4 +551,10 @@ console == """
 The move toward functional error handling has already been happening. Languages like Rust, Kotlin, and recent versions of C++ support these combined answer-error result types, with associated unpacking operations. In these languages, errors become part of the type system and it becomes far more difficult for an error to “slip through the cracks.”
 
 Python has only been able to support functional error handling since the advent of typing and type checkers, and it doesn’t provide any direct language or library constructs for this. The benefits of better error handling and robust composability make it worth adopting a library like `Results`.
+
+#### Acknowledgements
+
+Most of the understanding I needed to explain this topic came from my attempts to help on the book by Bill Frasure and James Ward, probably titled “Effect-Oriented Programming,” that we’ve been working on for over three years. I’ve also learned a lot from some of the interviews that James and I have done for the [Happy Path Programming podcast](https://happypathprogramming.com/).
+
+Despite its unreliability, I have been finding ChatGPT exceptionally useful for speeding up and improving my programming.
 

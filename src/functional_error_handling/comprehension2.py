@@ -28,13 +28,13 @@ value = 4
 """
 
 
-# Composition: return type enforced
-def g(i: int) -> int | str:
+# Return type enforced
+def composed(i: int) -> int | str:
     return reject_1(i)
 
 
-print(g(1))
-print(g(5))
+print(composed(1))
+print(composed(5))
 console == """
 i is 1
 10
