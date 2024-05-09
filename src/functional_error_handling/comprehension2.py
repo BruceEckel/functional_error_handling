@@ -1,6 +1,7 @@
 #: comprehension2.py
 # Type union aka Sum Type
 # Success vs error is not clear
+from util import display
 from validate_output import console
 
 
@@ -10,9 +11,13 @@ def reject_1(i: int) -> int | str:  # Sum type
     return i * 2
 
 
-print(outputs := [reject_1(i) for i in range(3)])
+inputs = range(3)  # [0, 1, 2]
+outputs = [reject_1(i) for i in inputs]
+display(inputs, outputs)
 console == """
-[0, 'i is 1', 4]
+0: 0
+1: i is 1
+2: 4
 """
 
 for r in outputs:

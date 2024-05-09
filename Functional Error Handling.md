@@ -167,6 +167,7 @@ A first attempt uses *type unions* to create a nameless return package:
 #: comprehension2.py
 # Type union aka Sum Type
 # Success vs error is not clear
+from util import display
 from validate_output import console
 
 
@@ -176,9 +177,13 @@ def reject_1(i: int) -> int | str:  # Sum type
     return i * 2
 
 
-print(outputs := [reject_1(i) for i in range(3)])
+inputs = range(3)  # [0, 1, 2]
+outputs = [reject_1(i) for i in inputs]
+display(inputs, outputs)
 console == """
-[0, 'i is 1', 4]
+0: 0
+1: i is 1
+2: 4
 """
 
 for r in outputs:
@@ -312,6 +317,7 @@ The previous examples included very simple composition in the `compsed` function
 #: comprehension4.py
 # Composing functions
 from result import Err, Ok, Result
+from util import display
 from validate_output import console
 
 
@@ -347,19 +353,13 @@ def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
     return result_c
 
 
-inputs = range(-1, 3)
-print(outputs := [composed(i) for i in inputs])
-console == """
-[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i is 1'), Ok(value='2#')]
-"""
-
-for inp, outp in zip(inputs, outputs):
-    print(f"{inp:>2}: {outp}")
-console == """
+if __name__ == "__main__":
+    display(inputs := range(-1, 3), [composed(i) for i in inputs])
+    console == """
 -1: Err(error=ValueError(-1))
- 0: Err(error=ZeroDivisionError())
- 1: Err(error='i is 1')
- 2: Ok(value='2#')
+0: Err(error=ZeroDivisionError())
+1: Err(error='i is 1')
+2: Ok(value='2#')
 """
 ```
 
@@ -379,26 +379,24 @@ The `and_then` method in `Result` (see the comment in `result.py` that said “I
 # Simplifying composition with and_then
 from comprehension4 import reject_0, reject_1, reject_minus_1
 from result import Result
+from util import display
 from validate_output import console
 
 
-def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
+def composed(
+    i: int,
+) -> Result[str, str | ZeroDivisionError | ValueError]:
     return reject_1(i).and_then(reject_0).and_then(reject_minus_1)
 
 
 inputs = range(-1, 3)
-print(outputs := [composed(i) for i in inputs])
-console == """
-[Err(error=ValueError(-1)), Err(error=ZeroDivisionError()), Err(error='i is 1'), Ok(value='2#')]
-"""
-
-for inp, outp in zip(inputs, outputs):
-    print(f"{inp:>2}: {outp}")
+outputs = [composed(i) for i in inputs]
+display(inputs, outputs)
 console == """
 -1: Err(error=ValueError(-1))
- 0: Err(error=ZeroDivisionError())
- 1: Err(error='i is 1')
- 2: Ok(value='2#')
+0: Err(error=ZeroDivisionError())
+1: Err(error='i is 1')
+2: Ok(value='2#')
 """
 ```
 
@@ -412,13 +410,13 @@ To understand what’s happening, here’s the definition of `and_then` taken fr
     ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Ok):
             return func(self.value)
-        return self  # Just pass the Err forward
+        return self  # Pass the Err forward
 ```
 
-At each “chaining point” in `a(i).and_then(b).and_then(c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next function in the chain. If not, that means `self` is an `Err` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Err`, so it doesn’t try to apply the next function but just (again) returns the `Err`. Once you produce an `Err`, no more function calls occur (that is, it short-circuits) and the `Err` result gets passed all the way out of the composed function so the caller can see the specific failure.
+At each “chaining point” in `reject_1(i).and_then(reject_0).and_then(reject_minus_1)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next function in the chain. If not, that means `self` is an `Err` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Err`, so it doesn’t try to apply the next function but just (again) returns the `Err`. Once you produce an `Err`, no more function calls occur (that is, it short-circuits) and the `Err` result gets passed all the way out of the composed function so the caller can deal with the specific failure.
 ## A More Capable Library
 
-We could continue adding features to our `Result` library until it becomes a complete solution. However, others have already created solutions to this problem so it makes more sense to reuse their work. The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns). `Returns` includes other features, but we will only focus on  `Result`.
+We could continue adding features to our `Result` library until it becomes a complete solution. However, others have worked on this problem so it makes more sense to reuse their libraries. The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns). `Returns` includes other features, but we will only focus on  `Result`.
 
 `Returns` provides elegant composition using *pipes* and the `bind` function:
 
@@ -428,6 +426,7 @@ We could continue adding features to our `Result` library until it becomes a com
 from returns.pipeline import is_successful, pipe
 from returns.pointfree import bind
 from returns.result import Failure, Result, Success, safe
+from util import display
 from validate_output import console
 
 
@@ -464,13 +463,12 @@ reject_0(-1) succeeded: -1.0
 reject_0(2) succeeded: 0.5
 """
 
-for inp, outp in zip(inputs, outputs):
-    print(f"{inp:>2}: {outp}")
+display(inputs, outputs)
 console == """
 -1: <Failure: c(i =-1)>
- 0: <Failure: division by zero>
- 1: <Failure: reject_1(i = 1)>
- 2: <Success: reject_minus_1(2)>
+0: <Failure: division by zero>
+1: <Failure: reject_1(i = 1)>
+2: <Success: reject_minus_1(2)>
 """
 
 # Extract results, converting failure to None:
@@ -505,11 +503,16 @@ The definition of `reject_1` looks the same as previous versions, except that we
 Notice that when the `outputs` list is created, the output from `reject0` only happens for the values `-1` and `2`, because the other values cause errors in the `composed` chain of operations. The value `1` never gets to `reject_0` because it is intercepted by the prior `composed` call to `reject_1`. The value `0` causes `reject_0` to produce a `ZeroDivisionError` when it tries to perform the division inside the `print`.
 
 [Explain rest of example]
+
+Note that there may be an issue with the `Returns` library, which is that for proper type checking it requires using a MyPy extension. So far I have been unable to get that extension to work (however, I have no experience with MyPy extensions).
 ## Handling Multiple Arguments
+
+The `pipe` is limiting because it assumes a single argument. What if you need to create a `composed` function that takes multiple arguments? For this, we use something called “do notation,” which you access using `Result.do`:
 
 ```python
 #: multiple_arguments.py
 from returns.result import Failure, Result, Success
+from util import display
 from validate_output import console
 
 
@@ -540,9 +543,8 @@ def composed(i: int, j: int) -> Result[int, ValueError]:
 
 
 inputs = [(1, 5), (7, 2), (3, 4)]
-outputs = [composed(*inp) for inp in inputs]
-for inp, outp in zip(inputs, outputs):
-    print(f"{inp}: {outp}")
+outputs = [composed(*args) for args in inputs]
+display(inputs, outputs)
 console == """
 (1, 5): <Failure: not_one: i = 1>
 (7, 2): <Failure: not_two: j = 2>
@@ -551,9 +553,9 @@ console == """
 ```
 
 
-# Functional Error Handling is Already Happening
+# Functional Error Handling is Happening
 
-The move toward functional error handling has already been happening. Languages like Rust, Kotlin, and recent versions of C++ support these combined answer-error result types, with associated unpacking operations. In these languages, errors become part of the type system and it becomes far more difficult for an error to “slip through the cracks.”
+Functional error handling has already appeared in languages like Rust, Kotlin, and recent versions of C++ support these combined answer-error result types, with associated unpacking operations. In these languages, errors become part of the type system and it is far more difficult for an error to “slip through the cracks.”
 
 Python has only been able to support functional error handling since the advent of typing and type checkers, and it doesn’t provide any direct language or library constructs for this. The benefits of better error handling and robust composability make it worth adopting a library like `Results`.
 
@@ -561,5 +563,5 @@ Python has only been able to support functional error handling since the advent 
 
 Most of the understanding I needed to explain this topic came from my attempts to help on the book by Bill Frasure and James Ward, probably titled “Effect-Oriented Programming,” that we’ve been working on for over three years. I’ve also learned a lot from some of the interviews that James and I have done for the [Happy Path Programming podcast](https://happypathprogramming.com/).
 
-Despite its unreliability, I have been finding ChatGPT exceptionally useful for speeding up and improving my programming.
+Despite its unreliability, I have found ChatGPT exceptionally useful for speeding up and improving my programming.
 

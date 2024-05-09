@@ -1,5 +1,6 @@
 #: multiple_arguments.py
 from returns.result import Failure, Result, Success
+from util import display
 from validate_output import console
 
 
@@ -30,9 +31,8 @@ def composed(i: int, j: int) -> Result[int, ValueError]:
 
 
 inputs = [(1, 5), (7, 2), (3, 4)]
-outputs = [composed(*inp) for inp in inputs]
-for inp, outp in zip(inputs, outputs):
-    print(f"{inp}: {outp}")
+outputs = [composed(*args) for args in inputs]
+display(inputs, outputs)
 console == """
 (1, 5): <Failure: not_one: i = 1>
 (7, 2): <Failure: not_two: j = 2>

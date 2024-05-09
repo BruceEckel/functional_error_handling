@@ -3,6 +3,7 @@
 from returns.pipeline import is_successful, pipe
 from returns.pointfree import bind
 from returns.result import Failure, Result, Success, safe
+from util import display
 from validate_output import console
 
 
@@ -39,13 +40,12 @@ reject_0(-1) succeeded: -1.0
 reject_0(2) succeeded: 0.5
 """
 
-for inp, outp in zip(inputs, outputs):
-    print(f"{inp:>2}: {outp}")
+display(inputs, outputs)
 console == """
 -1: <Failure: c(i =-1)>
- 0: <Failure: division by zero>
- 1: <Failure: reject_1(i = 1)>
- 2: <Success: reject_minus_1(2)>
+0: <Failure: division by zero>
+1: <Failure: reject_1(i = 1)>
+2: <Success: reject_minus_1(2)>
 """
 
 # Extract results, converting failure to None:
