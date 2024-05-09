@@ -138,14 +138,13 @@ Let’s start with a very simple example where we populate a `List` with the res
 # Exception produces no results, stops everything
 
 
-def f1(i: int) -> int:
+def reject_1(i: int) -> int:
     if i == 1:
         raise ValueError("i is 1")
-    else:
-        return i * 2
+    return i * 2
 
 
-result = [f1(i) for i in range(3)]
+result = [reject_1(i) for i in range(3)]
 print(result)
 """
 Traceback (most recent call last):
@@ -171,14 +170,13 @@ A first attempt uses *type unions* to create a nameless return package:
 from validate_output import console
 
 
-def f2(i: int) -> int | str:  # Sum type
+def reject_1(i: int) -> int | str:  # Sum type
     if i == 1:
         return "i is 1"
-    else:
-        return i * 2
+    return i * 2
 
 
-print(outputs := [f2(i) for i in range(3)])
+print(outputs := [reject_1(i) for i in range(3)])
 console == """
 [0, 'i is 1', 4]
 """
@@ -198,7 +196,7 @@ value = 4
 
 # Composition: return type enforced
 def g(i: int) -> int | str:
-    return f2(i)
+    return reject_1(i)
 
 
 print(g(1))
@@ -256,7 +254,7 @@ class Err(Result[ANSWER, ERROR]):
     error: ERROR  # Usage: return Err(error)
 ```
 
-A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Ok` calculation, and `error` for a failure (`Err`).
+A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Ok` calculation, and `error` for a failure (`Err`). Thus, if an `Err` is returned, the client programmer cannot simply reach in and grab the `value` field because it doesn’t exist. The client programmer is forced to properly analyze the `Result`.
 
 To use `Result`, you `return Ok(answer)` when you’ve successfully created an answer, and `return Err(error)` to indicate a failure. `unwrap` is a convenience method which is only available for an `Ok` (we’ll look at `and_then` a little later).
 
@@ -269,14 +267,13 @@ from result import Err, Ok, Result
 from validate_output import console
 
 
-def f3(i: int) -> Result[int, str]:
+def reject_1(i: int) -> Result[int, str]:
     if i == 1:
         return Err("i is 1")
-    else:
-        return Ok(i * 2)
+    return Ok(i * 2)
 
 
-print(outputs := [f3(i) for i in range(3)])
+print(outputs := [reject_1(i) for i in range(3)])
 console == """
 [Ok(value=0), Err(error='i is 1'), Ok(value=4)]
 """
@@ -296,7 +293,7 @@ value = 4
 
 # Composition: return type enforced
 def g(i: int) -> Result[int, str]:
-    return f3(i)
+    return reject_1(i)
 
 
 print(g(1))
@@ -319,36 +316,35 @@ from result import Err, Ok, Result
 from validate_output import console
 
 
-def a(i: int) -> Result[int, str]:
+def reject_1(i: int) -> Result[int, str]:
     if i == 1:
         return Err("i is 1")
-    else:
-        return Ok(i)
+    return Ok(i)
 
 
 # Use an exception as info (but don't raise it):
-def b(i: int) -> Result[int, ZeroDivisionError]:
+def reject_0(i: int) -> Result[int, ZeroDivisionError]:
     if i == 0:
         return Err(ZeroDivisionError())
     return Ok(i)
 
 
-def c(i: int) -> Result[str, ValueError]:
+def reject_minus_1(i: int) -> Result[str, ValueError]:
     if i == -1:
         return Err(ValueError(i))
     return Ok(f"{i}#")
 
 
 def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
-    result_a = a(i)
+    result_a = reject_1(i)
     if isinstance(result_a, Err):
         return result_a
 
-    result_b = b(result_a.unwrap())  # unwrap gets the value from Ok
+    result_b = reject_0(result_a.unwrap())  # unwrap gets the value from Ok
     if isinstance(result_b, Err):
         return result_b
 
-    result_c = c(result_b.unwrap())
+    result_c = reject_minus_1(result_b.unwrap())
     return result_c
 
 
@@ -382,13 +378,13 @@ The `and_then` method in `Result` (see the comment in `result.py` that said “I
 ```python
 #: comprehension5.py
 # Simplifying composition with and_then
-from comprehension4 import a, b, c
+from comprehension4 import reject_0, reject_1, reject_minus_1
 from result import Result
 from validate_output import console
 
 
 def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
-    return a(i).and_then(b).and_then(c)
+    return reject_1(i).and_then(reject_0).and_then(reject_minus_1)
 
 
 inputs = range(-1, 3)
@@ -440,7 +436,7 @@ from returns.result import Failure, Result, Success, safe
 from validate_output import console
 
 
-def a(i: int) -> Result[int, str]:
+def reject_1(i: int) -> Result[int, str]:
     if i == 1:
         return Failure(f"a({i = })")
     return Success(i)
@@ -449,21 +445,21 @@ def a(i: int) -> Result[int, str]:
 # Convert existing function.
 # Return type becomes Result[int, ZeroDivisionError]
 @safe
-def b(i: int) -> int:
+def reject_0(i: int) -> int:
     print(f"b({i}): {1 / i}")
     return i
 
 
-def c(i: int) -> Result[str, ValueError]:
+def reject_minus_1(i: int) -> Result[str, ValueError]:
     if i == -1:
         return Failure(ValueError(f"c({i =})"))
     return Success(f"c({i})")
 
 
 composed = pipe(  # type: ignore
-    a,
-    bind(b),
-    bind(c),
+    reject_1,
+    bind(reject_0),
+    bind(reject_minus_1),
 )
 
 inputs = range(-1, 3)  # [-1, 0, 1, 2]
@@ -513,13 +509,13 @@ from returns.result import Failure, Result, Success
 from validate_output import console
 
 
-def not_one(i: int) -> Result[int, ValueError]:
+def reject_1(i: int) -> Result[int, ValueError]:
     if i == 1:
         return Failure(ValueError(f"not_one: {i = }"))
     return Success(i * 10)
 
 
-def not_two(j: int) -> Result[int, ValueError]:
+def reject_2(j: int) -> Result[int, ValueError]:
     if j == 2:
         return Failure(ValueError(f"not_two: {j = }"))
     return Success(j * 100)
@@ -534,8 +530,8 @@ def do_add(i: int, j: int) -> Result[int, ValueError]:
     # fmt: off
     return Result.do(
         add(first, second) 
-        for first in not_one(i) 
-        for second in not_two(j)
+        for first in reject_1(i) 
+        for second in reject_2(j)
     )
 
 
@@ -551,9 +547,9 @@ console == """
 ```
 
 
-# The Promise of Functional Error Handling
+# Functional Error Handling is Already Happening
 
-The move toward functional error handling has already been happening. Languages like Rust, Kotlin, and recent versions of C++ support these combined answer-error result types, with associated unpacking operations. Because of this, in these languages errors become part of the type system and it becomes far more difficult for an error to “slip through the cracks.”
+The move toward functional error handling has already been happening. Languages like Rust, Kotlin, and recent versions of C++ support these combined answer-error result types, with associated unpacking operations. In these languages, errors become part of the type system and it becomes far more difficult for an error to “slip through the cracks.”
 
 Python has only been able to support functional error handling since the advent of typing and type checkers, and it doesn’t provide any direct language or library constructs for this. The benefits of better error handling and robust composability make it worth adopting a library like `Results`.
 

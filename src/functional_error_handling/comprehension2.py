@@ -4,14 +4,13 @@
 from validate_output import console
 
 
-def f2(i: int) -> int | str:  # Sum type
+def reject_1(i: int) -> int | str:  # Sum type
     if i == 1:
         return "i is 1"
-    else:
-        return i * 2
+    return i * 2
 
 
-print(outputs := [f2(i) for i in range(3)])
+print(outputs := [reject_1(i) for i in range(3)])
 console == """
 [0, 'i is 1', 4]
 """
@@ -31,7 +30,7 @@ value = 4
 
 # Composition: return type enforced
 def g(i: int) -> int | str:
-    return f2(i)
+    return reject_1(i)
 
 
 print(g(1))

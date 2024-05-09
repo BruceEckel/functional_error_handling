@@ -2,14 +2,13 @@
 # Exception produces no results, stops everything
 
 
-def f1(i: int) -> int:
+def reject_1(i: int) -> int:
     if i == 1:
         raise ValueError("i is 1")
-    else:
-        return i * 2
+    return i * 2
 
 
-result = [f1(i) for i in range(3)]
+result = [reject_1(i) for i in range(3)]
 print(result)
 """
 Traceback (most recent call last):

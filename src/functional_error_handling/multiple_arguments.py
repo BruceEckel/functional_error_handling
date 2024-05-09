@@ -3,13 +3,13 @@ from returns.result import Failure, Result, Success
 from validate_output import console
 
 
-def not_one(i: int) -> Result[int, ValueError]:
+def reject_1(i: int) -> Result[int, ValueError]:
     if i == 1:
         return Failure(ValueError(f"not_one: {i = }"))
     return Success(i * 10)
 
 
-def not_two(j: int) -> Result[int, ValueError]:
+def reject_2(j: int) -> Result[int, ValueError]:
     if j == 2:
         return Failure(ValueError(f"not_two: {j = }"))
     return Success(j * 100)
@@ -24,8 +24,8 @@ def do_add(i: int, j: int) -> Result[int, ValueError]:
     # fmt: off
     return Result.do(
         add(first, second) 
-        for first in not_one(i) 
-        for second in not_two(j)
+        for first in reject_1(i) 
+        for second in reject_2(j)
     )
 
 

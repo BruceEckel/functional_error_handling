@@ -6,7 +6,7 @@ from returns.result import Failure, Result, Success, safe
 from validate_output import console
 
 
-def a(i: int) -> Result[int, str]:
+def reject_1(i: int) -> Result[int, str]:
     if i == 1:
         return Failure(f"a({i = })")
     return Success(i)
@@ -15,21 +15,21 @@ def a(i: int) -> Result[int, str]:
 # Convert existing function.
 # Return type becomes Result[int, ZeroDivisionError]
 @safe
-def b(i: int) -> int:
+def reject_0(i: int) -> int:
     print(f"b({i}): {1 / i}")
     return i
 
 
-def c(i: int) -> Result[str, ValueError]:
+def reject_minus_1(i: int) -> Result[str, ValueError]:
     if i == -1:
         return Failure(ValueError(f"c({i =})"))
     return Success(f"c({i})")
 
 
 composed = pipe(  # type: ignore
-    a,
-    bind(b),
-    bind(c),
+    reject_1,
+    bind(reject_0),
+    bind(reject_minus_1),
 )
 
 inputs = range(-1, 3)  # [-1, 0, 1, 2]

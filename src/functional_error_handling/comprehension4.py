@@ -4,36 +4,35 @@ from result import Err, Ok, Result
 from validate_output import console
 
 
-def a(i: int) -> Result[int, str]:
+def reject_1(i: int) -> Result[int, str]:
     if i == 1:
         return Err("i is 1")
-    else:
-        return Ok(i)
+    return Ok(i)
 
 
 # Use an exception as info (but don't raise it):
-def b(i: int) -> Result[int, ZeroDivisionError]:
+def reject_0(i: int) -> Result[int, ZeroDivisionError]:
     if i == 0:
         return Err(ZeroDivisionError())
     return Ok(i)
 
 
-def c(i: int) -> Result[str, ValueError]:
+def reject_minus_1(i: int) -> Result[str, ValueError]:
     if i == -1:
         return Err(ValueError(i))
     return Ok(f"{i}#")
 
 
 def composed(i: int) -> Result[str, str | ZeroDivisionError | ValueError]:
-    result_a = a(i)
+    result_a = reject_1(i)
     if isinstance(result_a, Err):
         return result_a
 
-    result_b = b(result_a.unwrap())  # unwrap gets the value from Ok
+    result_b = reject_0(result_a.unwrap())  # unwrap gets the value from Ok
     if isinstance(result_b, Err):
         return result_b
 
-    result_c = c(result_b.unwrap())
+    result_c = reject_minus_1(result_b.unwrap())
     return result_c
 
 
