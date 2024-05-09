@@ -1,0 +1,144 @@
+/* .slides {
+  height: 100% !important;
+  width: 100% !important;
+} */
+
+
+
+/* font size */
+.reveal {
+    font-size: 1em;
+    /* for mobile use 1.5em */
+}
+
+/* zoom level for (mobile) landscape mode */
+/* @media screen and (orientation:landscape) {
+  .slides {
+    zoom: 1.1 !important;
+  }
+} */
+
+
+/* ---------------------------------------------------- */
+
+/* adds scrollbar */
+.slides {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    pointer-events: auto !important;
+}
+
+
+/* hide scroll bar */
+.slide ::-webkit-scrollbar {
+    display: none !important;
+}
+
+
+
+/* ---------------------------------------------------- */
+
+/* fixes padding for heading after list. e.g. see padding of this
+
+- item1
+## heading 2
+*/
+.reveal ul {
+    padding-bottom: 1.5%;
+}
+
+.reveal ol {
+    padding-bottom: 1.5%;
+}
+
+
+
+/* ---------------------------------------------------- */
+
+/* code styles */
+.reveal code {
+    max-height: fit-content !important;
+    /* disable this if you want scrollable code blocks */
+    color: #ffad00;
+}
+
+
+
+/* code blocks */
+.reveal pre {
+    font-size: 0.8em;
+    min-height: 1em;
+    padding: 0.5em;
+    /* margin-left: -2.5%; */
+    /* width: 105%; */
+    /* max-width: 70%; */
+}
+
+
+
+/* move copy button to top right corner */
+.slide .copy-code-button {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    /* display: none !important; // hides the copy button */
+}
+
+
+
+/* ---------------------------------------------------- */
+
+/* blockquotes */
+.reveal blockquote {
+    border-left: 5px solid var(--background-modifier-border);
+    padding: 0 0 0 15px;
+    font-size: 0.9em;
+}
+
+.reveal blockquote>p {
+    margin: 0.5em 0;
+}
+
+/* ---------------------------------------------------- */
+
+/* adds border to table */
+
+.reveal table {
+    /* font-size: 2em;   */
+    width: 80%;
+}
+
+.reveal table>thead>tr>th {
+    font-weight: 500;
+    border: 1px solid hsl(0, 0%, 18%);
+}
+
+.reveal table>tbody>tr>td {
+    border: 1px solid hsl(0, 0%, 18%);
+}
+
+.reveal table,
+th,
+td {
+    border: 1px solid hsl(0, 0%, 18%);
+}
+
+.reveal th,
+td {
+    min-width: 90px;
+    line-height: 1.5;
+}
+
+
+/* ---------------------------------------------------- */
+
+/* move left and right arrow button */
+.navigate-right {
+    /* bottom: 1.4em !important; */
+    right: 8em !important;
+}
+
+.navigate-left {
+    /* bottom: 1.4em !important; */
+    right: 15em !important;
+}

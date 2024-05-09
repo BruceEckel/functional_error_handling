@@ -160,4 +160,12 @@ cython_debug/
 #.idea/
 *_modified.py
 *_temp.py
+
+# Ignore everything in the .obsidian directory
 .obsidian/*
+
+# But exclude the snippets directory from being ignored
+!.obsidian/snippets/
+
+# Explicitly include all files under snippets (even if they are generally ignored types)
+!.obsidian/snippets/**
