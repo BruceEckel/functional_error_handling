@@ -218,7 +218,7 @@ In hindsight, it might seem like this “return package” approach is much more
 Note that in the definition of `composed`, the type checker requires that you return `int | str` because `reject_1` returns those types. Thus, when composing, type-safety is preserved. This means you won’t lose error type information during composition, so composability automatically scales.
 ## Unifying the Return Type
 
-As you can see in the display of the `outputs` array, we now have the unfortunate situation that `outputs` contains multiple types (both `int` and `str`). The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it universally applicable:
+We now have the unfortunate situation that `outputs` contains multiple types: both `int` and `str`. The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it universally applicable:
 
 ```python
 #: result.py
@@ -238,7 +238,7 @@ class Result(Generic[ANSWER, ERROR]):
     ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Ok):
             return func(self.value)
-        return self  # Just pass the Err forward
+        return self  # Pass the Err forward
 
 
 @dataclass(frozen=True)

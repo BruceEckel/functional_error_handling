@@ -15,7 +15,7 @@ class Result(Generic[ANSWER, ERROR]):
     ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Ok):
             return func(self.value)
-        return self  # Just pass the Err forward
+        return self  # Pass the Err forward
 
 
 @dataclass(frozen=True)
