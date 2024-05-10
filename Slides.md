@@ -31,15 +31,15 @@ Github: BruceEckel/functional_error_handling
 
 ### Goto Considered Harmful
 
-- Djikstra pushed programmers towards functions
+- Djikstra’s 1968 note pushed programmers towards functions
 
 - Functions present the caller with a single entry and exit point
 
 ---
 
-### Modules
+### No Namespace Control
 
-- Lack of namespace control: a significant roadblock
+- Modules isolate namespaces
 
 - Python files are automatically modules
 
@@ -52,14 +52,14 @@ Github: BruceEckel/functional_error_handling
 ### Error Handling
 
 - Different approaches made it hard to compose
-- Numerous attempts, usually global solutions with race conditions
+- Usually global solutions with race conditions
 - The domain of the OS or the language?
 
 ---
 ### Exceptions
 
-- Standardized error handling 
-- In the language domain
+- Standard way to report errors
+- In the language domain: closer to the problem
 - Unifies error reporting and recovery
 - Errors can't be ignored
 
@@ -68,26 +68,21 @@ Github: BruceEckel/functional_error_handling
 - Scaling up reveals problems
 
 ---
-### 1. Conflates the Two Kinds of Errors
+### 1. Conflates Categories
 
-- Panic
+- Panic: program can't continue
 - Recoverable
 
 ---
 ### 2. Not Part of the Type System
 
-- Caller can’t know what exceptions might emerge
-
-- If you figure them out, the function can start throwing new ones
-
+- Don’t know what exceptions will emerge
+- The function can start throwing new ones
 - C++ and Java tried *exception specifications*—didn't work
-
 - When errors are included in the type system, all errors are type-checked
 
 ---
 ### 3. Exception Specifications Create a “Shadow Type System”
-
-- Error specification types vs. language types
 
 ---
 ### 4. Exceptions Destroy Partial Calculations
