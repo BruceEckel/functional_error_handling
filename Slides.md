@@ -46,7 +46,7 @@ Github: BruceEckel/functional_error_handling
 ---
 ### Inheritance
 
-- Impedes composability because it breaks encapsulation
+- Breaks encapsulation --> impedes composability
 
 ---
 ### Error Handling
@@ -58,28 +58,29 @@ Github: BruceEckel/functional_error_handling
 ---
 ### Exceptions
 
-- Standard way to report errors
 - In the language domain: closer to the problem
+- Standard way to report errors
 - Unifies error reporting and recovery
 - Errors can't be ignored
 
 ---
 - In the small, exceptions seem to work well
-- Scaling up reveals problems
+- Scaling up (composing) reveals problems
 
 ---
 ### 1. Conflates Categories
 
-- Panic: program can't continue
 - Recoverable
-
+- Panic: program can't continue
+    - Treated the same as recoverable
+    - Unecessary overhead
 ---
 ### 2. Not Part of the Type System
 
 - Don’t know what exceptions will emerge
 - The function can start throwing new ones
 - C++ and Java tried *exception specifications*—didn't work
-- When errors are included in the type system, all errors are type-checked
+- We need error-handling enforced through types
 
 ---
 ### 3. Exception Specifications Create a “Shadow Type System”
@@ -96,13 +97,13 @@ Github: BruceEckel/functional_error_handling
 ### The Functional Solution
 
 - Stop using exceptions
-- Create a “return package” containing the answer + potential error
+- Return a “package” containing the answer + potential error
 - *Type union* creates a nameless return package:
 
 **`comprehension2.py`**
 
 ---
-### Unifying the Return Type
+### Create a new Type for Returns
 
 **`result.py`**
 
@@ -152,3 +153,6 @@ Github: BruceEckel/functional_error_handling
 - Errors are part of the type system
 - Far more difficult for an error to “slip through the cracks”
 - Benefits make it worth adopting a library like `Results`
+
+---
+- Open spaces session if you want to Q&A
