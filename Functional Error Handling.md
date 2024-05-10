@@ -108,7 +108,7 @@ Recoverable vs panic
 (Recovering/Retrying requires programming)
 With exceptions, the two types are conflated.
 (Link to Error handling article)
-### 2. Exceptions are not Part of the Type System
+### 2. Not Part of the Type System
 
 If the type system doesn’t include exceptions as part of a function signature, you can’t know what exceptions you must handle when calling other functions (i.e.: composing). Even if you track down all the possible exceptions thrown explicitly in the code (by hunting for them in their source code!), built-in exceptions can still happen without evidence in the code: divide-by-zero is a great example of this.
 
