@@ -127,15 +127,6 @@ Github: BruceEckel/functional_error_handling
 
 **`comprehension5.py`**
 
-```python
-    def and_then(
-        self, func: Callable[[ANSWER], "Result"]
-    ) -> "Result[ANSWER, ERROR]":
-        if isinstance(self, Ok):
-            return func(self.value)
-        return self  # Pass the Err forward
-```
-
 ---
 ### A More Capable Library
 
@@ -149,9 +140,9 @@ Github: BruceEckel/functional_error_handling
 ---
 ### Functional Error Handling is Happening
 
-- Already appears in Rust, Kotlin, and recent versions of C++
+- Already in Rust, Kotlin, and recent versions of C++
 - Errors are part of the type system
-- Far more difficult for an error to “slip through the cracks”
+- Far more difficult for an error to slip through the cracks
 - Benefits make it worth adopting a library like `Results`
 
 ---
