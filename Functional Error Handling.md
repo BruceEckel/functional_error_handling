@@ -455,7 +455,7 @@ def reject_0(i: int) -> int:
 
 def reject_minus_1(i: int) -> Result[str, ValueError]:
     if i == -1:
-        return Failure(ValueError(f"c({i =})"))
+        return Failure(ValueError(f"reject_minus_1({i =})"))
     return Success(f"reject_minus_1({i})")
 
 
@@ -474,7 +474,7 @@ reject_0(2) succeeded: 0.5
 
 display(inputs, outputs)
 console == """
--1: <Failure: c(i =-1)>
+-1: <Failure: reject_minus_1(i =-1)>
 0: <Failure: division by zero>
 1: <Failure: reject_1(i = 1)>
 2: <Success: reject_minus_1(2)>
@@ -496,7 +496,7 @@ for r in outputs:
     else:
         print(f"{r.failure() = }")
 console == """
-r.failure() = ValueError('c(i =-1)')
+r.failure() = ValueError('reject_minus_1(i =-1)')
 r.failure() = ZeroDivisionError('division by zero')
 r.failure() = 'reject_1(i = 1)'
 r.unwrap() = 'reject_minus_1(2)'
@@ -527,13 +527,13 @@ from validate_output import console
 
 def reject_1(i: int) -> Result[int, ValueError]:
     if i == 1:
-        return Failure(ValueError(f"not_one: {i = }"))
+        return Failure(ValueError(f"reject_1: {i = }"))
     return Success(i * 10)
 
 
 def reject_2(j: int) -> Result[int, ValueError]:
     if j == 2:
-        return Failure(ValueError(f"not_two: {j = }"))
+        return Failure(ValueError(f"reject_2: {j = }"))
     return Success(j * 100)
 
 
@@ -555,8 +555,8 @@ inputs = [(1, 5), (7, 2), (2, 1)]
 outputs = [composed(*args) for args in inputs]
 display(inputs, outputs)
 console == """
-(1, 5): <Failure: not_one: i = 1>
-(7, 2): <Failure: not_two: j = 2>
+(1, 5): <Failure: reject_1: i = 1>
+(7, 2): <Failure: reject_2: j = 2>
 (2, 1): <Success: 120>
 """
 ```

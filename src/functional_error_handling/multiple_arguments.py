@@ -6,13 +6,13 @@ from validate_output import console
 
 def reject_1(i: int) -> Result[int, ValueError]:
     if i == 1:
-        return Failure(ValueError(f"not_one: {i = }"))
+        return Failure(ValueError(f"reject_1: {i = }"))
     return Success(i * 10)
 
 
 def reject_2(j: int) -> Result[int, ValueError]:
     if j == 2:
-        return Failure(ValueError(f"not_two: {j = }"))
+        return Failure(ValueError(f"reject_2: {j = }"))
     return Success(j * 100)
 
 
@@ -34,7 +34,7 @@ inputs = [(1, 5), (7, 2), (2, 1)]
 outputs = [composed(*args) for args in inputs]
 display(inputs, outputs)
 console == """
-(1, 5): <Failure: not_one: i = 1>
-(7, 2): <Failure: not_two: j = 2>
+(1, 5): <Failure: reject_1: i = 1>
+(7, 2): <Failure: reject_2: j = 2>
 (2, 1): <Success: 120>
 """

@@ -23,7 +23,7 @@ def reject_0(i: int) -> int:
 
 def reject_minus_1(i: int) -> Result[str, ValueError]:
     if i == -1:
-        return Failure(ValueError(f"c({i =})"))
+        return Failure(ValueError(f"reject_minus_1({i =})"))
     return Success(f"reject_minus_1({i})")
 
 
@@ -42,7 +42,7 @@ reject_0(2) succeeded: 0.5
 
 display(inputs, outputs)
 console == """
--1: <Failure: c(i =-1)>
+-1: <Failure: reject_minus_1(i =-1)>
 0: <Failure: division by zero>
 1: <Failure: reject_1(i = 1)>
 2: <Success: reject_minus_1(2)>
@@ -64,7 +64,7 @@ for r in outputs:
     else:
         print(f"{r.failure() = }")
 console == """
-r.failure() = ValueError('c(i =-1)')
+r.failure() = ValueError('reject_minus_1(i =-1)')
 r.failure() = ZeroDivisionError('division by zero')
 r.failure() = 'reject_1(i = 1)'
 r.unwrap() = 'reject_minus_1(2)'

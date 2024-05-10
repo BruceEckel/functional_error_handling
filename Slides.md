@@ -6,7 +6,7 @@ Github: BruceEckel/functional_error_handling
 
 - Github: BruceEckel/functional_error_handling
     - These slides (Slides.md for Obsidian)
-    - Paper that goes in depth
+    - Paper: depth in things I can only touch on
     - Code examples + tools
 
 - Requires Python type annotations + checker
@@ -28,25 +28,30 @@ Github: BruceEckel/functional_error_handling
 - Effortlessly assemble components in the same way a child assembles Legos
 
 ---
+### Impediments
 
+---
 ### Goto Considered Harmful
 
 - Djikstra’s 1968 note pushed programmers towards functions
 
-- Functions present the caller with a single entry and exit point
+- Gotos created un-reusable spaghetti code
+
+- Functions present a single entry and exit point
 
 ---
 
 ### No Namespace Control
 
-- Modules isolate namespaces
+- Modules create namespaces
 
 - Python files are automatically modules
 
 ---
 ### Inheritance
 
-- Breaks encapsulation --> impedes composability
+- Breaks encapsulation 
+    - Impedes composability
 
 ---
 ### Error Handling
@@ -54,14 +59,15 @@ Github: BruceEckel/functional_error_handling
 - Different approaches made it hard to compose
 - Usually global solutions with race conditions
 - The domain of the OS or the language?
+    - Initial OS experiments, including resumption
 
 ---
 ### Exceptions
 
 - In the language domain: closer to the problem
 - Standard way to report errors
-- Unifies error reporting and recovery
 - Errors can't be ignored
+- Unifies error reporting and recovery
 
 ---
 - In the small, exceptions seem to work well
@@ -80,7 +86,7 @@ Github: BruceEckel/functional_error_handling
 - Don’t know what exceptions will emerge
 - The function can start throwing new ones
 - C++ and Java tried *exception specifications*—didn't work
-- We need error-handling enforced through types
+- We need type-enforced error-handling
 
 ---
 ### 3. Exception Specifications Create a “Shadow Type System”
@@ -94,10 +100,10 @@ Github: BruceEckel/functional_error_handling
 **`comprehension1.py`**
 
 ---
-### The Functional Solution
+### The Functional Approach
 
 - Stop using exceptions
-- Return a “package” containing the answer + potential error
+- Return a “package” combining the answer + potential error
 - *Type union* creates a nameless return package:
 
 **`comprehension2.py`**
@@ -107,8 +113,7 @@ Github: BruceEckel/functional_error_handling
 
 **`result.py`**
 
----
-### Incorporating `Result`
+#### Incorporate `Result`
 
 **`comprehension3.py`**
 
