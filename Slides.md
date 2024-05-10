@@ -1,12 +1,13 @@
 # Functional Error Handling
 Bruce Eckel
+Github: BruceEckel/functional_error_handling
 
 ---
 
-- https://github.com/BruceEckel/functional_error_handling
-    - This document
-    - Code examples
-    - Presentation slides
+- Github: BruceEckel/functional_error_handling
+    - These slides (Slides.md for Obsidian)
+    - Paper that goes in depth
+    - Code examples + tools
 
 - Requires Python type annotations + checker
 
@@ -24,7 +25,7 @@ Bruce Eckel
 
 > The ability to assemble bigger pieces from smaller pieces
 
-- To effortlessly assemble components in the same way a child assembles Legos
+- Effortlessly assemble components in the same way a child assembles Legos
 
 ---
 
@@ -38,7 +39,7 @@ Bruce Eckel
 
 ### Modules
 
-- Lack of namespace control: a significant composability roadblock
+- Lack of namespace control: a significant roadblock
 
 - Python files are automatically modules
 
@@ -50,19 +51,16 @@ Bruce Eckel
 ---
 ### Error Handling
 
-- Significant composability roadblock
-
+- Different approaches made it hard to compose
 - Numerous attempts, usually global solutions with race conditions
-
-- In the domain of the OS or the language?
+- The domain of the OS or the language?
 
 ---
 ### Exceptions
 
-- Standardized error handling in the language domain
-
+- Standardized error handling 
+- In the language domain
 - Unifies error reporting and recovery
-
 - Errors can't be ignored
 
 ---
@@ -82,7 +80,7 @@ Bruce Eckel
 
 - If you figure them out, the function can start throwing new ones
 
-- C++ and Java tried *exception specifications*; didn't work
+- C++ and Java tried *exception specifications*—didn't work
 
 - When errors are included in the type system, all errors are type-checked
 
@@ -92,7 +90,6 @@ Bruce Eckel
 - Error specification types vs. language types
 
 ---
-
 ### 4. Exceptions Destroy Partial Calculations
 
 **`comprehension1.py`**
@@ -155,7 +152,7 @@ Bruce Eckel
 ---
 ### Functional Error Handling is Happening
 
-- Has already appeared in languages like Rust, Kotlin, and recent versions of C++
-- Errors become part of the type system
+- Already appears in Rust, Kotlin, and recent versions of C++
+- Errors are part of the type system
 - Far more difficult for an error to “slip through the cracks”
 - Benefits make it worth adopting a library like `Results`
