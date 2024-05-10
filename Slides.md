@@ -8,7 +8,15 @@ Bruce Eckel
     - Code examples
     - Presentation slides
 
-- Requires Python type annotations
+- Requires Python type annotations + checker
+
+---
+#### Acknowledgements
+
+- My attempts to help Bill Frasure & James Ward
+- Book: “Effect-Oriented Programming”
+- Interviews that James and I have done for the [Happy Path Programming podcast](https://happypathprogramming.com/).
+- ChatGPT: Unreliable but still very useful
 
 ---
 
@@ -37,22 +45,18 @@ Bruce Eckel
 ---
 ### Inheritance
 
-- Breaks encapsulation
-
-- Impedes composability
+- Impedes composability because it breaks encapsulation
 
 ---
-
 ### Error Handling
 
-- Significant impediment to composability
+- Significant composability roadblock
 
 - Numerous attempts, usually global solutions with race conditions
 
 - In the domain of the OS or the language?
 
 ---
-
 ### Exceptions
 
 - Standardized error handling in the language domain
@@ -62,19 +66,15 @@ Bruce Eckel
 - Errors can't be ignored
 
 ---
-
-### Problems with Exceptions
-
-- In the small (and especially when teaching them), exceptions seem to work quite well
+- In the small, exceptions seem to work quite well
+- Scaling up reveals problems
 
 ---
-
 ### 1. Conflates the Two Kinds of Errors
 
 - Recoverable vs panic
 
 ---
-
 ### 2. Not Part of the Type System
 
 - Caller can’t know what exceptions might emerge
@@ -86,12 +86,9 @@ Bruce Eckel
 - When errors are included in the type system, all errors are type-checked
 
 ---
-
 ### 3. Exception Specifications Create a “Shadow Type System”
 
-- The error specification type system
-- The language type system
-- Often don't cover the same ground
+- Error specification types vs. language types
 
 ---
 
@@ -131,7 +128,6 @@ Bruce Eckel
 - Close to the origin where information is highest
 
 ---
-
 ### Simplifying Composition with `and_then`
 
 **`comprehension5.py`**
@@ -146,19 +142,16 @@ Bruce Eckel
 ```
 
 ---
-
 ### A More Capable Library
 
 **`comprehension6.py`**
 
 ---
-
 ### Handling Multiple Arguments
 
 **`multiple_arguments.py`**
 
 ---
-
 ### Functional Error Handling is Happening
 
 - Has already appeared in languages like Rust, Kotlin, and recent versions of C++
@@ -166,10 +159,3 @@ Bruce Eckel
 - Far more difficult for an error to “slip through the cracks”
 - Benefits make it worth adopting a library like `Results`
 
----
-
-#### Acknowledgements
-
-Most of the understanding I needed to explain this topic came from my attempts to help on the book by Bill Frasure and James Ward, probably titled “Effect-Oriented Programming,” that we’ve been working on for over three years. I’ve also learned a lot from some of the interviews that James and I have done for the [Happy Path Programming podcast](https://happypathprogramming.com/).
-
-Despite its unreliability, I have found ChatGPT exceptionally useful for speeding up and improving my programming.
