@@ -69,7 +69,7 @@ This paper assumes full usage of Python’s type system.
 
 ---
 
-### 2. Exceptions are not Part of the Type System
+### 2. Not Part of the Type System
 
 - Caller can’t know what exceptions might emerge.
 
@@ -511,9 +511,10 @@ console == """
 
 ### Functional Error Handling is Happening
 
-Functional error handling has already appeared in languages like Rust, Kotlin, and recent versions of C++ support these combined answer-error result types, with associated unpacking operations. In these languages, errors become part of the type system and it is far more difficult for an error to “slip through the cracks.”
-
-Python has only been able to support functional error handling since the advent of typing and type checkers, and it doesn’t provide any direct language or library constructs for this. The benefits of better error handling and robust composability make it worth adopting a library like `Results`.
+- Has already appeared in languages like Rust, Kotlin, and recent versions of C++
+- Errors become part of the type system 
+- Far more difficult for an error to “slip through the cracks.”
+- Benefits make it worth adopting a library like Results.
 
 
 ---
