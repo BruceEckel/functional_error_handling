@@ -5,216 +5,111 @@ This paper assumes full usage of Python’s type system.
 
 ---
 
-# Thesis
-
-> *Most of what we've been working towards in programming—whether we are aware of it or not—is composability.* 
-
-My definition:
+- Most of what we've been working towards in programming—whether we are aware of it or not—is composability. 
 
 > The ability to assemble bigger pieces from smaller pieces.
 
-> To effortlessly assemble components in the same way that a child assembles Legos.
+- To effortlessly combine components in the same way that a child assembles Legos.
 
 ---
 
-# Roadblock: Goto Considered Harmful
+### Goto Considered Harmful
 
-Pushed programmers towards functions.
+- Djikstra pushed programmers towards functions.
 
-Functions present the caller with a single entry and exit point.
-
----
-
-# Modules
-
-Lack of namespace control was a significant roadblock to composability
-
-Python files are automatically modules
-
----
-# Inheritance
-
-Inheritance breaks encapsulation
-
-This impedes composability
+- Functions present the caller with a single entry and exit point.
 
 ---
 
-# Error Handling
+### Modules
 
-A significant impediment to composability.
+- Lack of namespace control: a significant composability roadblock
 
-Numerous attempts, usually global solutions with race conditions
+- Python files are automatically modules
 
-Is it in the domain of the OS or the language?
+---
+### Inheritance
+
+- Breaks encapsulation.
+
+- Impedes composability.
 
 ---
 
-# Exceptions
+### Error Handling
 
-Standardized error handling in the language domain. 
+- Significant impediment to composability.
 
-Unifies error reporting and recovery.
+- Numerous attempts, usually global solutions with race conditions.
 
-Errors can't be ignored.
+- In the domain of the OS or the language?
+
+---
+
+### Exceptions
+
+- Standardized error handling in the language domain. 
+
+- Unifies error reporting and recovery.
+
+- Errors can't be ignored.
 
 
 ---
 
-## Problems with Exceptions
+### Problems with Exceptions
 
-In the small (and especially when teaching them), exceptions seem to work quite well. 
+- In the small (and especially when teaching them), exceptions seem to work quite well. 
 
 ---
 
 ### 1. The Two Kinds of Errors are Conflated
 
-Recoverable vs panic
+- Recoverable vs panic
 
 ---
 
 ### 2. Exceptions are not Part of the Type System
 
-Caller can’t know what exceptions might emerge.
+- Caller can’t know what exceptions might emerge.
 
-Even if you figure them all out, the function can start throwing a new kind of exception.
+- If you figure them out, the function can start throwing new ones.
 
-C++ and Java tried *exception specifications* which didn't work.
+- C++ and Java tried *exception specifications*; didn't work.
 
-When errors are included in the type system, all errors are type-checked.
+- When errors are included in the type system, all errors are type-checked.
 
 
 ---
 
 ### 3. Exception Specifications Create a “Shadow Type System”
 
-Languages like C++ and Java attempted to add notation indicating the exceptions that might emerge from a function call. This was well-intentioned and seems to produce the necessary information the client programmer needs to handle errors. The fundamental problem was that this created an alternate or “shadow” type system that doesn’t follow the same rules as the primary type system. To make the shadow type system work, its rules were warped to the point where it became effectively useless (a discovery that has taken years to realize).
-
-C++ exception specifications were originally optional and not statically type-checked. After many years these were deprecated in favor of the statically-typed [`expected` specification](https://en.cppreference.com/w/cpp/utility/expected) (which takes the functional approached described in this paper). 
-
-Java created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored. Eventually they added a feature that allows checked exceptions to be easily converted into runtime exceptions. Java functions can always return `null` without any warning.
-
-Both systems (the original C++ dynamic exception specifications, and Java exception specifications) had too many holes, and it was too difficult to effectively support both the main and shadow type systems.
+- The error specification type system
+- The language type system
+- Often don't cover the same ground
 
 ---
 
 ### 4. Exceptions Destroy Partial Calculations
 
-Let’s start with a very simple example where we populate a `List` with the results of a sequence of calls to the function `reject_1`:
+`comprehension1.py`
 
-```python
-
----
-
-#: comprehension1.py
+1. Computationally wasteful, especially with large calculations.
+2. Makes debugging harder.
 
 ---
 
-# Exception produces no results, stops everything
+### The Functional Solution
 
+- Create a “return package” containing the answer + potential error
+- *Type union* creates a nameless return package:
 
-def reject_1(i: int) -> int:
-    if i == 1:
-        raise ValueError("i is 1")
-    return i * 2
-
-
-result = [reject_1(i) for i in range(3)]
-print(result)
-"""
-Traceback (most recent call last):
-  ...
-ValueError: i is 1
-"""
-```
-
-`reject_1` throws a `ValueError` if its argument is `1`. The `range(3)` is 0, 1, and 2; only one of these values causes the exception. So `result` contains only one problem; the other two values are fine. However, we lose everything that we were calculating when the exception is thrown. This:
-1. Is computationally wasteful, especially with large calculations.
-2. Makes debugging harder. It would be quite valuable to see in `result` the parts that succeeded and those that failed.
-
----
-
-# The Functional Solution
-Instead of creating a complex implementation to report and handle errors, the functional approach creates a “return package” containing the answer along with the (potential) error information. Instead of only returning the answer, we return this package from the function. 
-
-This package is a new type, with operations that prevent the programmer from simply plucking the result from the package without dealing with error conditions (a failing of the Go language approach).
-
-A first attempt uses *type unions* to create a nameless return package:
-
-```python
-
----
-
-#: comprehension2.py
-
----
-
-# Type union aka Sum Type
-
----
-
-# Success vs error is not clear
-from util import display
-from validate_output import console
-
-
-def reject_1(i: int) -> int | str:  # Sum type
-    if i == 1:
-        return "i is 1"
-    return i * 2
-
-
-inputs = range(3)  # [0, 1, 2]
-outputs = [reject_1(i) for i in inputs]
-display(inputs, outputs)
-console == """
-0: 0
-1: i is 1
-2: 4
-"""
-
-for r in outputs:
-    match r:
-        case int(value):
-            print(f"{value = }")
-        case str(error):
-            print(f"{error = }")
-console == """
-value = 0
-error = 'i is 1'
-value = 4
-"""
-
+`comprehension2.py`
 
 
 ---
 
-# Return type enforced
-def composed(i: int) -> int | str:
-    return reject_1(i)
-
-
-print(composed(1))
-print(composed(5))
-console == """
-i is 1
-10
-"""
-```
-
-`validate_output` is a tool in the [GitHub repository](https://github.com/BruceEckel/functional_error_handling) that validates the correctness of the `console ==` strings. If you run the program you’ll see the same output as you see in the `console ==` strings.
-
-`reject_1` returns a `str` to indicate an error, and an `int` answer if there is no error. In the pattern match, we are forced to check the result type to determine whether an error occurs; we cannot just assume it is an `int`.
-
-An important problem with this approach is that it is not clear which type is the success value and which type represents the error condition—because we are trying to repurpose existing built-in types to represent new meanings.
-
-In hindsight, it might seem like this “return package” approach is much more obvious than the elaborate exception-handling scheme that was adopted for C++, Java and other languages, but at the time the apparent overhead of returning extra bytes seemed unacceptable (I don’t know of any comparisons between that and the overhead of exception-handling mechanisms, but I do know that the goal of C++ exception handling is to have zero execution overhead if no exceptions occur).
-
-Note that in the definition of `composed`, the type checker requires that you return `int | str` because `reject_1` returns those types. Thus, when composing, type-safety is preserved. This means you won’t lose error type information during composition, so composability automatically scales.
-
----
-
-## Unifying the Return Type
+### Unifying the Return Type
 
 We now have the unfortunate situation that `outputs` contains multiple types: both `int` and `str`. The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it universally applicable:
 
@@ -226,7 +121,7 @@ We now have the unfortunate situation that `outputs` contains multiple types: bo
 
 ---
 
-# Result with OK & Err subtypes
+### Result with OK & Err subtypes
 from dataclasses import dataclass
 from typing import Callable, Generic, TypeVar
 
@@ -272,7 +167,7 @@ The modified version of the example using `Result` is now:
 
 ---
 
-# Explicit result type
+### Explicit result type
 from result import Err, Ok, Result
 from validate_output import console
 
@@ -317,7 +212,7 @@ Now `reject_1` returns a single type, `Result`. The first type parameter to `Res
 
 ---
 
-## Composing with `Result`
+### Composing with `Result`
 
 The previous examples included very simple composition in the `compsed` functions which just called a single other function. What if you need to compose a more complex function from multiple other functions? The `Result` type ensures that the `composed` function properly represents both the `Answer` type but also the various different errors that can occur:
 
@@ -329,7 +224,7 @@ The previous examples included very simple composition in the `compsed` function
 
 ---
 
-# Composing functions
+### Composing functions
 from result import Err, Ok, Result
 from util import display
 from validate_output import console
@@ -344,7 +239,7 @@ def reject_1(i: int) -> Result[int, str]:
 
 ---
 
-# Use an exception as info (but don't raise it):
+### Use an exception as info (but don't raise it):
 def reject_0(i: int) -> Result[int, ZeroDivisionError]:
     if i == 0:
         return Err(ZeroDivisionError())
@@ -392,7 +287,7 @@ This means that any failure during a sequence of composed function calls will sh
 
 ---
 
-## Simplifying Composition with `and_then`
+### Simplifying Composition with `and_then`
 
 There’s still a problem that impedes our ultimate goal of composability: every time you call a function within a composed function, you must write code to check the `Result` type and extract the success value with `unwrap`. This is extra repetitive work that interrupts the flow and readability of the program. We need some way to reduce or eliminate the extra code.
 
@@ -406,7 +301,7 @@ The `and_then` method in `Result` (see the comment in `result.py` that said “I
 
 ---
 
-# Simplifying composition with and_then
+### Simplifying composition with and_then
 from comprehension4 import reject_0, reject_1, reject_minus_1
 from result import Result
 from util import display
@@ -445,7 +340,7 @@ At each “chaining point” in `reject_1(i).and_then(reject_0).and_then(reject_
 
 ---
 
-## A More Capable Library
+### A More Capable Library
 
 We could continue adding features to our `Result` library until it becomes a complete solution. However, others have worked on this problem so it makes more sense to reuse their libraries. The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns). `Returns` includes other features, but we will only focus on  `Result`.
 
@@ -459,7 +354,7 @@ We could continue adding features to our `Result` library until it becomes a com
 
 ---
 
-# Using https://github.com/dry-python/returns
+### Using https://github.com/dry-python/returns
 from returns.pipeline import is_successful, pipe
 from returns.pointfree import bind
 from returns.result import Failure, Result, Success, safe
@@ -476,11 +371,11 @@ def reject_1(i: int) -> Result[int, str]:
 
 ---
 
-# Convert existing function.
+### Convert existing function.
 
 ---
 
-# Return type becomes Result[int, ZeroDivisionError]
+### Return type becomes Result[int, ZeroDivisionError]
 @safe
 def reject_0(i: int) -> int:
     print(f"reject_0({i}) succeeded: {1 / i}")
@@ -517,7 +412,7 @@ console == """
 
 ---
 
-# Extract results, converting failure to None:
+### Extract results, converting failure to None:
 with_nones = [r.value_or(None) for r in outputs]
 print(str(with_nones))
 print(str(list(filter(None, with_nones))))
@@ -529,7 +424,7 @@ console == """
 
 ---
 
-# Another way to extract results:
+### Another way to extract results:
 for r in outputs:
     if is_successful(r):
         print(f"{r.unwrap() = }")
@@ -557,7 +452,7 @@ Note that there may be an issue with the `Returns` library, which is that for pr
 
 ---
 
-## Handling Multiple Arguments
+### Handling Multiple Arguments
 
 The `pipe` is limiting because it assumes a single argument. What if you need to create a `composed` function that takes multiple arguments? For this, we use something called “do notation,” which you access using `Result.do`:
 
@@ -586,7 +481,7 @@ def reject_2(j: int) -> Result[int, ValueError]:
 
 ---
 
-# Ordinary function:
+### Ordinary function:
 def add(first: int, second: int) -> int:
     return first + second
 
@@ -614,7 +509,7 @@ console == """
 
 ---
 
-# Functional Error Handling is Happening
+### Functional Error Handling is Happening
 
 Functional error handling has already appeared in languages like Rust, Kotlin, and recent versions of C++ support these combined answer-error result types, with associated unpacking operations. In these languages, errors become part of the type system and it is far more difficult for an error to “slip through the cracks.”
 
