@@ -1,12 +1,22 @@
 # Presentations using Slides
 
 A demo on how to build presentations using Slides.
+Is the next line merged?
 
 ---
 
 ## Formatting
 
 You can use regular Markdown formatting, like *emphasized* and **bold** text.
+
+1. bullet one
+2. bullet two
+3. Bullet three
+
+Actual bullets
+- abcde
+- fghijk
+- lmnopq
 
 
 ---

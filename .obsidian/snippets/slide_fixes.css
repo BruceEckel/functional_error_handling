@@ -1,3 +1,8 @@
+/*  
+Save this as a css file (slide_fixes.css) in your Obsidian css snippets folder (.obsidian/snippets). 
+Activate the snippet from obsidian → setting → appearence → css snippet. 
+*/
+
 .slides {
     height: 100% !important;
     width: 75% !important;
