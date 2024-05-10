@@ -66,13 +66,14 @@ Bruce Eckel
 - Errors can't be ignored
 
 ---
-- In the small, exceptions seem to work quite well
+- In the small, exceptions seem to work well
 - Scaling up reveals problems
 
 ---
 ### 1. Conflates the Two Kinds of Errors
 
-- Recoverable vs panic
+- Panic
+- Recoverable
 
 ---
 ### 2. Not Part of the Type System
@@ -122,7 +123,7 @@ Bruce Eckel
 
 **`comprehension4.py`**
 
-- Failure during a sequence of composed function calls short-circuits out
+- Failure short-circuits
 - Returns an `Err` that tells you exactly what happened
 - Can't ignore it
 - Close to the origin where information is highest
@@ -158,4 +159,3 @@ Bruce Eckel
 - Errors become part of the type system
 - Far more difficult for an error to “slip through the cracks”
 - Benefits make it worth adopting a library like `Results`
-
