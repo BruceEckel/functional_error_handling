@@ -100,6 +100,7 @@ Github: BruceEckel/functional_error_handling
 ---
 ### The Functional Solution
 
+- Stop using exceptions
 - Create a “return package” containing the answer + potential error
 - *Type union* creates a nameless return package:
 
