@@ -390,10 +390,17 @@ from validate_output import console
 def composed(
     i: int,
 ) -> Result[str, str | ZeroDivisionError | ValueError]:
-    return reject_1(i).and_then(reject_0).and_then(reject_minus_1)
+    # fmt: off
+    return (
+        reject_1(i)
+        .and_then(reject_0)
+        .and_then(reject_minus_1)
+    )
 
 
-display(inputs := range(-1, 3), [composed(i) for i in inputs])
+# fmt: off
+display(inputs := range(-1, 3),
+    [composed(i) for i in inputs])
 console == """
 -1: Err(error=ValueError(-1))
 0: Err(error=ZeroDivisionError())
@@ -544,13 +551,13 @@ def composed(i: int, j: int) -> Result[int, ValueError]:
     )
 
 
-inputs = [(1, 5), (7, 2), (3, 4)]
+inputs = [(1, 5), (7, 2), (2, 1)]
 outputs = [composed(*args) for args in inputs]
 display(inputs, outputs)
 console == """
 (1, 5): <Failure: not_one: i = 1>
 (7, 2): <Failure: not_two: j = 2>
-(3, 4): <Success: 430>
+(2, 1): <Success: 120>
 """
 ```
 

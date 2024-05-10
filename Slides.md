@@ -87,10 +87,10 @@ Github: BruceEckel/functional_error_handling
 ---
 ### 4. Exceptions Destroy Partial Calculations
 
-**`comprehension1.py`**
-
 1. Computationally wasteful, especially with large calculations
 2. Makes debugging harder
+
+**`comprehension1.py`**
 
 ---
 ### The Functional Solution
@@ -116,7 +116,7 @@ Github: BruceEckel/functional_error_handling
 
 **`comprehension4.py`**
 
-- Failure short-circuits
+- Failure causes a short-circuit
 - Returns an `Err` that tells you exactly what happened
 - Can't ignore it
 - Close to the origin where information is highest

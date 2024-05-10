@@ -30,11 +30,11 @@ def composed(i: int, j: int) -> Result[int, ValueError]:
     )
 
 
-inputs = [(1, 5), (7, 2), (3, 4)]
+inputs = [(1, 5), (7, 2), (2, 1)]
 outputs = [composed(*args) for args in inputs]
 display(inputs, outputs)
 console == """
 (1, 5): <Failure: not_one: i = 1>
 (7, 2): <Failure: not_two: j = 2>
-(3, 4): <Success: 430>
+(2, 1): <Success: 120>
 """
