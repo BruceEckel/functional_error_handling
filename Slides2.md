@@ -147,28 +147,23 @@ value = 2
 
 ---
 ```python
-#: result.py
-# Add and_then
+#: result_basic.py
+# Result with OK & Err subtypes
 from dataclasses import dataclass
-from typing import Callable, Generic, TypeVar
+from typing import Generic, TypeVar
 
-ANSWER = TypeVar("ANSWER")
+ANSWER = TypeVar("ANSWER")  # Generic parameters
 ERROR = TypeVar("ERROR")
 
 
 @dataclass(frozen=True)
 class Result(Generic[ANSWER, ERROR]):
-    def and_then(
-        self, func: Callable[[ANSWER], "Result"]
-    ) -> "Result[ANSWER, ERROR]":
-        if isinstance(self, Ok):
-            return func(self.value)
-        return self  # Pass the Err forward
+    pass
 
 
 @dataclass(frozen=True)
 class Ok(Result[ANSWER, ERROR]):
-    value: ANSWER
+    value: ANSWER  # Usage: return Ok(answer)
 
     def unwrap(self) -> ANSWER:
         return self.value
@@ -176,7 +171,7 @@ class Ok(Result[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Err(Result[ANSWER, ERROR]):
-    error: ERROR
+    error: ERROR  # Usage: return Err(error)
 ```
 
 ### Incorporate `Result`
@@ -186,6 +181,7 @@ class Err(Result[ANSWER, ERROR]):
 #: comprehension3.py
 # Explicit result type
 from result import Err, Ok, Result
+from util import display
 from validate_output import console
 
 
@@ -196,21 +192,14 @@ def func_a(i: int) -> Result[int, str]:
 
 
 if __name__ == "__main__":
-    print(outputs := [func_a(i) for i in range(3)])
+    display(
+        inputs := range(3),
+        outputs := [func_a(i) for i in inputs],
+    )
     console == """
-[Ok(value=0), Err(error='func_a(1)'), Ok(value=2)] 
-"""
-
-    for r in outputs:
-        match r:
-            case Ok(value):
-                print(f"{value = }")
-            case Err(error):
-                print(f"{error = }")
-    console == """
-value = 0
-error = 'func_a(1)'
-value = 2
+0: Ok(value=0)
+1: Err(error='func_a(1)')
+2: Ok(value=2)
 """
 ```
 
@@ -260,7 +249,7 @@ def composed(
 if __name__ == "__main__":
     display(
         inputs := range(-1, 3),
-        [composed(i) for i in inputs],
+        outputs := [composed(i) for i in inputs],
     )
     console == """
 -1: Err(error=ValueError('func_c(-1)'))
@@ -277,6 +266,39 @@ if __name__ == "__main__":
 
 ---
 ### Simplifying Composition with `and_then`
+```python
+#: result.py
+# Add and_then
+from dataclasses import dataclass
+from typing import Callable, Generic, TypeVar
+
+ANSWER = TypeVar("ANSWER")
+ERROR = TypeVar("ERROR")
+
+
+@dataclass(frozen=True)
+class Result(Generic[ANSWER, ERROR]):
+    def and_then(
+        self, func: Callable[[ANSWER], "Result"]
+    ) -> "Result[ANSWER, ERROR]":
+        if isinstance(self, Ok):
+            return func(self.value)
+        return self  # Pass the Err forward
+
+
+@dataclass(frozen=True)
+class Ok(Result[ANSWER, ERROR]):
+    value: ANSWER
+
+    def unwrap(self) -> ANSWER:
+        return self.value
+
+
+@dataclass(frozen=True)
+class Err(Result[ANSWER, ERROR]):
+    error: ERROR
+```
+
 
 ---
 ```python
@@ -299,10 +321,12 @@ def composed(
     )
 
 
-# fmt: off
-display(inputs := range(-1, 3),
-    [composed(i) for i in inputs])
-console == """
+if __name__ == "__main__":
+    display(
+        inputs := range(-1, 3),
+        outputs := [composed(i) for i in inputs],
+    )
+    console == """
 -1: Err(error=ValueError('func_c(-1)'))
 0: Err(error=ZeroDivisionError('func_b(0)'))
 1: Err(error='func_a(1)')
@@ -363,15 +387,6 @@ if __name__ == "__main__":
 2: <Success: func_c(2)>
 """
 
-    # Extract results, converting failure to None:
-    with_nones = [r.value_or(None) for r in outputs]
-    print(str(with_nones))
-    print(str(list(filter(None, with_nones))))
-    console == """
-[None, None, None, 'func_c(2)']
-['func_c(2)']
-"""
-
     # Another way to extract results:
     for r in outputs:
         if is_successful(r):
@@ -413,9 +428,10 @@ def composed(
     )
 
 
-inputs = [(1, 5), (7, 0), (2, 1)]
-outputs = [composed(*args) for args in inputs]
-display(inputs, outputs)
+display(
+    inputs := [(1, 5), (7, 0), (2, 1)],
+    outputs=[composed(*args) for args in inputs],
+)
 console == """
 (1, 5): <Failure: func_a(1)>
 (7, 0): <Failure: func_b(0)>
