@@ -115,11 +115,6 @@ Let's add a new method `and_then` to `Result`:
 **`comprehension5.py`**
 
 ---
-### A More Capable Library
-
-**`comprehension6.py`**
-
----
 ### Handling Multiple Arguments
 
 **`multiple_arguments.py`**

@@ -436,17 +436,27 @@ To understand what’s happening, here’s the definition of `and_then` taken fr
 
 At each “chaining point” in `func_a(i).and_then(func_b).and_then(func_c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next function in the chain. If not, that means `self` is an `Err` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Err`, so it doesn’t try to apply the next function but just (again) returns the `Err`. Once you produce an `Err`, no more function calls occur (that is, it short-circuits) and the `Err` result gets passed all the way out of the composed function so the caller can deal with the specific failure.
 
-## A More Capable Library
+## Handling Multiple Arguments
 
 We could continue adding features to our `Result` library until it becomes a complete solution. However, others have worked on this problem so it makes more sense to reuse their libraries. The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns). `Returns` includes other features, but we will only focus on  `Result`.
 
-`Returns` provides elegant composition using *pipes* and the `bind` function:
+`Returns` provides a `@safe` decorator that you see applied to the “plain” function `func_b`. This changes the normal `int` return type into a `Result` that includes `int` for the `Success` type but is also somehow able to recognize that the division might produce a `ZeroDivisionError` and include that in the `Failure` type. In addition, `@safe` is apparently catching the exception and converting it to the `ZeroDivisionError` returned as the information object in the `Failure` object. `@safe` is a helpful tool when converting exception-throwing code into error-returning code.
+
+`func_c` adds some variety by rejecting `-1` and producing a `str` result. We can now produce `composed` using a `pipe` and `bind`. All the previous error-checking and short-circuiting behaviors happen as before, but the syntax is now more straightforward and readable.
+
+Notice that when the `outputs` list is created, the output from `reject0` only happens for the values `-1` and `2`, because the other values cause errors in the `composed` chain of operations. The value `1` never gets to `func_b` because it is intercepted by the prior `composed` call to `func_a`. The value `0` causes `func_b` to produce a `ZeroDivisionError` when it tries to perform the division inside the `print`.
+
+[Explain rest of example]
+
+Note that there may be an issue with the `Returns` library, which is that for proper type checking it requires using a MyPy extension. So far I have been unable to get that extension to work (however, I have no experience with MyPy extensions).
+
+
+
+The `pipe` is limiting because it assumes a single argument. What if you need to create a `composed` function that takes multiple arguments? For this, we use something called “do notation,” which you access using `Result.do`:
 
 ```python
-#: comprehension6.py
+#: multiple_arguments.py
 # Using https://github.com/dry-python/returns
-from returns.pipeline import is_successful, pipe
-from returns.pointfree import bind
 from returns.result import Failure, Result, Success, safe
 from util import display
 from validate_output import console
@@ -464,94 +474,39 @@ def func_b(i: int) -> Result[int, ZeroDivisionError]:
     return Success(i)
 
 
-# Convert existing function.
-# Return type becomes Result[str, ValueError]
-@safe
-def func_c(i: int) -> str:
-    if i == -1:
+@safe  # Convert existing function
+def func_c(i: int) -> int:  # Result[int, ValueError]
+    if i == 3:
         raise ValueError(f"func_c({i})")
-    return f"func_c({i})"
+    return i
 
 
-composed = pipe(  # type: ignore
-    func_a,
-    bind(func_b),
-    bind(func_c),
-)
-
-if __name__ == "__main__":
-    display(
-        inputs := range(-1, 3),
-        outputs := [composed(i) for i in inputs],
-    )
-    console == """
--1: <Failure: func_c(-1)>
-0: <Failure: func_b(0)>
-1: <Failure: func_a(1)>
-2: <Success: func_c(2)>
-"""
-
-    # Another way to extract results:
-    for r in outputs:
-        if is_successful(r):
-            print(f"{r.unwrap() = }")
-        else:
-            print(f"{r.failure() = }")
-    console == """
-r.failure() = ValueError('func_c(-1)')
-r.failure() = ZeroDivisionError('func_b(0)')
-r.failure() = 'func_a(1)'
-r.unwrap() = 'func_c(2)'
-"""
-```
-
-The definition of `func_a` looks the same as previous versions, except that we now return `Failure` instead of `Err` and `Success` instead of ‘Ok’.
-
-`Returns` provides a `@safe` decorator that you see applied to the “plain” function `func_b`. This changes the normal `int` return type into a `Result` that includes `int` for the `Success` type but is also somehow able to recognize that the division might produce a `ZeroDivisionError` and include that in the `Failure` type. In addition, `@safe` is apparently catching the exception and converting it to the `ZeroDivisionError` returned as the information object in the `Failure` object. `@safe` is a helpful tool when converting exception-throwing code into error-returning code.
-
-`func_c` adds some variety by rejecting `-1` and producing a `str` result. We can now produce `composed` using a `pipe` and `bind`. All the previous error-checking and short-circuiting behaviors happen as before, but the syntax is now more straightforward and readable.
-
-Notice that when the `outputs` list is created, the output from `reject0` only happens for the values `-1` and `2`, because the other values cause errors in the `composed` chain of operations. The value `1` never gets to `func_b` because it is intercepted by the prior `composed` call to `func_a`. The value `0` causes `func_b` to produce a `ZeroDivisionError` when it tries to perform the division inside the `print`.
-
-[Explain rest of example]
-
-Note that there may be an issue with the `Returns` library, which is that for proper type checking it requires using a MyPy extension. So far I have been unable to get that extension to work (however, I have no experience with MyPy extensions).
-
-## Handling Multiple Arguments
-
-The `pipe` is limiting because it assumes a single argument. What if you need to create a `composed` function that takes multiple arguments? For this, we use something called “do notation,” which you access using `Result.do`:
-
-```python
-#: multiple_arguments.py
-from comprehension6 import func_a, func_b
-from returns.result import Result
-from util import display
-from validate_output import console
-
-
-def add(first: int, second: int) -> int:
-    return first + second
+# Pure function
+def add(first: int, second: int, third: int) -> int:
+    return first + second + third
 
 
 def composed(
     i: int, j: int
-) -> Result[int, str | ValueError]:
+) -> Result[int, str | ZeroDivisionError | ValueError]:
     # fmt: off
     return Result.do(
-        add(first, second)
+        add(first, second, third)
         for first in func_a(i)
         for second in func_b(j)
+        for third in func_c(i + j)
     )
 
 
 display(
-    inputs := [(1, 5), (7, 0), (2, 1)],
+    inputs := [(1, 5), (7, 0), (2, 1), (7, 5)],
     outputs=[composed(*args) for args in inputs],
 )
 console == """
 (1, 5): <Failure: func_a(1)>
 (7, 0): <Failure: func_b(0)>
-(2, 1): <Success: 3>
+(2, 1): <Failure: func_c(3)>
+(7, 5): <Success: 24>
 """
 ```
 
