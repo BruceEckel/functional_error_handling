@@ -197,19 +197,6 @@ value = 0
 error = 'i is 1'
 value = 4
 """
-
-
-# Return type enforced
-def composed(i: int) -> int | str:
-    return func_a(i)
-
-
-print(composed(1))
-print(composed(5))
-console == """
-i is 1
-10
-"""
 ```
 
 `validate_output` is a tool in the [GitHub repository](https://github.com/BruceEckel/functional_error_handling) that validates the correctness of the `console ==` strings. If you run the program you’ll see the same output as you see in the `console ==` strings.
@@ -275,12 +262,12 @@ from validate_output import console
 def func_a(i: int) -> Result[int, str]:
     if i == 1:
         return Err("i is 1")
-    return Ok(i * 2)
+    return Ok(i)
 
 
 print(outputs := [func_a(i) for i in range(3)])
 console == """
-[Ok(value=0), Err(error='i is 1'), Ok(value=4)]
+[Ok(value=0), Err(error='i is 1'), Ok(value=2)]
 """
 
 for r in outputs:
@@ -292,19 +279,7 @@ for r in outputs:
 console == """
 value = 0
 error = 'i is 1'
-value = 4
-"""
-
-
-def composed(i: int) -> Result[int, str]:
-    return func_a(i)
-
-
-print(composed(1))
-print(composed(5))
-console == """
-Err(error='i is 1')
-Ok(value=10)
+value = 2
 """
 ```
 
@@ -316,15 +291,10 @@ The previous examples included very simple composition in the `compsed` function
 ```python
 #: comprehension4.py
 # Composing functions
+from comprehension3 import func_a
 from result import Err, Ok, Result
 from util import display
 from validate_output import console
-
-
-def func_a(i: int) -> Result[int, str]:
-    if i == 1:
-        return Err("i is 1")
-    return Ok(i)
 
 
 # Use an exception as info (but don't raise it):
@@ -446,18 +416,19 @@ def func_a(i: int) -> Result[int, str]:
     return Success(i)
 
 
+def func_b(i: int) -> Result[int, ZeroDivisionError]:
+    if i == 0:
+        return Failure(ZeroDivisionError(f"func_b({i =})"))
+    return Success(i)
+
+
 # Convert existing function.
-# Return type becomes Result[int, ZeroDivisionError]
+# Return type becomes Result[str, ValueError]
 @safe
-def func_b(i: int) -> int:
-    print(f"func_b({i}) succeeded: {1 / i}")
-    return i
-
-
-def func_c(i: int) -> Result[str, ValueError]:
+def func_c(i: int) -> str:
     if i == -1:
-        return Failure(ValueError(f"func_c({i =})"))
-    return Success(f"func_c({i})")
+        return ValueError(f"func_c({i =})")
+    return f"func_c({i})"
 
 
 composed = pipe(  # type: ignore
@@ -466,39 +437,36 @@ composed = pipe(  # type: ignore
     bind(func_c),
 )
 
-inputs = range(-1, 3)  # [-1, 0, 1, 2]
-outputs = [composed(i) for i in inputs]
-console == """
-func_b(-1) succeeded: -1.0
-func_b(2) succeeded: 0.5
-"""
-
-display(inputs, outputs)
-console == """
--1: <Failure: func_c(i =-1)>
-0: <Failure: division by zero>
+if __name__ == "__main__":
+    display(
+        inputs := range(-1, 3),
+        outputs := [composed(i) for i in inputs],
+    )
+    console == """
+-1: <Success: func_c(i =-1)>
+0: <Failure: func_b(i =0)>
 1: <Failure: func_a(i = 1)>
 2: <Success: func_c(2)>
 """
 
-# Extract results, converting failure to None:
-with_nones = [r.value_or(None) for r in outputs]
-print(str(with_nones))
-print(str(list(filter(None, with_nones))))
-console == """
-[None, None, None, 'func_c(2)']
-['func_c(2)']
+    # Extract results, converting failure to None:
+    with_nones = [r.value_or(None) for r in outputs]
+    print(str(with_nones))
+    print(str(list(filter(None, with_nones))))
+    console == """
+[ValueError('func_c(i =-1)'), None, None, 'func_c(2)']
+[ValueError('func_c(i =-1)'), 'func_c(2)']
 """
 
-# Another way to extract results:
-for r in outputs:
-    if is_successful(r):
-        print(f"{r.unwrap() = }")
-    else:
-        print(f"{r.failure() = }")
-console == """
-r.failure() = ValueError('func_c(i =-1)')
-r.failure() = ZeroDivisionError('division by zero')
+    # Another way to extract results:
+    for r in outputs:
+        if is_successful(r):
+            print(f"{r.unwrap() = }")
+        else:
+            print(f"{r.failure() = }")
+    console == """
+r.unwrap() = ValueError('func_c(i =-1)')
+r.failure() = ZeroDivisionError('func_b(i =0)')
 r.failure() = 'func_a(i = 1)'
 r.unwrap() = 'func_c(2)'
 """
@@ -522,29 +490,17 @@ The `pipe` is limiting because it assumes a single argument. What if you need to
 
 ```python
 #: multiple_arguments.py
-from returns.result import Failure, Result, Success
+from comprehension6 import func_a, func_b
+from returns.result import Result
 from util import display
 from validate_output import console
 
 
-def func_a(i: int) -> Result[int, ValueError]:
-    if i == 1:
-        return Failure(ValueError(f"func_a: {i = }"))
-    return Success(i * 10)
-
-
-def func_b(j: int) -> Result[int, ValueError]:
-    if j == 2:
-        return Failure(ValueError(f"func_b: {j = }"))
-    return Success(j * 100)
-
-
-# Ordinary function:
 def add(first: int, second: int) -> int:
     return first + second
 
 
-def composed(i: int, j: int) -> Result[int, ValueError]:
+def composed(i: int, j: int) -> Result[int, str | ValueError]:
     # fmt: off
     return Result.do(
         add(first, second)
@@ -553,13 +509,13 @@ def composed(i: int, j: int) -> Result[int, ValueError]:
     )
 
 
-inputs = [(1, 5), (7, 2), (2, 1)]
+inputs = [(1, 5), (7, 0), (2, 1)]
 outputs = [composed(*args) for args in inputs]
 display(inputs, outputs)
 console == """
-(1, 5): <Failure: func_a: i = 1>
-(7, 2): <Failure: func_b: j = 2>
-(2, 1): <Success: 120>
+(1, 5): <Failure: func_a(i = 1)>
+(7, 0): <Failure: func_b(i =0)>
+(2, 1): <Success: 3>
 """
 ```
 

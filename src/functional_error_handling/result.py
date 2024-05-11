@@ -1,15 +1,14 @@
 #: result.py
-# Result with OK & Err subtypes
+# Add and_then
 from dataclasses import dataclass
 from typing import Callable, Generic, TypeVar
 
-ANSWER = TypeVar("ANSWER")  # Generic parameters
+ANSWER = TypeVar("ANSWER")
 ERROR = TypeVar("ERROR")
 
 
 @dataclass(frozen=True)
 class Result(Generic[ANSWER, ERROR]):
-    # Ignore this method for now:
     def and_then(
         self, func: Callable[[ANSWER], "Result"]
     ) -> "Result[ANSWER, ERROR]":
@@ -20,7 +19,7 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Ok(Result[ANSWER, ERROR]):
-    value: ANSWER  # Usage: return Ok(answer)
+    value: ANSWER
 
     def unwrap(self) -> ANSWER:
         return self.value
@@ -28,4 +27,4 @@ class Ok(Result[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Err(Result[ANSWER, ERROR]):
-    error: ERROR  # Usage: return Err(error)
+    error: ERROR

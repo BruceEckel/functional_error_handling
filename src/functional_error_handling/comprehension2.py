@@ -31,16 +31,3 @@ value = 0
 error = 'i is 1'
 value = 4
 """
-
-
-# Return type enforced
-def composed(i: int) -> int | str:
-    return func_a(i)
-
-
-print(composed(1))
-print(composed(5))
-console == """
-i is 1
-10
-"""

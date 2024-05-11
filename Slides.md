@@ -14,8 +14,8 @@ Github: BruceEckel/functional_error_handling
 ---
 #### Acknowledgements
 
-- My attempts to help Bill Frasure & James Ward
-- Book: “Effect-Oriented Programming”
+- Helping Bill Frasure & James Ward on
+> Effect-Oriented Programming
 - Interviews that James and I have done for the [Happy Path Programming podcast](https://happypathprogramming.com/).
 - ChatGPT: Unreliable but still very useful
 
@@ -55,18 +55,19 @@ Github: BruceEckel/functional_error_handling
 - Scaling up (composing) reveals problems
 
 ---
-### 1. Conflates Categories
+### 1. Not Part of the Type System
+
+- Don’t know what exceptions will emerge
+- The function can start throwing new ones
+- C++ and Java tried *exception specifications*—didn't work
+ 
+---
+### 2. Conflates Categories
 
 - Recoverable
 - Panic: program can't continue
     - Treated the same as recoverable
     - Unecessary overhead
----
-### 2. Not Part of the Type System
-
-- Don’t know what exceptions will emerge
-- The function can start throwing new ones
-- C++ and Java tried *exception specifications*—didn't work
 
 ---
 ### 3. Exceptions Destroy Partial Calculations
@@ -81,7 +82,7 @@ Github: BruceEckel/functional_error_handling
 
 - Stop using exceptions
 - Functions return a “package” combining the answer + potential error
-- We can do this with a *Type union*:
+- We can do this with a *type union*:
 
 **`comprehension2.py`**
 
@@ -90,7 +91,7 @@ Github: BruceEckel/functional_error_handling
 
 **`result.py`**
 
-#### Incorporate `Result`
+### Incorporate `Result`
 
 **`comprehension3.py`**
 

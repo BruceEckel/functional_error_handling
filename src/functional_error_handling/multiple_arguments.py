@@ -1,27 +1,15 @@
 #: multiple_arguments.py
-from returns.result import Failure, Result, Success
+from comprehension6 import func_a, func_b
+from returns.result import Result
 from util import display
 from validate_output import console
 
 
-def func_a(i: int) -> Result[int, ValueError]:
-    if i == 1:
-        return Failure(ValueError(f"func_a: {i = }"))
-    return Success(i * 10)
-
-
-def func_b(j: int) -> Result[int, ValueError]:
-    if j == 2:
-        return Failure(ValueError(f"func_b: {j = }"))
-    return Success(j * 100)
-
-
-# Ordinary function:
 def add(first: int, second: int) -> int:
     return first + second
 
 
-def composed(i: int, j: int) -> Result[int, ValueError]:
+def composed(i: int, j: int) -> Result[int, str | ValueError]:
     # fmt: off
     return Result.do(
         add(first, second)
@@ -30,11 +18,11 @@ def composed(i: int, j: int) -> Result[int, ValueError]:
     )
 
 
-inputs = [(1, 5), (7, 2), (2, 1)]
+inputs = [(1, 5), (7, 0), (2, 1)]
 outputs = [composed(*args) for args in inputs]
 display(inputs, outputs)
 console == """
-(1, 5): <Failure: func_a: i = 1>
-(7, 2): <Failure: func_b: j = 2>
-(2, 1): <Success: 120>
+(1, 5): <Failure: func_a(i = 1)>
+(7, 0): <Failure: func_b(i =0)>
+(2, 1): <Success: 3>
 """

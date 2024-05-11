@@ -1,14 +1,9 @@
 #: comprehension4.py
 # Composing functions
+from comprehension3 import func_a
 from result import Err, Ok, Result
 from util import display
 from validate_output import console
-
-
-def func_a(i: int) -> Result[int, str]:
-    if i == 1:
-        return Err("i is 1")
-    return Ok(i)
 
 
 # Use an exception as info (but don't raise it):
