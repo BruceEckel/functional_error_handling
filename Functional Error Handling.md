@@ -440,17 +440,6 @@ At each “chaining point” in `func_a(i).and_then(func_b).and_then(func_c)`, `
 
 We could continue adding features to our `Result` library until it becomes a complete solution. However, others have worked on this problem so it makes more sense to reuse their libraries. The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns). `Returns` includes other features, but we will only focus on  `Result`.
 
-`Returns` provides a `@safe` decorator that you see applied to the “plain” function `func_b`. This changes the normal `int` return type into a `Result` that includes `int` for the `Success` type but is also somehow able to recognize that the division might produce a `ZeroDivisionError` and include that in the `Failure` type. In addition, `@safe` is apparently catching the exception and converting it to the `ZeroDivisionError` returned as the information object in the `Failure` object. `@safe` is a helpful tool when converting exception-throwing code into error-returning code.
-
-`func_c` adds some variety by rejecting `-1` and producing a `str` result. We can now produce `composed` using a `pipe` and `bind`. All the previous error-checking and short-circuiting behaviors happen as before, but the syntax is now more straightforward and readable.
-
-Notice that when the `outputs` list is created, the output from `reject0` only happens for the values `-1` and `2`, because the other values cause errors in the `composed` chain of operations. The value `1` never gets to `func_b` because it is intercepted by the prior `composed` call to `func_a`. The value `0` causes `func_b` to produce a `ZeroDivisionError` when it tries to perform the division inside the `print`.
-
-[Explain rest of example]
-
-Note that there may be an issue with the `Returns` library, which is that for proper type checking it requires using a MyPy extension. So far I have been unable to get that extension to work (however, I have no experience with MyPy extensions).
-
-
 
 The `pipe` is limiting because it assumes a single argument. What if you need to create a `composed` function that takes multiple arguments? For this, we use something called “do notation,” which you access using `Result.do`:
 
@@ -509,6 +498,16 @@ console == """
 (7, 5): <Success: 24>
 """
 ```
+
+`Returns` provides a `@safe` decorator that you see applied to the “plain” function `func_b`. This changes the normal `int` return type into a `Result` that includes `int` for the `Success` type but is also somehow able to recognize that the division might produce a `ZeroDivisionError` and include that in the `Failure` type. In addition, `@safe` is apparently catching the exception and converting it to the `ZeroDivisionError` returned as the information object in the `Failure` object. `@safe` is a helpful tool when converting exception-throwing code into error-returning code.
+
+`func_c` adds some variety by rejecting `-1` and producing a `str` result. We can now produce `composed` using a `pipe` and `bind`. All the previous error-checking and short-circuiting behaviors happen as before, but the syntax is now more straightforward and readable.
+
+Notice that when the `outputs` list is created, the output from `reject0` only happens for the values `-1` and `2`, because the other values cause errors in the `composed` chain of operations. The value `1` never gets to `func_b` because it is intercepted by the prior `composed` call to `func_a`. The value `0` causes `func_b` to produce a `ZeroDivisionError` when it tries to perform the division inside the `print`.
+
+[Explain rest of example]
+
+Note that there may be an issue with the `Returns` library, which is that for proper type checking it requires using a MyPy extension. So far I have been unable to get that extension to work (however, I have no experience with MyPy extensions).
 
 # Functional Error Handling is Happening
 
