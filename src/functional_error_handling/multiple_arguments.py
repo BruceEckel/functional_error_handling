@@ -22,7 +22,7 @@ inputs = [(1, 5), (7, 0), (2, 1)]
 outputs = [composed(*args) for args in inputs]
 display(inputs, outputs)
 console == """
-(1, 5): <Failure: func_a(i = 1)>
-(7, 0): <Failure: func_b(i =0)>
+(1, 5): <Failure: func_a(1)>
+(7, 0): <Failure: func_b(0)>
 (2, 1): <Success: 3>
 """

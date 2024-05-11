@@ -4,7 +4,7 @@
 
 def func_a(i: int) -> int:
     if i == 1:
-        raise ValueError("i is 1")
+        raise ValueError(f"func_a({i})")
     return i
 
 

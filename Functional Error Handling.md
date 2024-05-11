@@ -140,7 +140,7 @@ Let’s start with a very simple example where we populate a `List` with the res
 
 def func_a(i: int) -> int:
     if i == 1:
-        raise ValueError("i is 1")
+        raise ValueError(f"func_a({i})")
     return i
 
 
@@ -173,7 +173,7 @@ from validate_output import console
 
 def func_a(i: int) -> int | str:  # Sum type
     if i == 1:
-        return "i is 1"
+        return f"func_a({i})"
     return i * 2
 
 
@@ -182,7 +182,7 @@ outputs = [func_a(i) for i in inputs]
 display(inputs, outputs)
 console == """
 0: 0
-1: i is 1
+1: func_a(1)
 2: 4
 """
 
@@ -194,7 +194,7 @@ for r in outputs:
             print(f"{error = }")
 console == """
 value = 0
-error = 'i is 1'
+error = 'func_a(1)'
 value = 4
 """
 ```
@@ -214,17 +214,16 @@ We now have the unfortunate situation that `outputs` contains multiple types: bo
 
 ```python
 #: result.py
-# Result with OK & Err subtypes
+# Add and_then
 from dataclasses import dataclass
 from typing import Callable, Generic, TypeVar
 
-ANSWER = TypeVar("ANSWER")  # Generic parameters
+ANSWER = TypeVar("ANSWER")
 ERROR = TypeVar("ERROR")
 
 
 @dataclass(frozen=True)
 class Result(Generic[ANSWER, ERROR]):
-    # Ignore this method for now:
     def and_then(
         self, func: Callable[[ANSWER], "Result"]
     ) -> "Result[ANSWER, ERROR]":
@@ -235,7 +234,7 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Ok(Result[ANSWER, ERROR]):
-    value: ANSWER  # Usage: return Ok(answer)
+    value: ANSWER
 
     def unwrap(self) -> ANSWER:
         return self.value
@@ -243,7 +242,7 @@ class Ok(Result[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Err(Result[ANSWER, ERROR]):
-    error: ERROR  # Usage: return Err(error)
+    error: ERROR
 ```
 
 A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Ok` calculation, and `error` for a failure (`Err`). Thus, if an `Err` is returned, the client programmer cannot simply reach in and grab the `value` field because it doesn’t exist. The client programmer is forced to properly analyze the `Result`.
@@ -261,24 +260,25 @@ from validate_output import console
 
 def func_a(i: int) -> Result[int, str]:
     if i == 1:
-        return Err("i is 1")
+        return Err(f"func_a({i})")
     return Ok(i)
 
 
-print(outputs := [func_a(i) for i in range(3)])
-console == """
-[Ok(value=0), Err(error='i is 1'), Ok(value=2)]
+if __name__ == "__main__":
+    print(outputs := [func_a(i) for i in range(3)])
+    console == """
+[Ok(value=0), Err(error='func_a(1)'), Ok(value=2)]
 """
 
-for r in outputs:
-    match r:
-        case Ok(value):
-            print(f"{value = }")
-        case Err(error):
-            print(f"{error = }")
-console == """
+    for r in outputs:
+        match r:
+            case Ok(value):
+                print(f"{value = }")
+            case Err(error):
+                print(f"{error = }")
+    console == """
 value = 0
-error = 'i is 1'
+error = 'func_a(1)'
 value = 2
 """
 ```
@@ -300,13 +300,13 @@ from validate_output import console
 # Use an exception as info (but don't raise it):
 def func_b(i: int) -> Result[int, ZeroDivisionError]:
     if i == 0:
-        return Err(ZeroDivisionError())
+        return Err(ZeroDivisionError(f"func_b({i})"))
     return Ok(i)
 
 
 def func_c(i: int) -> Result[str, ValueError]:
     if i == -1:
-        return Err(ValueError(i))
+        return Err(ValueError(f"func_c({i})"))
     return Ok(f"{i}#")
 
 
@@ -330,9 +330,9 @@ def composed(
 if __name__ == "__main__":
     display(inputs := range(-1, 3), [composed(i) for i in inputs])
     console == """
--1: Err(error=ValueError(-1))
-0: Err(error=ZeroDivisionError())
-1: Err(error='i is 1')
+-1: Err(error=ValueError('func_c(-1)'))
+0: Err(error=ZeroDivisionError('func_b(0)'))
+1: Err(error='func_a(1)')
 2: Ok(value='2#')
 """
 ```
@@ -372,9 +372,9 @@ def composed(
 display(inputs := range(-1, 3),
     [composed(i) for i in inputs])
 console == """
--1: Err(error=ValueError(-1))
-0: Err(error=ZeroDivisionError())
-1: Err(error='i is 1')
+-1: Err(error=ValueError('func_c(-1)'))
+0: Err(error=ZeroDivisionError('func_b(0)'))
+1: Err(error='func_a(1)')
 2: Ok(value='2#')
 """
 ```
@@ -412,13 +412,13 @@ from validate_output import console
 
 def func_a(i: int) -> Result[int, str]:
     if i == 1:
-        return Failure(f"func_a({i = })")
+        return Failure(f"func_a({i})")
     return Success(i)
 
 
 def func_b(i: int) -> Result[int, ZeroDivisionError]:
     if i == 0:
-        return Failure(ZeroDivisionError(f"func_b({i =})"))
+        return Failure(ZeroDivisionError(f"func_b({i})"))
     return Success(i)
 
 
@@ -427,7 +427,7 @@ def func_b(i: int) -> Result[int, ZeroDivisionError]:
 @safe
 def func_c(i: int) -> str:
     if i == -1:
-        return ValueError(f"func_c({i =})")
+        return ValueError(f"func_c({i})")
     return f"func_c({i})"
 
 
@@ -443,9 +443,9 @@ if __name__ == "__main__":
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: <Success: func_c(i =-1)>
-0: <Failure: func_b(i =0)>
-1: <Failure: func_a(i = 1)>
+-1: <Success: func_c(-1)>
+0: <Failure: func_b(0)>
+1: <Failure: func_a(1)>
 2: <Success: func_c(2)>
 """
 
@@ -454,8 +454,8 @@ if __name__ == "__main__":
     print(str(with_nones))
     print(str(list(filter(None, with_nones))))
     console == """
-[ValueError('func_c(i =-1)'), None, None, 'func_c(2)']
-[ValueError('func_c(i =-1)'), 'func_c(2)']
+[ValueError('func_c(-1)'), None, None, 'func_c(2)']
+[ValueError('func_c(-1)'), 'func_c(2)']
 """
 
     # Another way to extract results:
@@ -465,9 +465,9 @@ if __name__ == "__main__":
         else:
             print(f"{r.failure() = }")
     console == """
-r.unwrap() = ValueError('func_c(i =-1)')
-r.failure() = ZeroDivisionError('func_b(i =0)')
-r.failure() = 'func_a(i = 1)'
+r.unwrap() = ValueError('func_c(-1)')
+r.failure() = ZeroDivisionError('func_b(0)')
+r.failure() = 'func_a(1)'
 r.unwrap() = 'func_c(2)'
 """
 ```
@@ -513,8 +513,8 @@ inputs = [(1, 5), (7, 0), (2, 1)]
 outputs = [composed(*args) for args in inputs]
 display(inputs, outputs)
 console == """
-(1, 5): <Failure: func_a(i = 1)>
-(7, 0): <Failure: func_b(i =0)>
+(1, 5): <Failure: func_a(1)>
+(7, 0): <Failure: func_b(0)>
 (2, 1): <Success: 3>
 """
 ```

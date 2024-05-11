@@ -7,7 +7,7 @@ from validate_output import console
 
 def func_a(i: int) -> int | str:  # Sum type
     if i == 1:
-        return "i is 1"
+        return f"func_a({i})"
     return i * 2
 
 
@@ -16,7 +16,7 @@ outputs = [func_a(i) for i in inputs]
 display(inputs, outputs)
 console == """
 0: 0
-1: i is 1
+1: func_a(1)
 2: 4
 """
 
@@ -28,6 +28,6 @@ for r in outputs:
             print(f"{error = }")
 console == """
 value = 0
-error = 'i is 1'
+error = 'func_a(1)'
 value = 4
 """
