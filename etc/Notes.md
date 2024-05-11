@@ -1,3 +1,7 @@
+Bill:
+Make two versions of Result, first without and_then
+Consider renaming reject_1 etc.
+
 https://sobolevn.me/2019/02/python-exceptions-considered-an-antipattern
 
 VSCode next/previous tab Ctrl-PgDown/Ctrl-PgUp

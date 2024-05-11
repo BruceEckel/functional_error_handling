@@ -23,7 +23,7 @@ Github: BruceEckel/functional_error_handling
 
 - Most of what we've been working towards in programming—whether we are aware of it or not—is composability
 
-> The ability to assemble bigger pieces from smaller pieces
+> Combining smaller pieces into bigger pieces
 
 - Effortlessly assemble components in the same way a child assembles Legos
 
@@ -31,33 +31,11 @@ Github: BruceEckel/functional_error_handling
 ### Impediments
 
 ---
-### Goto Considered Harmful
-
-- Djikstra’s 1968 note pushed programmers towards functions
-
-- Gotos created un-reusable spaghetti code
-
-- Functions present a single entry and exit point
-
----
-
-### No Namespace Control
-
-- Modules create namespaces
-
-- Python files are automatically modules
-
----
-### Inheritance
-
-- Breaks encapsulation 
-    - Impedes composability
-
----
 ### Error Handling
 
-- Different approaches made it hard to compose
+- Different approaches 
 - Usually global solutions with race conditions
+- Hard to compose
 - The domain of the OS or the language?
     - Initial OS experiments, including resumption
 
@@ -67,7 +45,7 @@ Github: BruceEckel/functional_error_handling
 - In the language domain: closer to the problem
 - Standard way to report errors
 - Errors can't be ignored
-- Unifies error reporting and recovery
+- Added recovery
 
 ---
 - In the small, exceptions seem to work well
@@ -86,7 +64,6 @@ Github: BruceEckel/functional_error_handling
 - Don’t know what exceptions will emerge
 - The function can start throwing new ones
 - C++ and Java tried *exception specifications*—didn't work
-- We need type-enforced error-handling
 
 ---
 ### 3. Exception Specifications Create a “Shadow Type System”
@@ -103,8 +80,8 @@ Github: BruceEckel/functional_error_handling
 ### The Functional Approach
 
 - Stop using exceptions
-- Return a “package” combining the answer + potential error
-- *Type union* creates a nameless return package:
+- Functions return a “package” combining the answer + potential error
+- We can do this with a *Type union*:
 
 **`comprehension2.py`**
 

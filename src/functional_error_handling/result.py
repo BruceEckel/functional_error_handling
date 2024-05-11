@@ -3,7 +3,7 @@
 from dataclasses import dataclass
 from typing import Callable, Generic, TypeVar
 
-ANSWER = TypeVar("ANSWER")
+ANSWER = TypeVar("ANSWER")  # Generic parameters
 ERROR = TypeVar("ERROR")
 
 
