@@ -13,6 +13,7 @@ This is less-precise than some definitions. For example, composition in object-o
 To enable the easy construction of programs, we need to be able to effortlessly assemble components in the same way that a child assembles Legos—by simply sticking them together, without requiring extra activities. On top of that, such assemblages become their own components that can be stuck together just as easily. This composability scales up regardless of the size of the components.
 
 Over the years we have encountered numerous roadblocks to this goal.
+
 ## Goto Considered Harmful
 
 [Djikstra’s 1968 note](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) had quite an impact on the programming community, which at the time consisted largely of assembly-language programmers. For these, the goto statement was foundational, and denigrating it was a shock. Although he never explicitly mentioned functions in his note, the effect was to push programmers towards functions. [The creator of Structured Concurrency](https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/) provides a clear description of this.
@@ -22,6 +23,7 @@ Rather than jumping about within a limited program, functions present the caller
 My programming training was primarily as a computer engineer and I spent the first few years of my career programming in assembly. Assembly supports subroutine calls and returns, but not the loading of arguments on the stack and passing results back out—the programmer must write this error-prone code by hand.
 
 Higher-level languages handle function arguments and returns for you, which made them a very desirable improvement as the size and complexity of programs grew beyond what the assembly programmer was able to hold in their head.
+
 ## Modules
 
 Tim Peters’ observation of the value of namespaces (see [The Zen of Python](https://peps.python.org/pep-0020/)) is the core of the idea of modules, which more modern languages incorporate (unfortunately C++ had to inherit C’s messy system, for backwards compatibility). In Python, files are automatically modules, which is certainly one of the easiest solutions.
@@ -41,6 +43,7 @@ This allowed complete granularity independent of file organization; perhaps this
 The main benefit of modules is name control—each module creates a scope for names (a namespace) which allows programmers the freedom to choose any name at will within a module. This prevents name collisions across a project and reduces the cognitive load on the programmer. Prior to this, programs reached scaling limits as they grew larger. Program size in assembly language programs was limited by many different factors, so the need for modules was not seen until systems were able to grow larger because higher-level languages solved enough of these other factors.
 
 In modern languages, modularity is part of the background of a language and we don’t think much about it. At one time, however, the lack of modularity was a significant roadblock to code composability.
+
 ## Inheritance
 
 Object-oriented programming has a bit of a tortured history. Although the first OO language was Simula-67 (a compiled language), OO found its first real success with Smalltalk. But Smalltalk might be the most dynamic language you’ll ever encounter—literally everything is evaluated at runtime. While this worked well for the kinds of problems Smalltalk was good at solving, it turned out that taking the ideas of Smalltalk and imprinting them into a statically-typed language lost a *lot* in translation.
@@ -48,6 +51,7 @@ Object-oriented programming has a bit of a tortured history. Although the first 
 # Error Handling
 
 Error reporting and handling has been a significant impediment to composability.
+
 ## History
 
 Original programs were small (by present-day standards), written in assembly language (machine code quickly became too unwieldy), and tightly coupled to the underlying hardware. If something went wrong, the only way to report it was to change the output on a wire, to turn on a light or a buzzer. If you had one, you put a message on the console—this might as simple as a dot-matrix display. Such an error message probably wasn’t friendly to the end-user of the system and usually required a tech support call to the manufacturer. 
@@ -96,6 +100,7 @@ Exceptions seemed like a great idea:
 5. Exception hierarchies allow more general exception handlers to handle multiple exception subtypes.
 
 To be clear, exceptions were a big improvement over all of the previous (non) solutions to the error reporting problem. Exceptions moved us forward for awhile (and became entrenched in programming culture) until folks started discovering pain points. As is often the case, this happened as we tried to scale up to create larger and more complex systems. And once again, the underlying issue was composability.
+
 ## Problems with Exceptions
 
 In the small (and especially when teaching them), exceptions seem to work quite well. 
@@ -103,6 +108,7 @@ In the small (and especially when teaching them), exceptions seem to work quite 
 maybe you can't prove it, things work in the small but don't scale). We only figure it out when scaling composability.
 
 ### 1. The Two Kinds of Errors are Conflated
+
 Recoverable vs panic
 (Recovering/Retrying requires programming)
 With exceptions, the two types are conflated.
@@ -129,13 +135,14 @@ C++ exception specifications were originally optional and not statically type-ch
 Java created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored. Eventually they added a feature that allows checked exceptions to be easily converted into runtime exceptions. Java functions can always return `null` without any warning.
 
 Both systems (the original C++ dynamic exception specifications, and Java exception specifications) had too many holes, and it was too difficult to effectively support both the main and shadow type systems.
+
 ### 4. Exceptions Destroy Partial Calculations
 
-Let’s start with a very simple example where we populate a `List` with the results of a sequence of calls to the function `func_a`:
+Let’s start with a simple example where we populate a `List` with the results of a sequence of calls to the function `func_a`:
 
 ```python
 #: comprehension1.py
-# Exception produces no results, stops everything
+# Exception throws everything away
 
 
 def func_a(i: int) -> int:
@@ -156,7 +163,9 @@ ValueError: i is 1
 `func_a` throws a `ValueError` if its argument is `1`. The `range(3)` is 0, 1, and 2; only one of these values causes the exception. So `result` contains only one problem; the other two values are fine. However, we lose everything that we were calculating when the exception is thrown. This:
 1. Is computationally wasteful, especially with large calculations.
 2. Makes debugging harder. It would be quite valuable to see in `result` the parts that succeeded and those that failed.
+
 # The Functional Solution
+
 Instead of creating a complex implementation to report and handle errors, the functional approach creates a “return package” containing the answer along with the (potential) error information. Instead of only returning the answer, we return this package from the function. 
 
 This package is a new type, with operations that prevent the programmer from simply plucking the result from the package without dealing with error conditions (a failing of the Go language approach).
@@ -174,16 +183,17 @@ from validate_output import console
 def func_a(i: int) -> int | str:  # Sum type
     if i == 1:
         return f"func_a({i})"
-    return i * 2
+    return i
 
 
-inputs = range(3)  # [0, 1, 2]
-outputs = [func_a(i) for i in inputs]
-display(inputs, outputs)
+display(
+    inputs := range(3),
+    outputs := [func_a(i) for i in inputs],
+)
 console == """
 0: 0
 1: func_a(1)
-2: 4
+2: 2
 """
 
 for r in outputs:
@@ -195,7 +205,7 @@ for r in outputs:
 console == """
 value = 0
 error = 'func_a(1)'
-value = 4
+value = 2
 """
 ```
 
@@ -208,33 +218,29 @@ An important problem with this approach is that it is not clear which type is th
 In hindsight, it might seem like this “return package” approach is much more obvious than the elaborate exception-handling scheme that was adopted for C++, Java and other languages, but at the time the apparent overhead of returning extra bytes seemed unacceptable (I don’t know of any comparisons between that and the overhead of exception-handling mechanisms, but I do know that the goal of C++ exception handling is to have zero execution overhead if no exceptions occur).
 
 Note that in the definition of `composed`, the type checker requires that you return `int | str` because `func_a` returns those types. Thus, when composing, type-safety is preserved. This means you won’t lose error type information during composition, so composability automatically scales.
-## Unifying the Return Type
+
+## Creating a New Return Type
 
 We now have the unfortunate situation that `outputs` contains multiple types: both `int` and `str`. The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it universally applicable:
 
 ```python
-#: result.py
-# Add and_then
+#: result_basic.py
+# Result with OK & Err subtypes
 from dataclasses import dataclass
-from typing import Callable, Generic, TypeVar
+from typing import Generic, TypeVar
 
-ANSWER = TypeVar("ANSWER")
+ANSWER = TypeVar("ANSWER")  # Generic parameters
 ERROR = TypeVar("ERROR")
 
 
 @dataclass(frozen=True)
 class Result(Generic[ANSWER, ERROR]):
-    def and_then(
-        self, func: Callable[[ANSWER], "Result"]
-    ) -> "Result[ANSWER, ERROR]":
-        if isinstance(self, Ok):
-            return func(self.value)
-        return self  # Pass the Err forward
+    pass
 
 
 @dataclass(frozen=True)
 class Ok(Result[ANSWER, ERROR]):
-    value: ANSWER
+    value: ANSWER  # Usage: return Ok(answer)
 
     def unwrap(self) -> ANSWER:
         return self.value
@@ -242,7 +248,7 @@ class Ok(Result[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Err(Result[ANSWER, ERROR]):
-    error: ERROR
+    error: ERROR  # Usage: return Err(error)
 ```
 
 A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Ok` calculation, and `error` for a failure (`Err`). Thus, if an `Err` is returned, the client programmer cannot simply reach in and grab the `value` field because it doesn’t exist. The client programmer is forced to properly analyze the `Result`.
@@ -255,6 +261,7 @@ The modified version of the example using `Result` is now:
 #: comprehension3.py
 # Explicit result type
 from result import Err, Ok, Result
+from util import display
 from validate_output import console
 
 
@@ -265,25 +272,19 @@ def func_a(i: int) -> Result[int, str]:
 
 
 if __name__ == "__main__":
-    print(outputs := [func_a(i) for i in range(3)])
+    display(
+        inputs := range(3),
+        outputs := [func_a(i) for i in inputs],
+    )
     console == """
-[Ok(value=0), Err(error='func_a(1)'), Ok(value=2)]
-"""
-
-    for r in outputs:
-        match r:
-            case Ok(value):
-                print(f"{value = }")
-            case Err(error):
-                print(f"{error = }")
-    console == """
-value = 0
-error = 'func_a(1)'
-value = 2
+0: Ok(value=0)
+1: Err(error='func_a(1)')
+2: Ok(value=2)
 """
 ```
 
 Now `func_a` returns a single type, `Result`. The first type parameter to `Result` is the type returned by `Ok` and the second type parameter is the type returned by `Err`. The `outputs` from the comprehension are all of type `Result`, and we have preserved the successful calculations even though there is a failing call. We can also pattern-match on the outputs, and it is crystal-clear which match is for the success and which is for the failure.
+
 ## Composing with `Result`
 
 The previous examples included very simple composition in the `compsed` functions which just called a single other function. What if you need to compose a more complex function from multiple other functions? The `Result` type ensures that the `composed` function properly represents both the `Answer` type but also the various different errors that can occur:
@@ -328,7 +329,10 @@ def composed(
 
 
 if __name__ == "__main__":
-    display(inputs := range(-1, 3), [composed(i) for i in inputs])
+    display(
+        inputs := range(-1, 3),
+        outputs := [composed(i) for i in inputs],
+    )
     console == """
 -1: Err(error=ValueError('func_c(-1)'))
 0: Err(error=ZeroDivisionError('func_b(0)'))
@@ -342,9 +346,45 @@ The `a`, `b` and `c` functions each have argument values that are unacceptable. 
 In `composed`, we call `a`, `b` and `c` in sequence. After each call, we check to see if the result type is `Err`. If so, the calculation has failed and we can’t continue, so we return the current result, which is an `Err` object containing the reason for the failure. If it succeeds, it is an `Ok` which contains an `unwrap` method that is used to extract the answer from that calculation—if you look back at `Result`, you’ll see that it returns the `ANSWER` type so its use can be properly type-checked.
 
 This means that any failure during a sequence of composed function calls will short-circuit out of `composed`, returning an `Err` that tells you exactly what happened, and that you must decide what to do with. You can’t just ignore it and assume that it will “bubble up” until it finds an appropriate handler. You are forced to deal with it at the point of origin, which is typically when you know the most about an error.
+
 ## Simplifying Composition with `and_then`
 
 There’s still a problem that impedes our ultimate goal of composability: every time you call a function within a composed function, you must write code to check the `Result` type and extract the success value with `unwrap`. This is extra repetitive work that interrupts the flow and readability of the program. We need some way to reduce or eliminate the extra code.
+
+Lets modify `Result` to add a new member function, `and_then`:
+
+```python
+#: result.py
+# Add and_then
+from dataclasses import dataclass
+from typing import Callable, Generic, TypeVar
+
+ANSWER = TypeVar("ANSWER")
+ERROR = TypeVar("ERROR")
+
+
+@dataclass(frozen=True)
+class Result(Generic[ANSWER, ERROR]):
+    def and_then(
+        self, func: Callable[[ANSWER], "Result"]
+    ) -> "Result[ANSWER, ERROR]":
+        if isinstance(self, Ok):
+            return func(self.value)
+        return self  # Pass the Err forward
+
+
+@dataclass(frozen=True)
+class Ok(Result[ANSWER, ERROR]):
+    value: ANSWER
+
+    def unwrap(self) -> ANSWER:
+        return self.value
+
+
+@dataclass(frozen=True)
+class Err(Result[ANSWER, ERROR]):
+    error: ERROR
+```
 
 The `and_then` method in `Result` (see the comment in `result.py` that said “Ignore this method for now”) solves this exact problem:
 
@@ -368,10 +408,12 @@ def composed(
     )
 
 
-# fmt: off
-display(inputs := range(-1, 3),
-    [composed(i) for i in inputs])
-console == """
+if __name__ == "__main__":
+    display(
+        inputs := range(-1, 3),
+        outputs := [composed(i) for i in inputs],
+    )
+    console == """
 -1: Err(error=ValueError('func_c(-1)'))
 0: Err(error=ZeroDivisionError('func_b(0)'))
 1: Err(error='func_a(1)')
@@ -449,15 +491,6 @@ if __name__ == "__main__":
 2: <Success: func_c(2)>
 """
 
-    # Extract results, converting failure to None:
-    with_nones = [r.value_or(None) for r in outputs]
-    print(str(with_nones))
-    print(str(list(filter(None, with_nones))))
-    console == """
-[None, None, None, 'func_c(2)']
-['func_c(2)']
-"""
-
     # Another way to extract results:
     for r in outputs:
         if is_successful(r):
@@ -500,7 +533,9 @@ def add(first: int, second: int) -> int:
     return first + second
 
 
-def composed(i: int, j: int) -> Result[int, str | ValueError]:
+def composed(
+    i: int, j: int
+) -> Result[int, str | ValueError]:
     # fmt: off
     return Result.do(
         add(first, second)
@@ -509,9 +544,10 @@ def composed(i: int, j: int) -> Result[int, str | ValueError]:
     )
 
 
-inputs = [(1, 5), (7, 0), (2, 1)]
-outputs = [composed(*args) for args in inputs]
-display(inputs, outputs)
+display(
+    inputs := [(1, 5), (7, 0), (2, 1)],
+    outputs=[composed(*args) for args in inputs],
+)
 console == """
 (1, 5): <Failure: func_a(1)>
 (7, 0): <Failure: func_b(0)>

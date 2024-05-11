@@ -46,15 +46,6 @@ if __name__ == "__main__":
 2: <Success: func_c(2)>
 """
 
-    # Extract results, converting failure to None:
-    with_nones = [r.value_or(None) for r in outputs]
-    print(str(with_nones))
-    print(str(list(filter(None, with_nones))))
-    console == """
-[None, None, None, 'func_c(2)']
-['func_c(2)']
-"""
-
     # Another way to extract results:
     for r in outputs:
         if is_successful(r):

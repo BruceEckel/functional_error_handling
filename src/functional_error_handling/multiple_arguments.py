@@ -9,7 +9,9 @@ def add(first: int, second: int) -> int:
     return first + second
 
 
-def composed(i: int, j: int) -> Result[int, str | ValueError]:
+def composed(
+    i: int, j: int
+) -> Result[int, str | ValueError]:
     # fmt: off
     return Result.do(
         add(first, second)
@@ -18,9 +20,10 @@ def composed(i: int, j: int) -> Result[int, str | ValueError]:
     )
 
 
-inputs = [(1, 5), (7, 0), (2, 1)]
-outputs = [composed(*args) for args in inputs]
-display(inputs, outputs)
+display(
+    inputs := [(1, 5), (7, 0), (2, 1)],
+    outputs=[composed(*args) for args in inputs],
+)
 console == """
 (1, 5): <Failure: func_a(1)>
 (7, 0): <Failure: func_b(0)>

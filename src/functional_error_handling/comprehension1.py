@@ -1,5 +1,5 @@
 #: comprehension1.py
-# Exception produces no results, stops everything
+# Exception throws everything away
 
 
 def func_a(i: int) -> int:

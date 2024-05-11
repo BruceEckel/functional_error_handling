@@ -1,6 +1,7 @@
 #: comprehension3.py
 # Explicit result type
 from result import Err, Ok, Result
+from util import display
 from validate_output import console
 
 
@@ -11,19 +12,12 @@ def func_a(i: int) -> Result[int, str]:
 
 
 if __name__ == "__main__":
-    print(outputs := [func_a(i) for i in range(3)])
+    display(
+        inputs := range(3),
+        outputs := [func_a(i) for i in inputs],
+    )
     console == """
-[Ok(value=0), Err(error='func_a(1)'), Ok(value=2)]
-"""
-
-    for r in outputs:
-        match r:
-            case Ok(value):
-                print(f"{value = }")
-            case Err(error):
-                print(f"{error = }")
-    console == """
-value = 0
-error = 'func_a(1)'
-value = 2
+0: Ok(value=0)
+1: Err(error='func_a(1)')
+2: Ok(value=2)
 """

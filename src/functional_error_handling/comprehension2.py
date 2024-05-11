@@ -8,16 +8,17 @@ from validate_output import console
 def func_a(i: int) -> int | str:  # Sum type
     if i == 1:
         return f"func_a({i})"
-    return i * 2
+    return i
 
 
-inputs = range(3)  # [0, 1, 2]
-outputs = [func_a(i) for i in inputs]
-display(inputs, outputs)
+display(
+    inputs := range(3),
+    outputs := [func_a(i) for i in inputs],
+)
 console == """
 0: 0
 1: func_a(1)
-2: 4
+2: 2
 """
 
 for r in outputs:
@@ -29,5 +30,5 @@ for r in outputs:
 console == """
 value = 0
 error = 'func_a(1)'
-value = 4
+value = 2
 """

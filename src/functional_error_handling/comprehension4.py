@@ -37,7 +37,10 @@ def composed(
 
 
 if __name__ == "__main__":
-    display(inputs := range(-1, 3), [composed(i) for i in inputs])
+    display(
+        inputs := range(-1, 3),
+        outputs := [composed(i) for i in inputs],
+    )
     console == """
 -1: Err(error=ValueError('func_c(-1)'))
 0: Err(error=ZeroDivisionError('func_b(0)'))

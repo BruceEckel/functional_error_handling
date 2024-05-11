@@ -108,6 +108,10 @@ Github: BruceEckel/functional_error_handling
 ---
 ### Simplifying Composition with `and_then`
 
+Let's add a new method `and_then` to `Result`:
+
+**`result.py`**
+
 **`comprehension5.py`**
 
 ---

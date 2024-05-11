@@ -26,9 +26,6 @@ allow-direct-references = true
 [tool.pyright]
 reportUnusedExpression = false
 
-[tool.ruff]
-line-length = 70
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"
@@ -36,3 +33,6 @@ testpaths = ["src/functional_error_handling"]
 
 [tool.mypy]
 plugins = ["returns.contrib.mypy.returns_plugin"]
+
+[tool.ruff]
+line-length = 60
