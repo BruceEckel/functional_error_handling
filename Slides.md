@@ -28,7 +28,10 @@ Github: BruceEckel/functional_error_handling
 - Effortlessly assemble components in the same way a child assembles Legos
 
 ---
-### Impediments
+### Steps to Composability
+- Gotos -> Functions
+- Modules
+- Inheritance Breaks Encapsulation
 
 ---
 ### Error Handling
@@ -66,10 +69,7 @@ Github: BruceEckel/functional_error_handling
 - C++ and Java tried *exception specifications*—didn't work
 
 ---
-### 3. Exception Specifications Create a “Shadow Type System”
-
----
-### 4. Exceptions Destroy Partial Calculations
+### 3. Exceptions Destroy Partial Calculations
 
 1. Computationally wasteful, especially with large calculations
 2. Makes debugging harder

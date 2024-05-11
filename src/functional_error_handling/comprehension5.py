@@ -1,6 +1,6 @@
 #: comprehension5.py
 # Simplifying composition with and_then
-from comprehension4 import reject_0, reject_1, reject_minus_1
+from comprehension4 import func_a, func_b, func_c
 from result import Result
 from util import display
 from validate_output import console
@@ -11,9 +11,9 @@ def composed(
 ) -> Result[str, str | ZeroDivisionError | ValueError]:
     # fmt: off
     return (
-        reject_1(i)
-        .and_then(reject_0)
-        .and_then(reject_minus_1)
+        func_a(i)
+        .and_then(func_b)
+        .and_then(func_c)
     )
 
 

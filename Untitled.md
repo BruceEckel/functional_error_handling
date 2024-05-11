@@ -27,7 +27,7 @@ Actual bullets
 def composed(
     i: int,
 ) -> Result[str, str | ZeroDivisionError | ValueError]:
-    return reject_1(i).and_then(reject_0).and_then(reject_minus_1)
+    return func_a(i).and_then(func_b).and_then(func_c)
 
 display(inputs := range(-1, 3), [composed(i) for i in inputs])
 console == """

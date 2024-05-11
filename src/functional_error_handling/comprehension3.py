@@ -4,13 +4,13 @@ from result import Err, Ok, Result
 from validate_output import console
 
 
-def reject_1(i: int) -> Result[int, str]:
+def func_a(i: int) -> Result[int, str]:
     if i == 1:
         return Err("i is 1")
     return Ok(i * 2)
 
 
-print(outputs := [reject_1(i) for i in range(3)])
+print(outputs := [func_a(i) for i in range(3)])
 console == """
 [Ok(value=0), Err(error='i is 1'), Ok(value=4)]
 """
@@ -29,7 +29,7 @@ value = 4
 
 
 def composed(i: int) -> Result[int, str]:
-    return reject_1(i)
+    return func_a(i)
 
 
 print(composed(1))

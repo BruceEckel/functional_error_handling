@@ -5,14 +5,14 @@ from util import display
 from validate_output import console
 
 
-def reject_1(i: int) -> int | str:  # Sum type
+def func_a(i: int) -> int | str:  # Sum type
     if i == 1:
         return "i is 1"
     return i * 2
 
 
 inputs = range(3)  # [0, 1, 2]
-outputs = [reject_1(i) for i in inputs]
+outputs = [func_a(i) for i in inputs]
 display(inputs, outputs)
 console == """
 0: 0
@@ -35,7 +35,7 @@ value = 4
 
 # Return type enforced
 def composed(i: int) -> int | str:
-    return reject_1(i)
+    return func_a(i)
 
 
 print(composed(1))
