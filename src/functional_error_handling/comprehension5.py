@@ -24,5 +24,5 @@ console == """
 -1: Err(error=ValueError('func_c(-1)'))
 0: Err(error=ZeroDivisionError('func_b(0)'))
 1: Err(error='func_a(1)')
-2: Ok(value='2#')
+2: Ok(value='func_c(2)')
 """

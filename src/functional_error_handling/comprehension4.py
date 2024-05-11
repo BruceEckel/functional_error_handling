@@ -16,7 +16,7 @@ def func_b(i: int) -> Result[int, ZeroDivisionError]:
 def func_c(i: int) -> Result[str, ValueError]:
     if i == -1:
         return Err(ValueError(f"func_c({i})"))
-    return Ok(f"{i}#")
+    return Ok(f"func_c({i})")
 
 
 def composed(
@@ -42,5 +42,5 @@ if __name__ == "__main__":
 -1: Err(error=ValueError('func_c(-1)'))
 0: Err(error=ZeroDivisionError('func_b(0)'))
 1: Err(error='func_a(1)')
-2: Ok(value='2#')
+2: Ok(value='func_c(2)')
 """

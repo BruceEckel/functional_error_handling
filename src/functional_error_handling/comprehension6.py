@@ -24,7 +24,7 @@ def func_b(i: int) -> Result[int, ZeroDivisionError]:
 @safe
 def func_c(i: int) -> str:
     if i == -1:
-        return ValueError(f"func_c({i})")
+        raise ValueError(f"func_c({i})")
     return f"func_c({i})"
 
 
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: <Success: func_c(-1)>
+-1: <Failure: func_c(-1)>
 0: <Failure: func_b(0)>
 1: <Failure: func_a(1)>
 2: <Success: func_c(2)>
@@ -51,8 +51,8 @@ if __name__ == "__main__":
     print(str(with_nones))
     print(str(list(filter(None, with_nones))))
     console == """
-[ValueError('func_c(-1)'), None, None, 'func_c(2)']
-[ValueError('func_c(-1)'), 'func_c(2)']
+[None, None, None, 'func_c(2)']
+['func_c(2)']
 """
 
     # Another way to extract results:
@@ -62,7 +62,7 @@ if __name__ == "__main__":
         else:
             print(f"{r.failure() = }")
     console == """
-r.unwrap() = ValueError('func_c(-1)')
+r.failure() = ValueError('func_c(-1)')
 r.failure() = ZeroDivisionError('func_b(0)')
 r.failure() = 'func_a(1)'
 r.unwrap() = 'func_c(2)'
