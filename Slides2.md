@@ -93,7 +93,7 @@ print(result)
 """
 Traceback (most recent call last):
   ...
-ValueError: i is 1
+ValueError: func_a(1)
 """
 ```
 
