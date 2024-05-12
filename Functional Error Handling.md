@@ -240,7 +240,7 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Success(Result[ANSWER, ERROR]):
-    value: ANSWER  # Usage: return Ok(answer)
+    value: ANSWER  # Usage: return Success(answer)
 
     def unwrap(self) -> ANSWER:
         return self.value
@@ -248,7 +248,7 @@ class Success(Result[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Failure(Result[ANSWER, ERROR]):
-    error: ERROR  # Usage: return Err(error)
+    error: ERROR  # Usage: return Success(error)
 ```
 
 A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Ok` calculation, and `error` for a failure (`Err`). Thus, if an `Err` is returned, the client programmer cannot simply reach in and grab the `value` field because it doesn’t exist. The client programmer is forced to properly analyze the `Result`.

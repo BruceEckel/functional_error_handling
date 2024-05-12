@@ -14,7 +14,7 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Success(Result[ANSWER, ERROR]):
-    value: ANSWER  # Usage: return Ok(answer)
+    value: ANSWER  # Usage: return Success(answer)
 
     def unwrap(self) -> ANSWER:
         return self.value
@@ -22,4 +22,4 @@ class Success(Result[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Failure(Result[ANSWER, ERROR]):
-    error: ERROR  # Usage: return Err(error)
+    error: ERROR  # Usage: return Success(error)
