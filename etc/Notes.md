@@ -1,7 +1,3 @@
-Bill:
-Make two versions of Result, first without and_then
-Consider renaming func_a etc.
-
 https://sobolevn.me/2019/02/python-exceptions-considered-an-antipattern
 
 VSCode next/previous tab Ctrl-PgDown/Ctrl-PgUp
@@ -16,14 +12,13 @@ And add:
     },
     "editor.hover.enabled": false
 
-- Functional programmers don't have the curse of knowledge, but the damnation of knowledge. It's amazing what they assume you know. Like concurrency, whatever niche they understand, they assume is obvious. (Their focus is figuring out functional programming, not communicating)
-
-- The biggest thing that "introductory" functional programming tutorials assume you know is "why are we doing this." These tutorials most commonly devolve into a list of disparate features, without giving any unifying idea behind these features.
 
 - Coconut seems to skip error handling altogether (it just uses exceptions)
 
 
 ----------------------------
+
+For eventual use as documentation for update_markdown_code_listings.py
 
 I want to create a tool to update the python source-code listings within a markdown file. The listings in the markdown file look like this:
 
