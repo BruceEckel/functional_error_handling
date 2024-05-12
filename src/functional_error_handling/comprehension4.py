@@ -1,7 +1,7 @@
 #: comprehension4.py
 # Composing functions
 from comprehension3 import func_a
-from result import Failure, Success, Result
+from result import Failure, Result, Success
 from util import display
 from validate_output import console
 
@@ -32,8 +32,7 @@ def composed(
     if isinstance(result_b, Failure):
         return result_b
 
-    result_c = func_c(result_b.unwrap())
-    return result_c
+    return func_c(result_b.unwrap())
 
 
 if __name__ == "__main__":

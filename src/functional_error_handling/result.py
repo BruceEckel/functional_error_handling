@@ -13,8 +13,8 @@ class Result(Generic[ANSWER, ERROR]):
         self, func: Callable[[ANSWER], "Result"]
     ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Success):
-            return func(self.value)
-        return self  # Pass the Err forward
+            return func(self.unwrap())
+        return self  # Pass the Failure forward
 
 
 @dataclass(frozen=True)

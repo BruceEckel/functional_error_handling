@@ -5,9 +5,9 @@ Github: BruceEckel/functional_error_handling
 ---
 
 - Github: BruceEckel/functional_error_handling
-    - These slides (Slides.md for Obsidian)
-    - Paper (in progress): for depth in things I can only touch on
     - Code examples + tools
+    - Paper (in progress): for depth in things I can only touch on
+    - These slides (derived from the paper)
 
 - Requires Python type annotations + checker
 
@@ -36,7 +36,7 @@ Github: BruceEckel/functional_error_handling
 ---
 ### Error Handling
 
-- Different approaches 
+- Different approaches
 - Usually global solutions with race conditions
 - Hard to compose
 - The domain of the OS or the language?
@@ -59,8 +59,8 @@ Github: BruceEckel/functional_error_handling
 
 - Don’t know what exceptions will emerge
 - The function can start throwing new ones
-- C++ and Java tried *exception specifications*—didn't work
- 
+- C++ and Java tried a *shadow type system*: *exception specifications*—didn't work
+
 ---
 ### 2. Conflates Categories
 
@@ -101,7 +101,7 @@ Github: BruceEckel/functional_error_handling
 **`comprehension4.py`**
 
 - Failure causes a short-circuit
-- Returns an `Err` that tells you exactly what happened
+- Returns a `Failure` that tells you exactly what happened
 - Can't ignore it
 - Close to the origin where information is highest
 
