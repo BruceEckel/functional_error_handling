@@ -12,13 +12,13 @@ class Result(Generic[ANSWER, ERROR]):
     def and_then(
         self, func: Callable[[ANSWER], "Result"]
     ) -> "Result[ANSWER, ERROR]":
-        if isinstance(self, Ok):
+        if isinstance(self, Success):
             return func(self.value)
         return self  # Pass the Err forward
 
 
 @dataclass(frozen=True)
-class Ok(Result[ANSWER, ERROR]):
+class Success(Result[ANSWER, ERROR]):
     value: ANSWER
 
     def unwrap(self) -> ANSWER:
@@ -26,5 +26,5 @@ class Ok(Result[ANSWER, ERROR]):
 
 
 @dataclass(frozen=True)
-class Err(Result[ANSWER, ERROR]):
+class Failure(Result[ANSWER, ERROR]):
     error: ERROR

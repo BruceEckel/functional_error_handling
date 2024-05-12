@@ -1,14 +1,14 @@
 #: comprehension3.py
 # Explicit result type
-from result import Err, Ok, Result
+from result import Failure, Success, Result
 from util import display
 from validate_output import console
 
 
 def func_a(i: int) -> Result[int, str]:
     if i == 1:
-        return Err(f"func_a({i})")
-    return Ok(i)
+        return Failure(f"func_a({i})")
+    return Success(i)
 
 
 if __name__ == "__main__":
@@ -17,7 +17,7 @@ if __name__ == "__main__":
         outputs := [func_a(i) for i in inputs],
     )
     console == """
-0: Ok(value=0)
-1: Err(error='func_a(1)')
-2: Ok(value=2)
+0: Success(value=0)
+1: Failure(error='func_a(1)')
+2: Success(value=2)
 """

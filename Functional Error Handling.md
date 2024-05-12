@@ -239,7 +239,7 @@ class Result(Generic[ANSWER, ERROR]):
 
 
 @dataclass(frozen=True)
-class Ok(Result[ANSWER, ERROR]):
+class Success(Result[ANSWER, ERROR]):
     value: ANSWER  # Usage: return Ok(answer)
 
     def unwrap(self) -> ANSWER:
@@ -247,7 +247,7 @@ class Ok(Result[ANSWER, ERROR]):
 
 
 @dataclass(frozen=True)
-class Err(Result[ANSWER, ERROR]):
+class Failure(Result[ANSWER, ERROR]):
     error: ERROR  # Usage: return Err(error)
 ```
 
@@ -260,15 +260,15 @@ The modified version of the example using `Result` is now:
 ```python
 #: comprehension3.py
 # Explicit result type
-from result import Err, Ok, Result
+from result import Failure, Success, Result
 from util import display
 from validate_output import console
 
 
 def func_a(i: int) -> Result[int, str]:
     if i == 1:
-        return Err(f"func_a({i})")
-    return Ok(i)
+        return Failure(f"func_a({i})")
+    return Success(i)
 
 
 if __name__ == "__main__":
@@ -277,9 +277,9 @@ if __name__ == "__main__":
         outputs := [func_a(i) for i in inputs],
     )
     console == """
-0: Ok(value=0)
-1: Err(error='func_a(1)')
-2: Ok(value=2)
+0: Success(value=0)
+1: Failure(error='func_a(1)')
+2: Success(value=2)
 """
 ```
 
@@ -293,7 +293,7 @@ The previous examples included very simple composition in the `compsed` function
 #: comprehension4.py
 # Composing functions
 from comprehension3 import func_a
-from result import Err, Ok, Result
+from result import Failure, Success, Result
 from util import display
 from validate_output import console
 
@@ -301,27 +301,27 @@ from validate_output import console
 # Use an exception as info (but don't raise it):
 def func_b(i: int) -> Result[int, ZeroDivisionError]:
     if i == 0:
-        return Err(ZeroDivisionError(f"func_b({i})"))
-    return Ok(i)
+        return Failure(ZeroDivisionError(f"func_b({i})"))
+    return Success(i)
 
 
 def func_c(i: int) -> Result[str, ValueError]:
     if i == -1:
-        return Err(ValueError(f"func_c({i})"))
-    return Ok(f"func_c({i})")
+        return Failure(ValueError(f"func_c({i})"))
+    return Success(f"func_c({i})")
 
 
 def composed(
     i: int,
 ) -> Result[str, str | ZeroDivisionError | ValueError]:
     result_a = func_a(i)
-    if isinstance(result_a, Err):
+    if isinstance(result_a, Failure):
         return result_a
 
     result_b = func_b(
         result_a.unwrap()  # unwrap gets the value from Ok
     )
-    if isinstance(result_b, Err):
+    if isinstance(result_b, Failure):
         return result_b
 
     result_c = func_c(result_b.unwrap())
@@ -334,10 +334,10 @@ if __name__ == "__main__":
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: Err(error=ValueError('func_c(-1)'))
-0: Err(error=ZeroDivisionError('func_b(0)'))
-1: Err(error='func_a(1)')
-2: Ok(value='func_c(2)')
+-1: Failure(error=ValueError('func_c(-1)'))
+0: Failure(error=ZeroDivisionError('func_b(0)'))
+1: Failure(error='func_a(1)')
+2: Success(value='func_c(2)')
 """
 ```
 
@@ -368,13 +368,13 @@ class Result(Generic[ANSWER, ERROR]):
     def and_then(
         self, func: Callable[[ANSWER], "Result"]
     ) -> "Result[ANSWER, ERROR]":
-        if isinstance(self, Ok):
+        if isinstance(self, Success):
             return func(self.value)
         return self  # Pass the Err forward
 
 
 @dataclass(frozen=True)
-class Ok(Result[ANSWER, ERROR]):
+class Success(Result[ANSWER, ERROR]):
     value: ANSWER
 
     def unwrap(self) -> ANSWER:
@@ -382,7 +382,7 @@ class Ok(Result[ANSWER, ERROR]):
 
 
 @dataclass(frozen=True)
-class Err(Result[ANSWER, ERROR]):
+class Failure(Result[ANSWER, ERROR]):
     error: ERROR
 ```
 
@@ -414,10 +414,10 @@ if __name__ == "__main__":
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: Err(error=ValueError('func_c(-1)'))
-0: Err(error=ZeroDivisionError('func_b(0)'))
-1: Err(error='func_a(1)')
-2: Ok(value='func_c(2)')
+-1: Failure(error=ValueError('func_c(-1)'))
+0: Failure(error=ZeroDivisionError('func_b(0)'))
+1: Failure(error='func_a(1)')
+2: Success(value='func_c(2)')
 """
 ```
 

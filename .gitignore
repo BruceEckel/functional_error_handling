@@ -170,3 +170,4 @@ cython_debug/
 # Explicitly include all files under snippets (even if they are generally ignored types)
 !.obsidian/snippets/**
 tmp.txt
+.idea
