@@ -6,7 +6,7 @@ Github: BruceEckel/functional_error_handling
 
 - Github: BruceEckel/functional_error_handling
     - These slides (Slides.md for Obsidian)
-    - Paper: depth in things I can only touch on
+    - Paper (in progress): for depth in things I can only touch on
     - Code examples + tools
 
 - Requires Python type annotations + checker
@@ -16,7 +16,7 @@ Github: BruceEckel/functional_error_handling
 
 - Helping Bill Frasure & James Ward on
 > Effect-Oriented Programming
-- Interviews that James and I have done for the [Happy Path Programming podcast](https://happypathprogramming.com/).
+- People James and I have interviewed for the [Happy Path Programming podcast](https://happypathprogramming.com/).
 - ChatGPT: Unreliable but still very useful
 
 ---
@@ -28,9 +28,9 @@ Github: BruceEckel/functional_error_handling
 - Effortlessly assemble components in the same way a child assembles Legos
 
 ---
-### Steps to Composability
+### Impediments to Composability
 - Gotos -> Functions
-- Modules
+- The Need for Modules
 - Inheritance Breaks Encapsulation
 
 ---
