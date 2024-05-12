@@ -148,7 +148,7 @@ value = 2
 ---
 ```python
 #: result_basic.py
-# Result with OK & Err subtypes
+# Result with Success & Failure subtypes
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
@@ -211,7 +211,7 @@ if __name__ == "__main__":
 #: comprehension4.py
 # Composing functions
 from comprehension3 import func_a
-from result import Failure, Success, Result
+from result import Failure, Result, Success
 from util import display
 from validate_output import console
 
@@ -237,13 +237,12 @@ def composed(
         return result_a
 
     result_b = func_b(
-        result_a.unwrap()  # unwrap gets the value from Ok
+        result_a.unwrap()  # unwrap gets the value from Success
     )
     if isinstance(result_b, Failure):
         return result_b
 
-    result_c = func_c(result_b.unwrap())
-    return result_c
+    return func_c(result_b.unwrap())
 
 
 if __name__ == "__main__":
@@ -260,7 +259,7 @@ if __name__ == "__main__":
 ```
 
 - Failure causes a short-circuit
-- Returns an `Err` that tells you exactly what happened
+- Returns an `Failure` that tells you exactly what happened
 - Can't ignore it
 - Close to the origin where information is highest
 
@@ -282,8 +281,8 @@ class Result(Generic[ANSWER, ERROR]):
         self, func: Callable[[ANSWER], "Result"]
     ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Success):
-            return func(self.value)
-        return self  # Pass the Err forward
+            return func(self.unwrap())
+        return self  # Pass the Failure forward
 
 
 @dataclass(frozen=True)

@@ -27,7 +27,7 @@ def composed(
         return result_a
 
     result_b = func_b(
-        result_a.unwrap()  # unwrap gets the value from Ok
+        result_a.unwrap()  # unwrap gets the value from Success
     )
     if isinstance(result_b, Failure):
         return result_b

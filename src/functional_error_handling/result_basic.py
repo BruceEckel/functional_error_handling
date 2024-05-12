@@ -1,5 +1,5 @@
 #: result_basic.py
-# Result with OK & Err subtypes
+# Result with Success & Failure subtypes
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 

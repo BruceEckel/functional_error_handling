@@ -225,7 +225,7 @@ We now have the unfortunate situation that `outputs` contains multiple types: bo
 
 ```python
 #: result_basic.py
-# Result with OK & Err subtypes
+# Result with Success & Failure subtypes
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
@@ -251,9 +251,9 @@ class Failure(Result[ANSWER, ERROR]):
     error: ERROR  # Usage: return Success(error)
 ```
 
-A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Ok` calculation, and `error` for a failure (`Err`). Thus, if an `Err` is returned, the client programmer cannot simply reach in and grab the `value` field because it doesn’t exist. The client programmer is forced to properly analyze the `Result`.
+A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Success` calculation, and `error` for a `Failure`. Thus, if a `Failure` is returned, the client programmer cannot simply reach in and grab the `value` field because it doesn’t exist. The client programmer is forced to properly analyze the `Result`.
 
-To use `Result`, you `return Ok(answer)` when you’ve successfully created an answer, and `return Err(error)` to indicate a failure. `unwrap` is a convenience method which is only available for an `Ok` (we’ll look at `and_then` later).
+To use `Result`, you `return Success(answer)` when you’ve successfully created an answer, and `return Failure(error)` to indicate a failure. `unwrap` is a convenience method which is only available for a `Success`.
 
 The modified version of the example using `Result` is now:
 
@@ -283,7 +283,7 @@ if __name__ == "__main__":
 """
 ```
 
-Now `func_a` returns a single type, `Result`. The first type parameter to `Result` is the type returned by `Ok` and the second type parameter is the type returned by `Err`. The `outputs` from the comprehension are all of type `Result`, and we have preserved the successful calculations even though there is a failing call. We can also pattern-match on the outputs, and it is crystal-clear which match is for the success and which is for the failure.
+Now `func_a` returns a single type, `Result`. The first type parameter to `Result` is the type returned by `Success` and the second type parameter is the type returned by `Failure`. The `outputs` from the comprehension are all of type `Result`, and we have preserved the successful calculations even though there is a failing call. We can also pattern-match on the outputs, and it is crystal-clear which match is for the success and which is for the failure.
 
 ## Composing with `Result`
 
@@ -293,7 +293,7 @@ The previous examples included very simple composition in the `compsed` function
 #: comprehension4.py
 # Composing functions
 from comprehension3 import func_a
-from result import Failure, Success, Result
+from result import Failure, Result, Success
 from util import display
 from validate_output import console
 
@@ -319,13 +319,12 @@ def composed(
         return result_a
 
     result_b = func_b(
-        result_a.unwrap()  # unwrap gets the value from Ok
+        result_a.unwrap()  # unwrap gets the value from Success
     )
     if isinstance(result_b, Failure):
         return result_b
 
-    result_c = func_c(result_b.unwrap())
-    return result_c
+    return func_c(result_b.unwrap())
 
 
 if __name__ == "__main__":
@@ -341,11 +340,11 @@ if __name__ == "__main__":
 """
 ```
 
-The `a`, `b` and `c` functions each have argument values that are unacceptable. Notice that `b` and `c` both use built-in exception types as arguments to `Err`, but those exceptions are never raised—they are simply used to convey information, just like the `str` in `a`.
+The `a`, `b` and `c` functions each have argument values that are unacceptable. Notice that `b` and `c` both use built-in exception types as arguments to `Failure`, but those exceptions are never raised—they are simply used to convey information, just like the `str` in `a`.
 
-In `composed`, we call `a`, `b` and `c` in sequence. After each call, we check to see if the result type is `Err`. If so, the calculation has failed and we can’t continue, so we return the current result, which is an `Err` object containing the reason for the failure. If it succeeds, it is an `Ok` which contains an `unwrap` method that is used to extract the answer from that calculation—if you look back at `Result`, you’ll see that it returns the `ANSWER` type so its use can be properly type-checked.
+In `composed`, we call `a`, `b` and `c` in sequence. After each call, we check to see if the result type is `Failure`. If so, the calculation has failed and we can’t continue, so we return the current result, which is a `Failure` object containing the reason for the failure. If it succeeds, it is a `Success` which contains an `unwrap` method that is used to extract the answer from that calculation—if you look back at `Result`, you’ll see that it returns the `ANSWER` type so its use can be properly type-checked.
 
-This means that any failure during a sequence of composed function calls will short-circuit out of `composed`, returning an `Err` that tells you exactly what happened, and that you must decide what to do with. You can’t just ignore it and assume that it will “bubble up” until it finds an appropriate handler. You are forced to deal with it at the point of origin, which is typically when you know the most about an error.
+This means that any failure during a sequence of composed function calls will short-circuit out of `composed`, returning a `Failure` that tells you exactly what happened, and that you must decide what to do with. You can’t just ignore it and assume that it will “bubble up” until it finds an appropriate handler. You are forced to deal with it at the point of origin, which is typically when you know the most about an error.
 
 ## Simplifying Composition with `and_then`
 
@@ -369,8 +368,8 @@ class Result(Generic[ANSWER, ERROR]):
         self, func: Callable[[ANSWER], "Result"]
     ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Success):
-            return func(self.value)
-        return self  # Pass the Err forward
+            return func(self.unwrap())
+        return self  # Pass the Failure forward
 
 
 @dataclass(frozen=True)
@@ -429,12 +428,12 @@ To understand what’s happening, here’s the definition of `and_then` taken fr
     def and_then(
         self, func: Callable[[ANSWER], "Result"]
     ) -> "Result[ANSWER, ERROR]":
-        if isinstance(self, Ok):
+        if isinstance(self, Success):
             return func(self.value)
-        return self  # Pass the Err forward
+        return self  # Pass the Failure forward
 ```
 
-At each “chaining point” in `func_a(i).and_then(func_b).and_then(func_c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next function in the chain. If not, that means `self` is an `Err` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Err`, so it doesn’t try to apply the next function but just (again) returns the `Err`. Once you produce an `Err`, no more function calls occur (that is, it short-circuits) and the `Err` result gets passed all the way out of the composed function so the caller can deal with the specific failure.
+At each “chaining point” in `func_a(i).and_then(func_b).and_then(func_c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next function in the chain. If not, that means `self` is a `Failure` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Failure`, so it doesn’t try to apply the next function but just (again) returns the `Failure`. Once you produce a `Failure`, no more function calls occur (that is, it short-circuits) and the `Failure` result gets passed all the way out of the composed function so the caller can deal with the specific failure.
 
 ## Handling Multiple Arguments
 
