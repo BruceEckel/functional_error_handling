@@ -198,14 +198,14 @@ console == """
 
 for r in outputs:
     match r:
-        case int(value):
-            print(f"{value = }")
+        case int(answer):
+            print(f"{answer = }")
         case str(error):
             print(f"{error = }")
 console == """
-value = 0
+answer = 0
 error = 'func_a(1)'
-value = 2
+answer = 2
 """
 ```
 
@@ -240,10 +240,10 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Success(Result[ANSWER, ERROR]):
-    value: ANSWER  # Usage: return Success(answer)
+    answer: ANSWER  # Usage: return Success(answer)
 
     def unwrap(self) -> ANSWER:
-        return self.value
+        return self.answer
 
 
 @dataclass(frozen=True)
@@ -251,7 +251,7 @@ class Failure(Result[ANSWER, ERROR]):
     error: ERROR  # Usage: return Failure(error)
 ```
 
-A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `value` for a successful `Success` calculation, and `error` for a `Failure`. Thus, if a `Failure` is returned, the client programmer cannot simply reach in and grab the `value` field because it doesn’t exist. The client programmer is forced to properly analyze the `Result`.
+A `TypeVar` defines a generic parameter. We want `Result` to contain a type for an `ANSWER` when the function call is successful, and an `ERROR` to indicate how the function call failed. Each subtype of `Result` only holds one field: `answer` for a successful `Success` calculation, and `error` for a `Failure`. Thus, if a `Failure` is returned, the client programmer cannot simply reach in and grab the `answer` field because it doesn’t exist. The client programmer is forced to properly analyze the `Result`.
 
 To use `Result`, you `return Success(answer)` when you’ve successfully created an answer, and `return Failure(error)` to indicate a failure. `unwrap` is a convenience method which is only available for a `Success`.
 
@@ -277,9 +277,9 @@ if __name__ == "__main__":
         outputs := [func_a(i) for i in inputs],
     )
     console == """
-0: Success(value=0)
+0: Success(answer=0)
 1: Failure(error='func_a(1)')
-2: Success(value=2)
+2: Success(answer=2)
 """
 ```
 
@@ -319,7 +319,7 @@ def composed(
         return result_a
 
     result_b = func_b(
-        result_a.unwrap()  # unwrap gets the value from Success
+        result_a.unwrap()  # unwrap gets the answer from Success
     )
     if isinstance(result_b, Failure):
         return result_b
@@ -336,7 +336,7 @@ if __name__ == "__main__":
 -1: Failure(error=ValueError('func_c(-1)'))
 0: Failure(error=ZeroDivisionError('func_b(0)'))
 1: Failure(error='func_a(1)')
-2: Success(value='func_c(2)')
+2: Success(answer='func_c(2)')
 """
 ```
 
@@ -348,7 +348,7 @@ This means that any failure during a sequence of composed function calls will sh
 
 ## Simplifying Composition with `and_then`
 
-There’s still a problem that impedes our ultimate goal of composability: every time you call a function within a composed function, you must write code to check the `Result` type and extract the success value with `unwrap`. This is extra repetitive work that interrupts the flow and readability of the program. We need some way to reduce or eliminate the extra code.
+There’s still a problem that impedes our ultimate goal of composability: every time you call a function within a composed function, you must write code to check the `Result` type and extract the `answer` with `unwrap`. This is extra repetitive work that interrupts the flow and readability of the program. We need some way to reduce or eliminate the extra code.
 
 Lets modify `Result` to add a new member function, `and_then`:
 
@@ -374,10 +374,10 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Success(Result[ANSWER, ERROR]):
-    value: ANSWER
+    answer: ANSWER
 
     def unwrap(self) -> ANSWER:
-        return self.value
+        return self.answer
 
 
 @dataclass(frozen=True)
@@ -416,7 +416,7 @@ if __name__ == "__main__":
 -1: Failure(error=ValueError('func_c(-1)'))
 0: Failure(error=ZeroDivisionError('func_b(0)'))
 1: Failure(error='func_a(1)')
-2: Success(value='func_c(2)')
+2: Success(answer='func_c(2)')
 """
 ```
 
@@ -427,13 +427,13 @@ To understand what’s happening, here’s the definition of `and_then` taken fr
 ```python
     def and_then(
         self, func: Callable[[ANSWER], "Result"]
-    ) -> "Result[ANSWER, ERROR]":
-        if isinstance(self, Success):
-            return func(self.value)
-        return self  # Pass the Failure forward
+) -> "Result[ANSWER, ERROR]":
+    if isinstance(self, Success):
+        return func(self.answer)
+    return self  # Pass the Failure forward
 ```
 
-At each “chaining point” in `func_a(i).and_then(func_b).and_then(func_c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `value` from that call as the argument to the next function in the chain. If not, that means `self` is a `Failure` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Failure`, so it doesn’t try to apply the next function but just (again) returns the `Failure`. Once you produce a `Failure`, no more function calls occur (that is, it short-circuits) and the `Failure` result gets passed all the way out of the composed function so the caller can deal with the specific failure.
+At each “chaining point” in `func_a(i).and_then(func_b).and_then(func_c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `answer` from that call as the argument to the next function in the chain. If not, that means `self` is a `Failure` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Failure`, so it doesn’t try to apply the next function but just (again) returns the `Failure`. Once you produce a `Failure`, no more function calls occur (that is, it short-circuits) and the `Failure` result gets passed all the way out of the composed function so the caller can deal with the specific failure.
 
 ## Handling Multiple Arguments
 

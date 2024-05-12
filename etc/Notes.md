@@ -1,4 +1,3 @@
-1. Change 'value' field to 'answer' in Result
 2. Should there be a success(self) method to indicate if this is a Success object, would be part of base type Result?
 4. Does Returns have and_then? If so could use that earlier and avoid repetition of definitions of func_a etc. If it's named something else we could use that in result.py
 

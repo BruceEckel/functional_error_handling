@@ -19,10 +19,10 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Success(Result[ANSWER, ERROR]):
-    value: ANSWER
+    answer: ANSWER
 
     def unwrap(self) -> ANSWER:
-        return self.value
+        return self.answer
 
 
 @dataclass(frozen=True)

@@ -27,7 +27,7 @@ def composed(
         return result_a
 
     result_b = func_b(
-        result_a.unwrap()  # unwrap gets the value from Success
+        result_a.unwrap()  # unwrap gets the answer from Success
     )
     if isinstance(result_b, Failure):
         return result_b
@@ -44,5 +44,5 @@ if __name__ == "__main__":
 -1: Failure(error=ValueError('func_c(-1)'))
 0: Failure(error=ZeroDivisionError('func_b(0)'))
 1: Failure(error='func_a(1)')
-2: Success(value='func_c(2)')
+2: Success(answer='func_c(2)')
 """

@@ -26,5 +26,5 @@ if __name__ == "__main__":
 -1: Failure(error=ValueError('func_c(-1)'))
 0: Failure(error=ZeroDivisionError('func_b(0)'))
 1: Failure(error='func_a(1)')
-2: Success(value='func_c(2)')
+2: Success(answer='func_c(2)')
 """

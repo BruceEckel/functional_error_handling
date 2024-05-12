@@ -17,7 +17,7 @@ if __name__ == "__main__":
         outputs := [func_a(i) for i in inputs],
     )
     console == """
-0: Success(value=0)
+0: Success(answer=0)
 1: Failure(error='func_a(1)')
-2: Success(value=2)
+2: Success(answer=2)
 """

@@ -131,14 +131,14 @@ console == """
 
 for r in outputs:
     match r:
-        case int(value):
-            print(f"{value = }")
+        case int(answer):
+            print(f"{answer = }")
         case str(error):
             print(f"{error = }")
 console == """
-value = 0
+answer = 0
 error = 'func_a(1)'
-value = 2
+answer = 2
 """
 ```
 
@@ -163,10 +163,10 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Success(Result[ANSWER, ERROR]):
-    value: ANSWER  # Usage: return Success(answer)
+    answer: ANSWER  # Usage: return Success(answer)
 
     def unwrap(self) -> ANSWER:
-        return self.value
+        return self.answer
 
 
 @dataclass(frozen=True)
@@ -197,9 +197,9 @@ if __name__ == "__main__":
         outputs := [func_a(i) for i in inputs],
     )
     console == """
-0: Success(value=0)
+0: Success(answer=0)
 1: Failure(error='func_a(1)')
-2: Success(value=2)
+2: Success(answer=2)
 """
 ```
 
@@ -237,7 +237,7 @@ def composed(
         return result_a
 
     result_b = func_b(
-        result_a.unwrap()  # unwrap gets the value from Success
+        result_a.unwrap()  # unwrap gets the answer from Success
     )
     if isinstance(result_b, Failure):
         return result_b
@@ -254,7 +254,7 @@ if __name__ == "__main__":
 -1: Failure(error=ValueError('func_c(-1)'))
 0: Failure(error=ZeroDivisionError('func_b(0)'))
 1: Failure(error='func_a(1)')
-2: Success(value='func_c(2)')
+2: Success(answer='func_c(2)')
 """
 ```
 
@@ -287,10 +287,10 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Success(Result[ANSWER, ERROR]):
-    value: ANSWER
+    answer: ANSWER
 
     def unwrap(self) -> ANSWER:
-        return self.value
+        return self.answer
 
 
 @dataclass(frozen=True)
@@ -329,7 +329,7 @@ if __name__ == "__main__":
 -1: Failure(error=ValueError('func_c(-1)'))
 0: Failure(error=ZeroDivisionError('func_b(0)'))
 1: Failure(error='func_a(1)')
-2: Success(value='func_c(2)')
+2: Success(answer='func_c(2)')
 """
 ```
 

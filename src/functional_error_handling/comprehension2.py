@@ -23,12 +23,12 @@ console == """
 
 for r in outputs:
     match r:
-        case int(value):
-            print(f"{value = }")
+        case int(answer):
+            print(f"{answer = }")
         case str(error):
             print(f"{error = }")
 console == """
-value = 0
+answer = 0
 error = 'func_a(1)'
-value = 2
+answer = 2
 """

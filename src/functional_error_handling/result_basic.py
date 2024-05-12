@@ -14,10 +14,10 @@ class Result(Generic[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Success(Result[ANSWER, ERROR]):
-    value: ANSWER  # Usage: return Success(answer)
+    answer: ANSWER  # Usage: return Success(answer)
 
     def unwrap(self) -> ANSWER:
-        return self.value
+        return self.answer
 
 
 @dataclass(frozen=True)
