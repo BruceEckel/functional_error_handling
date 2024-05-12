@@ -22,4 +22,4 @@ class Success(Result[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Failure(Result[ANSWER, ERROR]):
-    error: ERROR  # Usage: return Success(error)
+    error: ERROR  # Usage: return Failure(error)

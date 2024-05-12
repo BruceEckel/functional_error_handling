@@ -1,6 +1,5 @@
 1. Change 'value' field to 'answer' in Result
-2. Should there be a success(self) method?
-3. Search all text for Success and Failure
+2. Should there be a success(self) method to indicate if this is a Success object, would be part of base type Result?
 4. Does Returns have and_then? If so could use that earlier and avoid repetition of definitions of func_a etc. If it's named something else we could use that in result.py
 
 https://sobolevn.me/2019/02/python-exceptions-considered-an-antipattern
