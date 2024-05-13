@@ -19,7 +19,9 @@ def func_c(i: int) -> Result[int, ZeroDivisionError]:
     try:
         1 / (i - 3)
     except ZeroDivisionError as e:
-        return Failure(f"func_c({i}): {e}")
+        return Failure(
+            ZeroDivisionError(f"func_c({i}): {e}")
+        )
     return Success(i)
 
 
