@@ -1,6 +1,6 @@
 #: example3.py
-# Explicit result type
-from result import Failure, Result, Success
+# Result type returns Success/Failure
+from returns.result import Failure, Result, Success
 from util import display
 from validate_output import console
 
@@ -17,7 +17,7 @@ if __name__ == "__main__":
         outputs := [func_a(i) for i in inputs],
     )
     console == """
-0: Success(answer=0)
-1: Failure(error='func_a(1)')
-2: Success(answer=2)
+0: <Success: 0>
+1: <Failure: func_a(1)>
+2: <Success: 2>
 """

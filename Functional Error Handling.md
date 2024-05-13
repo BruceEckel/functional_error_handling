@@ -259,8 +259,8 @@ The modified version of the example using `Result` is now:
 
 ```python
 #: example3.py
-# Explicit result type
-from result import Failure, Result, Success
+# Result type returns Success/Failure
+from returns.result import Failure, Result, Success
 from util import display
 from validate_output import console
 
@@ -277,9 +277,9 @@ if __name__ == "__main__":
         outputs := [func_a(i) for i in inputs],
     )
     console == """
-0: Success(answer=0)
-1: Failure(error='func_a(1)')
-2: Success(answer=2)
+0: <Success: 0>
+1: <Failure: func_a(1)>
+2: <Success: 2>
 """
 ```
 
@@ -292,56 +292,65 @@ The previous examples included very simple composition in the `compsed` function
 ```python
 #: example4.py
 # Composing functions
-from returns.result import Failure, Result, Success
+# Using https://github.com/dry-python/returns
+from example3 import func_a
+from returns.result import Failure, Result, Success, safe
 from util import display
 from validate_output import console
 
 
-def func_a(i: int) -> Result[int, str]:
-    if i == 1:
-        return Failure(f"func_a({i})")
-    return Success(i)
-
-
 # Use an exception as info (but don't raise it):
-def func_b(i: int) -> Result[int, ZeroDivisionError]:
-    if i == 0:
-        return Failure(ZeroDivisionError(f"func_b({i})"))
+def func_b(i: int) -> Result[int, ValueError]:
+    if i == 2:
+        return Failure(ValueError(f"func_b({i})"))
     return Success(i)
 
 
-def func_c(i: int) -> Result[str, ValueError]:
-    if i == -1:
-        return Failure(ValueError(f"func_c({i})"))
-    return Success(f"func_c({i})")
+# Convert exception to Failure:
+def func_c(i: int) -> Result[int, ZeroDivisionError]:
+    try:
+        1 / (i - 3)
+    except ZeroDivisionError as e:
+        return Failure(f"func_c({i}): {e}")
+    return Success(i)
+
+
+@safe  # Convert existing function
+def func_d(i: int) -> str:  # Result[str, ZeroDivisionError]
+    1 / i
+    return f"func_d({i})"
 
 
 def composed(
     i: int,
-) -> Result[str, str | ZeroDivisionError | ValueError]:
+) -> Result[str, str | ValueError | ZeroDivisionError]:
     result_a = func_a(i)
     if isinstance(result_a, Failure):
         return result_a
 
-    result_b = func_b(
-        result_a.unwrap()  # unwrap gets the answer from Success
-    )
+    # unwrap() gets the answer from Success:
+    result_b = func_b(result_a.unwrap())
     if isinstance(result_b, Failure):
         return result_b
 
-    return func_c(result_b.unwrap())
+    result_c = func_c(result_b.unwrap())
+    if isinstance(result_c, Failure):
+        return result_c
+
+    return func_d(result_c.unwrap())
 
 
 if __name__ == "__main__":
     display(
-        inputs := range(-1, 3),
+        inputs := range(5),
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: <Failure: func_c(-1)>
-0: <Failure: func_b(0)>
+0: <Failure: division by zero>
 1: <Failure: func_a(1)>
-2: <Success: func_c(2)>
+2: <Failure: func_b(2)>
+3: <Failure: func_c(3): division by zero>
+4: <Success: func_d(4)>
 """
 ```
 
@@ -389,12 +398,12 @@ class Failure(Result[ANSWER, ERROR]):
     error: ERROR
 ```
 
-The `bind` method in `Result` cleans up our code nicely:
+`bind` removes the duplicated code:
 
 ```python
 #: example5.py
 # Simplifying composition with bind
-from example4 import func_a, func_b, func_c
+from example4 import func_a, func_b, func_c, func_d
 from returns.result import Result
 from util import display
 from validate_output import console
@@ -408,62 +417,44 @@ def composed(
         func_a(i)
         .bind(func_b)
         .bind(func_c)
+        .bind(func_d)
     )
 
 
 if __name__ == "__main__":
     display(
-        inputs := range(-1, 3),
+        inputs := range(5),
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: <Failure: func_c(-1)>
-0: <Failure: func_b(0)>
+0: <Failure: division by zero>
 1: <Failure: func_a(1)>
-2: <Success: func_c(2)>
+2: <Failure: func_b(2)>
+3: <Failure: func_c(3): division by zero>
+4: <Success: func_d(4)>
 """
 ```
 
-In `composed`, we call `a(i)` which returns a `Result`. The `bind` method is called on that `Result`, passing it the next function we want to call (`b`) as an argument. The return value of `bind` is *also* a `Result`, so we can call `bind` again upon that `Result`, passing it the third function we want to call (`c`).
+In `composed`, we call `func_a(i)` which returns a `Result`. The `bind` method is called on that `Result`, passing it the next function we want to call (`func_b`) as an argument. The return value of `bind` is *also* a `Result`, so we can call `bind` again upon that `Result`, passing it the third function we want to call (`func_c`), and so on.
 
-At each “chaining point” in `func_a(i).bind(func_b).bind(func_c)`, `bind` checks to see if the previous call was successful. If so, it passes the result `answer` from that call as the argument to the next function in the chain. If not, that means `self` is a `Failure` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Failure`, so it doesn’t try to apply the next function but just (again) returns the `Failure`. Once you produce a `Failure`, no more function calls occur (that is, it short-circuits) and the `Failure` result gets passed all the way out of the composed function so the caller can deal with the specific failure.
+At each “chaining point” in `func_a(i).bind(func_b).bind(func_c).bind(func_d)`, `bind` checks the `Result` type to see if it `Success`. If so, it passes the result `answer` from that call as the argument to the next function in the chain. If not, that means `self` is a `Failure` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Failure`, so it doesn’t try to apply the next function but just (again) returns the `Failure`. Once you produce a `Failure`, no more function calls occur (that is, it short-circuits) and the `Failure` result gets passed all the way out of the composed function so the caller can deal with that specific failure.
 
 ## Handling Multiple Arguments
 
 We could continue adding features to our `Result` library until it becomes a complete solution. However, others have worked on this problem so it makes more sense to reuse their libraries. The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns). `Returns` includes other features, but we will only focus on  `Result`.
 
 
-The `pipe` is limiting because it assumes a single argument. What if you need to create a `composed` function that takes multiple arguments? For this, we use something called “do notation,” which you access using `Result.do`:
+What if you need to create a `composed` function that takes multiple arguments? For this, we use something called “do notation,” which you access using `Result.do`:
 
 ```python
 #: example6.py
 # Multiple arguments in composition
-# Using https://github.com/dry-python/returns
-from returns.result import Failure, Result, Success, safe
+from example4 import func_a, func_b, func_c
+from returns.result import Result
 from util import display
 from validate_output import console
 
 
-def func_a(i: int) -> Result[int, str]:
-    if i == 1:
-        return Failure(f"func_a({i})")
-    return Success(i)
-
-
-def func_b(i: int) -> Result[int, ZeroDivisionError]:
-    if i == 0:
-        return Failure(ZeroDivisionError(f"func_b({i})"))
-    return Success(i)
-
-
-@safe  # Convert existing function
-def func_c(i: int) -> int:  # Result[int, ValueError]
-    if i == 3:
-        raise ValueError(f"func_c({i})")
-    return i
-
-
-# Pure function
 def add(first: int, second: int, third: int) -> int:
     return first + second + third
 
@@ -481,13 +472,13 @@ def composed(
 
 
 display(
-    inputs := [(1, 5), (7, 0), (2, 1), (7, 5)],
+    inputs := [(1, 5), (7, 2), (2, 1), (7, 5)],
     outputs=[composed(*args) for args in inputs],
 )
 console == """
 (1, 5): <Failure: func_a(1)>
-(7, 0): <Failure: func_b(0)>
-(2, 1): <Failure: func_c(3)>
+(7, 2): <Failure: func_b(2)>
+(2, 1): <Failure: func_c(3): division by zero>
 (7, 5): <Success: 24>
 """
 ```

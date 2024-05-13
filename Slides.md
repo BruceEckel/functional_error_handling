@@ -45,7 +45,7 @@ Github: BruceEckel/functional_error_handling
 ---
 ### Exceptions
 
-- In the language domain: closer to the problem
+- The language domain is closer to the problem
 - Standard way to report errors
 - Errors can't be ignored
 - Added recovery
