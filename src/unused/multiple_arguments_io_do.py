@@ -1,4 +1,4 @@
-#: multiple_arguments_io_do.py
+#: example6_io_do.py
 from returns.io import IO
 
 

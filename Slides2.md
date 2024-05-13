@@ -78,7 +78,7 @@ Github: BruceEckel/functional_error_handling
 
 ---
 ```python
-#: comprehension1.py
+#: example1.py
 # Exception throws everything away
 
 
@@ -106,7 +106,7 @@ ValueError: func_a(1)
 
 ---
 ```python
-#: comprehension2.py
+#: example2.py
 # Type union aka Sum Type
 # Success vs error is not clear
 from util import display
@@ -178,9 +178,9 @@ class Failure(Result[ANSWER, ERROR]):
 
 ---
 ```python
-#: comprehension3.py
+#: example3.py
 # Explicit result type
-from result import Failure, Success, Result
+from result import Failure, Result, Success
 from util import display
 from validate_output import console
 
@@ -208,7 +208,7 @@ if __name__ == "__main__":
 
 ---
 ```python
-#: comprehension4.py
+#: example4.py
 # Composing functions
 from returns.result import Failure, Result, Success
 from util import display
@@ -307,9 +307,9 @@ class Failure(Result[ANSWER, ERROR]):
 ---
 
 ```python
-#: comprehension5.py
+#: example5.py
 # Simplifying composition with bind
-from comprehension4 import func_a, func_b, func_c
+from example4 import func_a, func_b, func_c
 from returns.result import Result
 from util import display
 from validate_output import console
@@ -345,7 +345,8 @@ if __name__ == "__main__":
 
 ---
 ```python
-#: multiple_arguments.py
+#: example6.py
+# Multiple arguments in composition
 # Using https://github.com/dry-python/returns
 from returns.result import Failure, Result, Success, safe
 from util import display

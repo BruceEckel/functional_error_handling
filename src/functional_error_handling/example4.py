@@ -1,4 +1,4 @@
-#: comprehension4.py
+#: example4.py
 # Composing functions
 from returns.result import Failure, Result, Success
 from util import display

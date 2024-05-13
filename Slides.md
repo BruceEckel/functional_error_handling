@@ -75,7 +75,7 @@ Github: BruceEckel/functional_error_handling
 1. Computationally wasteful, especially with large calculations
 2. Makes debugging harder
 
-**`comprehension1.py`**
+**`example1.py`**
 
 ---
 ### The Functional Approach
@@ -84,7 +84,7 @@ Github: BruceEckel/functional_error_handling
 - Functions return a “package” combining the answer + potential error
 - We can do this with a *type union*:
 
-**`comprehension2.py`**
+**`example2.py`**
 
 ---
 ### Create a new Type for Returns
@@ -93,12 +93,12 @@ Github: BruceEckel/functional_error_handling
 
 ### Incorporate `Result`
 
-**`comprehension3.py`**
+**`example3.py`**
 
 ---
 ### Composing with `Result`
 
-**`comprehension4.py`**
+**`example4.py`**
 
 - Failure causes a short-circuit
 - Returns a `Failure` that tells you exactly what happened
@@ -112,12 +112,12 @@ Let's add a new method `bind` to `Result`:
 
 **`result_with_bind.py`**
 
-**`comprehension5.py`**
+**`example5.py`**
 
 ---
 ### Handling Multiple Arguments
 
-**`multiple_arguments.py`**
+**`example6.py`**
 
 ---
 ### Functional Error Handling is Happening

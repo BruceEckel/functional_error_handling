@@ -141,7 +141,7 @@ Both systems (the original C++ dynamic exception specifications, and Java except
 Let’s start with a simple example where we populate a `List` with the results of a sequence of calls to the function `func_a`:
 
 ```python
-#: comprehension1.py
+#: example1.py
 # Exception throws everything away
 
 
@@ -173,7 +173,7 @@ This package is a new type, with operations that prevent the programmer from sim
 A first attempt uses *type unions* to create a nameless return package:
 
 ```python
-#: comprehension2.py
+#: example2.py
 # Type union aka Sum Type
 # Success vs error is not clear
 from util import display
@@ -258,9 +258,9 @@ To use `Result`, you `return Success(answer)` when you’ve successfully created
 The modified version of the example using `Result` is now:
 
 ```python
-#: comprehension3.py
+#: example3.py
 # Explicit result type
-from result import Failure, Success, Result
+from result import Failure, Result, Success
 from util import display
 from validate_output import console
 
@@ -290,7 +290,7 @@ Now `func_a` returns a single type, `Result`. The first type parameter to `Resul
 The previous examples included very simple composition in the `compsed` functions which just called a single other function. What if you need to compose a more complex function from multiple other functions? The `Result` type ensures that the `composed` function properly represents both the `Answer` type but also the various different errors that can occur:
 
 ```python
-#: comprehension4.py
+#: example4.py
 # Composing functions
 from returns.result import Failure, Result, Success
 from util import display
@@ -392,9 +392,9 @@ class Failure(Result[ANSWER, ERROR]):
 The `bind` method in `Result` cleans up our code nicely:
 
 ```python
-#: comprehension5.py
+#: example5.py
 # Simplifying composition with bind
-from comprehension4 import func_a, func_b, func_c
+from example4 import func_a, func_b, func_c
 from returns.result import Result
 from util import display
 from validate_output import console
@@ -436,7 +436,8 @@ We could continue adding features to our `Result` library until it becomes a com
 The `pipe` is limiting because it assumes a single argument. What if you need to create a `composed` function that takes multiple arguments? For this, we use something called “do notation,” which you access using `Result.do`:
 
 ```python
-#: multiple_arguments.py
+#: example6.py
+# Multiple arguments in composition
 # Using https://github.com/dry-python/returns
 from returns.result import Failure, Result, Success, safe
 from util import display

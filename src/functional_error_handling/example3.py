@@ -1,6 +1,6 @@
-#: comprehension3.py
+#: example3.py
 # Explicit result type
-from result import Failure, Success, Result
+from result import Failure, Result, Success
 from util import display
 from validate_output import console
 

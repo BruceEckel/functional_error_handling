@@ -1,4 +1,5 @@
-#: multiple_arguments.py
+#: example6.py
+# Multiple arguments in composition
 # Using https://github.com/dry-python/returns
 from returns.result import Failure, Result, Success, safe
 from util import display

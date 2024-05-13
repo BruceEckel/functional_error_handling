@@ -1,6 +1,6 @@
-#: comprehension5.py
+#: example5.py
 # Simplifying composition with bind
-from comprehension4 import func_a, func_b, func_c
+from example4 import func_a, func_b, func_c
 from returns.result import Result
 from util import display
 from validate_output import console

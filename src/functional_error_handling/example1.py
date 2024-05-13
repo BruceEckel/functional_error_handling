@@ -1,4 +1,4 @@
-#: comprehension1.py
+#: example1.py
 # Exception throws everything away
 
 

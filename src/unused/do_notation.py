@@ -2,7 +2,7 @@
 # Alternative to flow/bind
 from test import test
 
-from comprehension5 import composed, func_a, func_b, func_c
+from example5 import composed, func_a, func_b, func_c
 from returns.result import Result
 
 

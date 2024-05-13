@@ -1,4 +1,4 @@
-#: comprehension2.py
+#: example2.py
 # Type union aka Sum Type
 # Success vs error is not clear
 from util import display

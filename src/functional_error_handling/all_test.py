@@ -35,34 +35,34 @@ def run_script(file_name, throws_exception=False):
     print(f"{file_name} completed")
 
 
-def test_comprehension1():
-    run_script("comprehension1.py", throws_exception=True)
+def test_example1():
+    run_script("example1.py", throws_exception=True)
 
 
-def test_comprehension2():
-    run_script("comprehension2.py")
+def test_example2():
+    run_script("example2.py")
 
 
-def test_comprehension3():
-    run_script("comprehension3.py")
+def test_example3():
+    run_script("example3.py")
 
 
-def test_comprehension4():
-    run_script("comprehension4.py")
+def test_example4():
+    run_script("example4.py")
 
 
-def test_comprehension5():
-    run_script("comprehension5.py")
+def test_example5():
+    run_script("example5.py")
 
 
-def test_multiple_arguments():
-    run_script("multiple_arguments.py")
+def test_example6():
+    run_script("example6.py")
 
 
 if __name__ == "__main__":
-    test_comprehension1()
-    test_comprehension2()
-    test_comprehension3()
-    test_comprehension4()
-    test_comprehension5()
-    test_multiple_arguments()
+    test_example1()
+    test_example2()
+    test_example3()
+    test_example4()
+    test_example5()
+    test_example6()

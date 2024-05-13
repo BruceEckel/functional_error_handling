@@ -1,13 +1,16 @@
-#: multiple_arguments_tuples.py
+#: example6_tuples.py
 # Multiple arguments within composed function using tuples
-from returns.result import Result, Success, Failure
-from returns.pipeline import flow
-from returns.pointfree import bind
-from validate_output import console
 from typing import Tuple
 
+from returns.pipeline import flow
+from returns.pointfree import bind
+from returns.result import Failure, Result, Success
+from validate_output import console
 
-def first(t: Tuple[int, int]) -> Result[Tuple[int, int], str]:
+
+def first(
+    t: Tuple[int, int],
+) -> Result[Tuple[int, int], str]:
     i, j = t  # Unpack tuple
     if i == j:
         return Failure(f"first({i = }, {j = })")
