@@ -1,4 +1,4 @@
-#: example6_tuples.py
+#: multiple_arguments_tuples.py
 # Multiple arguments within composed function using tuples
 from typing import Tuple
 
