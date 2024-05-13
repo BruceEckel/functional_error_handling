@@ -6,13 +6,16 @@ from util import display
 from validate_output import console
 
 
-def add(first: int, second: int, third: int) -> int:
-    return first + second + third
+def add(first: int, second: int, third: int) -> str:
+    return (
+        f"add({first} + {second} + {third}):"
+        f" {first + second + third}"
+    )
 
 
 def composed(
     i: int, j: int
-) -> Result[int, str | ZeroDivisionError | ValueError]:
+) -> Result[str, str | ZeroDivisionError | ValueError]:
     # fmt: off
     return Result.do(
         add(first, second, third)
@@ -30,5 +33,5 @@ console == """
 (1, 5): <Failure: func_a(1)>
 (7, 2): <Failure: func_b(2)>
 (2, 1): <Failure: func_c(3): division by zero>
-(7, 5): <Success: 24>
+(7, 5): <Success: add(7 + 5 + 12): 24>
 """
