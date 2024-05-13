@@ -27,23 +27,33 @@ class MarkdownListing:
     def __post_init__(self):
         if self.source_file_path is None:
             console.print(
-                "[bold red] MarkdownListing: source_file_path not found among:[/bold red]"
+                "[bold red] MarkdownListing: source_file_path is None"
+                f" for slugname: {self.slugname}[/bold red]"
             )
             console.print(pformat(python_files))
             raise ValueError("source_file cannot be None")
         self.source_file_contents = (
             "```python\n"
-            + self.source_file_path.read_text(encoding="utf-8")
+            + self.source_file_path.read_text(
+                encoding="utf-8"
+            )
             + "```"
         )
-        self.changed = self.markdown_listing != self.source_file_contents
+        self.changed = (
+            self.markdown_listing
+            != self.source_file_contents
+        )
         if self.changed:
             # Compute the differences between markdown_listing and source_file_contents
             differ = difflib.Differ()
             diff_lines = list(
                 differ.compare(
-                    self.markdown_listing.splitlines(keepends=True),
-                    self.source_file_contents.splitlines(keepends=True),
+                    self.markdown_listing.splitlines(
+                        keepends=True
+                    ),
+                    self.source_file_contents.splitlines(
+                        keepends=True
+                    ),
                 )
             )
             # Format the differences for display
@@ -74,35 +84,66 @@ def find_python_files_and_listings(
     global python_files
     listings = []
 
-    code_location_pattern = re.compile(r"#\[code_location\]\s*(.*)\s*-->")
+    code_location_pattern = re.compile(
+        r"#\[code_location\]\s*(.*)\s*-->"
+    )
 
-    for match in re.finditer(code_location_pattern, markdown_content):
+    for match in re.finditer(
+        code_location_pattern, markdown_content
+    ):
         code_location = Path(match.group(1))
         if code_location.is_absolute():
-            python_files.extend(list(code_location.glob("**/*.py")))
+            python_files.extend(
+                list(code_location.glob("**/*.py"))
+            )
         else:  # Relative path:
             python_files.extend(
-                list((Path.cwd() / code_location).resolve().glob("**/*.py"))
+                list(
+                    (Path.cwd() / code_location)
+                    .resolve()
+                    .glob("**/*.py")
+                )
             )
     console.print(
         f"[orange3]{"  Available Python Files  ".center(width, "-")}[/orange3]"
     )
     for pyfile in [pf.name for pf in python_files]:
-        console.print(f"\t[sea_green2]{pyfile}[/sea_green2]")
+        console.print(
+            f"\t[sea_green2]{pyfile}[/sea_green2]"
+        )
     console.print(f"[orange3]{"-" * width}[/orange3]")
 
     # If slug line doesn't exist group(1) returns None:
-    listing_pattern = re.compile(r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL)
-    for match in re.finditer(listing_pattern, markdown_content):
+    listing_pattern = re.compile(
+        r"```python\n(#\:(.*?)\n)?(.*?)```", re.DOTALL
+    )
+    for match in re.finditer(
+        listing_pattern, markdown_content
+    ):
         if match.group(1) is not None:
-            listing_content = match.group(0)  # Include markdown tags
-            filename = match.group(2).strip() if match.group(2) else None
-            assert filename, f"filename not found in {match}"
+            listing_content = match.group(
+                0
+            )  # Include markdown tags
+            filename = (
+                match.group(2).strip()
+                if match.group(2)
+                else None
+            )
+            assert (
+                filename
+            ), f"filename not found in {match}"
             source_file = next(
-                (file for file in python_files if file.name == filename), None
+                (
+                    file
+                    for file in python_files
+                    if file.name == filename
+                ),
+                None,
             )
             listings.append(
-                MarkdownListing(filename, listing_content, source_file)
+                MarkdownListing(
+                    filename, listing_content, source_file
+                )
             )
     return listings
 
@@ -113,12 +154,19 @@ def update_markdown_listings(
     updated_markdown = markdown_content
     for listing in listings:
         if not listing.changed:
-            console.print(f"[bold green]{listing.slugname}[/bold green]")
+            console.print(
+                f"[bold green]{listing.slugname}[/bold green]"
+            )
         if listing.changed:
-            console.print(f"[bold red]{listing.slugname}[/bold red]")
-            console.print(f"[bright_cyan]{listing}[/bright_cyan]")
+            console.print(
+                f"[bold red]{listing.slugname}[/bold red]"
+            )
+            console.print(
+                f"[bright_cyan]{listing}[/bright_cyan]"
+            )
             updated_markdown = updated_markdown.replace(
-                listing.markdown_listing, listing.source_file_contents
+                listing.markdown_listing,
+                listing.source_file_contents,
             )
     return updated_markdown
 
@@ -128,26 +176,41 @@ def main():
         description="Update Python slugline-marked source-code listings within a markdown file."
     )
     parser.add_argument(
-        "markdown_file", help="Path to the markdown file to be updated."
+        "markdown_file",
+        help="Path to the markdown file to be updated.",
     )
     args = parser.parse_args()
 
     markdown_file = Path(args.markdown_file)
-    markdown_content = markdown_file.read_text(encoding="utf-8")
-    listings = find_python_files_and_listings(markdown_content)
-    changes = [True for listing in listings if listing.changed]
+    markdown_content = markdown_file.read_text(
+        encoding="utf-8"
+    )
+    listings = find_python_files_and_listings(
+        markdown_content
+    )
+    changes = [
+        True for listing in listings if listing.changed
+    ]
     if any(changes):
-        updated_markdown = update_markdown_listings(markdown_content, listings)
-        markdown_file.write_text(updated_markdown, encoding="utf-8")
-    change_count = (
-        f"  {changes.count(True)} changes made to {markdown_file}  ".center(
-            width, "-"
+        updated_markdown = update_markdown_listings(
+            markdown_content, listings
         )
+        markdown_file.write_text(
+            updated_markdown, encoding="utf-8"
+        )
+    change_count = f"  {changes.count(True)} changes made to {markdown_file}  ".center(
+        width, "-"
     )
     console.print(f"\n[orange3]{change_count}[/orange3]")
     if any(changes):
-        for change in [listing for listing in listings if listing.changed]:
-            console.print(f"[bright_cyan]{change.slugname}[/bright_cyan]")
+        for change in [
+            listing
+            for listing in listings
+            if listing.changed
+        ]:
+            console.print(
+                f"[bright_cyan]{change.slugname}[/bright_cyan]"
+            )
 
 
 if __name__ == "__main__":

@@ -224,8 +224,8 @@ Note that in the definition of `composed`, the type checker requires that you re
 We now have the unfortunate situation that `outputs` contains multiple types: both `int` and `str`. The solution is to create a new type that unifies the “answer” and “error” types. We’ll call this `Result` and define it using generics to make it universally applicable:
 
 ```python
-#: result_basic.py
-# Result with Success & Failure subtypes
+#: result.py
+# Generic Result with Success & Failure subtypes
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
@@ -292,10 +292,15 @@ The previous examples included very simple composition in the `compsed` function
 ```python
 #: comprehension4.py
 # Composing functions
-from comprehension3 import func_a
-from result import Failure, Result, Success
+from returns.result import Failure, Result, Success
 from util import display
 from validate_output import console
+
+
+def func_a(i: int) -> Result[int, str]:
+    if i == 1:
+        return Failure(f"func_a({i})")
+    return Success(i)
 
 
 # Use an exception as info (but don't raise it):
@@ -333,10 +338,10 @@ if __name__ == "__main__":
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: Failure(error=ValueError('func_c(-1)'))
-0: Failure(error=ZeroDivisionError('func_b(0)'))
-1: Failure(error='func_a(1)')
-2: Success(answer='func_c(2)')
+-1: <Failure: func_c(-1)>
+0: <Failure: func_b(0)>
+1: <Failure: func_a(1)>
+2: <Success: func_c(2)>
 """
 ```
 
@@ -346,15 +351,14 @@ In `composed`, we call `a`, `b` and `c` in sequence. After each call, we check t
 
 This means that any failure during a sequence of composed function calls will short-circuit out of `composed`, returning a `Failure` that tells you exactly what happened, and that you must decide what to do with. You can’t just ignore it and assume that it will “bubble up” until it finds an appropriate handler. You are forced to deal with it at the point of origin, which is typically when you know the most about an error.
 
-## Simplifying Composition with `and_then`
+## Simplifying Composition with `bind`
 
 There’s still a problem that impedes our ultimate goal of composability: every time you call a function within a composed function, you must write code to check the `Result` type and extract the `answer` with `unwrap`. This is extra repetitive work that interrupts the flow and readability of the program. We need some way to reduce or eliminate the extra code.
 
-Lets modify `Result` to add a new member function, `and_then`:
+Lets modify `Result` to add a new member function, `bind`:
 
 ```python
-#: result.py
-# Add and_then
+#: result_with_bind.py
 from dataclasses import dataclass
 from typing import Callable, Generic, TypeVar
 
@@ -364,7 +368,7 @@ ERROR = TypeVar("ERROR")
 
 @dataclass(frozen=True)
 class Result(Generic[ANSWER, ERROR]):
-    def and_then(
+    def bind(
         self, func: Callable[[ANSWER], "Result"]
     ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Success):
@@ -385,13 +389,13 @@ class Failure(Result[ANSWER, ERROR]):
     error: ERROR
 ```
 
-The `and_then` method in `Result` (see the comment in `result.py` that said “Ignore this method for now”) solves this exact problem:
+The `bind` method in `Result` cleans up our code nicely:
 
 ```python
 #: comprehension5.py
-# Simplifying composition with and_then
+# Simplifying composition with bind
 from comprehension4 import func_a, func_b, func_c
-from result import Result
+from returns.result import Result
 from util import display
 from validate_output import console
 
@@ -402,8 +406,8 @@ def composed(
     # fmt: off
     return (
         func_a(i)
-        .and_then(func_b)
-        .and_then(func_c)
+        .bind(func_b)
+        .bind(func_c)
     )
 
 
@@ -413,27 +417,16 @@ if __name__ == "__main__":
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: Failure(error=ValueError('func_c(-1)'))
-0: Failure(error=ZeroDivisionError('func_b(0)'))
-1: Failure(error='func_a(1)')
-2: Success(answer='func_c(2)')
+-1: <Failure: func_c(-1)>
+0: <Failure: func_b(0)>
+1: <Failure: func_a(1)>
+2: <Success: func_c(2)>
 """
 ```
 
-In `composed`, we call `a(i)` which returns a `Result`. The `and_then` method is called on that `Result`, passing it the next function we want to call (`b`) as an argument. The return value of `and_then` is *also* a `Result`, so we can call `and_then` again upon that `Result`, passing it the third function we want to call (`c`).
+In `composed`, we call `a(i)` which returns a `Result`. The `bind` method is called on that `Result`, passing it the next function we want to call (`b`) as an argument. The return value of `bind` is *also* a `Result`, so we can call `bind` again upon that `Result`, passing it the third function we want to call (`c`).
 
-To understand what’s happening, here’s the definition of `and_then` taken from `result.py`:
-
-```python
-    def and_then(
-        self, func: Callable[[ANSWER], "Result"]
-) -> "Result[ANSWER, ERROR]":
-    if isinstance(self, Success):
-        return func(self.answer)
-    return self  # Pass the Failure forward
-```
-
-At each “chaining point” in `func_a(i).and_then(func_b).and_then(func_c)`, `and_then` checks to see if the previous call was successful. If so, it passes the result `answer` from that call as the argument to the next function in the chain. If not, that means `self` is a `Failure` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Failure`, so it doesn’t try to apply the next function but just (again) returns the `Failure`. Once you produce a `Failure`, no more function calls occur (that is, it short-circuits) and the `Failure` result gets passed all the way out of the composed function so the caller can deal with the specific failure.
+At each “chaining point” in `func_a(i).bind(func_b).bind(func_c)`, `bind` checks to see if the previous call was successful. If so, it passes the result `answer` from that call as the argument to the next function in the chain. If not, that means `self` is a `Failure` object (containing specific error information), so all it needs to do is `return self`. The next call in the chain sees that the returned type is `Failure`, so it doesn’t try to apply the next function but just (again) returns the `Failure`. Once you produce a `Failure`, no more function calls occur (that is, it short-circuits) and the `Failure` result gets passed all the way out of the composed function so the caller can deal with the specific failure.
 
 ## Handling Multiple Arguments
 

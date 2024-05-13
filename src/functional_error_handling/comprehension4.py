@@ -1,9 +1,14 @@
 #: comprehension4.py
 # Composing functions
-from comprehension3 import func_a
-from result import Failure, Result, Success
+from returns.result import Failure, Result, Success
 from util import display
 from validate_output import console
+
+
+def func_a(i: int) -> Result[int, str]:
+    if i == 1:
+        return Failure(f"func_a({i})")
+    return Success(i)
 
 
 # Use an exception as info (but don't raise it):
@@ -41,8 +46,8 @@ if __name__ == "__main__":
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: Failure(error=ValueError('func_c(-1)'))
-0: Failure(error=ZeroDivisionError('func_b(0)'))
-1: Failure(error='func_a(1)')
-2: Success(answer='func_c(2)')
+-1: <Failure: func_c(-1)>
+0: <Failure: func_b(0)>
+1: <Failure: func_a(1)>
+2: <Success: func_c(2)>
 """

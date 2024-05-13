@@ -1,25 +1,20 @@
 #: result.py
-# Add and_then
+# Generic Result with Success & Failure subtypes
 from dataclasses import dataclass
-from typing import Callable, Generic, TypeVar
+from typing import Generic, TypeVar
 
-ANSWER = TypeVar("ANSWER")
+ANSWER = TypeVar("ANSWER")  # Generic parameters
 ERROR = TypeVar("ERROR")
 
 
 @dataclass(frozen=True)
 class Result(Generic[ANSWER, ERROR]):
-    def and_then(
-        self, func: Callable[[ANSWER], "Result"]
-    ) -> "Result[ANSWER, ERROR]":
-        if isinstance(self, Success):
-            return func(self.unwrap())
-        return self  # Pass the Failure forward
+    pass
 
 
 @dataclass(frozen=True)
 class Success(Result[ANSWER, ERROR]):
-    answer: ANSWER
+    answer: ANSWER  # Usage: return Success(answer)
 
     def unwrap(self) -> ANSWER:
         return self.answer
@@ -27,4 +22,4 @@ class Success(Result[ANSWER, ERROR]):
 
 @dataclass(frozen=True)
 class Failure(Result[ANSWER, ERROR]):
-    error: ERROR
+    error: ERROR  # Usage: return Failure(error)

@@ -147,8 +147,8 @@ answer = 2
 
 ---
 ```python
-#: result_basic.py
-# Result with Success & Failure subtypes
+#: result.py
+# Generic Result with Success & Failure subtypes
 from dataclasses import dataclass
 from typing import Generic, TypeVar
 
@@ -210,10 +210,15 @@ if __name__ == "__main__":
 ```python
 #: comprehension4.py
 # Composing functions
-from comprehension3 import func_a
-from result import Failure, Result, Success
+from returns.result import Failure, Result, Success
 from util import display
 from validate_output import console
+
+
+def func_a(i: int) -> Result[int, str]:
+    if i == 1:
+        return Failure(f"func_a({i})")
+    return Success(i)
 
 
 # Use an exception as info (but don't raise it):
@@ -251,10 +256,10 @@ if __name__ == "__main__":
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: Failure(error=ValueError('func_c(-1)'))
-0: Failure(error=ZeroDivisionError('func_b(0)'))
-1: Failure(error='func_a(1)')
-2: Success(answer='func_c(2)')
+-1: <Failure: func_c(-1)>
+0: <Failure: func_b(0)>
+1: <Failure: func_a(1)>
+2: <Success: func_c(2)>
 """
 ```
 
@@ -264,10 +269,10 @@ if __name__ == "__main__":
 - Close to the origin where information is highest
 
 ---
-### Simplifying Composition with `and_then`
+### Simplifying Composition with `bind`
+
 ```python
-#: result.py
-# Add and_then
+#: result_with_bind.py
 from dataclasses import dataclass
 from typing import Callable, Generic, TypeVar
 
@@ -277,7 +282,7 @@ ERROR = TypeVar("ERROR")
 
 @dataclass(frozen=True)
 class Result(Generic[ANSWER, ERROR]):
-    def and_then(
+    def bind(
         self, func: Callable[[ANSWER], "Result"]
     ) -> "Result[ANSWER, ERROR]":
         if isinstance(self, Success):
@@ -300,11 +305,12 @@ class Failure(Result[ANSWER, ERROR]):
 
 
 ---
+
 ```python
 #: comprehension5.py
-# Simplifying composition with and_then
+# Simplifying composition with bind
 from comprehension4 import func_a, func_b, func_c
-from result import Result
+from returns.result import Result
 from util import display
 from validate_output import console
 
@@ -315,8 +321,8 @@ def composed(
     # fmt: off
     return (
         func_a(i)
-        .and_then(func_b)
-        .and_then(func_c)
+        .bind(func_b)
+        .bind(func_c)
     )
 
 
@@ -326,10 +332,10 @@ if __name__ == "__main__":
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: Failure(error=ValueError('func_c(-1)'))
-0: Failure(error=ZeroDivisionError('func_b(0)'))
-1: Failure(error='func_a(1)')
-2: Success(answer='func_c(2)')
+-1: <Failure: func_c(-1)>
+0: <Failure: func_b(0)>
+1: <Failure: func_a(1)>
+2: <Success: func_c(2)>
 """
 ```
 

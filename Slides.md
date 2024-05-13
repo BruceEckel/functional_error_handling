@@ -106,11 +106,11 @@ Github: BruceEckel/functional_error_handling
 - Close to the origin where information is highest
 
 ---
-### Simplifying Composition with `and_then`
+### Simplifying Composition with `bind`
 
-Let's add a new method `and_then` to `Result`:
+Let's add a new method `bind` to `Result`:
 
-**`result.py`**
+**`result_with_bind.py`**
 
 **`comprehension5.py`**
 

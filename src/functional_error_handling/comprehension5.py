@@ -1,7 +1,7 @@
 #: comprehension5.py
-# Simplifying composition with and_then
+# Simplifying composition with bind
 from comprehension4 import func_a, func_b, func_c
-from result import Result
+from returns.result import Result
 from util import display
 from validate_output import console
 
@@ -12,8 +12,8 @@ def composed(
     # fmt: off
     return (
         func_a(i)
-        .and_then(func_b)
-        .and_then(func_c)
+        .bind(func_b)
+        .bind(func_c)
     )
 
 
@@ -23,8 +23,8 @@ if __name__ == "__main__":
         outputs := [composed(i) for i in inputs],
     )
     console == """
--1: Failure(error=ValueError('func_c(-1)'))
-0: Failure(error=ZeroDivisionError('func_b(0)'))
-1: Failure(error='func_a(1)')
-2: Success(answer='func_c(2)')
+-1: <Failure: func_c(-1)>
+0: <Failure: func_b(0)>
+1: <Failure: func_a(1)>
+2: <Success: func_c(2)>
 """
