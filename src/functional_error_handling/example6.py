@@ -26,12 +26,8 @@ def composed(
     )
 
 
-pprint(
-    [
-        (args, composed(*args))
-        for args in [(1, 5), (7, 2), (2, 1), (7, 5)]
-    ]
-)
+inputs = [(1, 5), (7, 2), (2, 1), (7, 5)]
+pprint([(args, composed(*args)) for args in inputs])
 console == """
 [((1, 5), <Failure: func_a(1)>),
  ((7, 2), <Failure: func_b(2)>),

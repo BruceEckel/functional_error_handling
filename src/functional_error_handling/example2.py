@@ -15,16 +15,16 @@ console == """
 [(0, 0), (1, 'func_a(1)'), (2, 2), (3, 3), (4, 4)]
 """
 
-for _, r in outputs:
+for i, r in outputs:
     match r:
         case int(answer):
-            print(f"{answer = }")
+            print(f"{i}: {answer = }")
         case str(error):
-            print(f"{error = }")
+            print(f"{i}: {error = }")
 console == """
-answer = 0
-error = 'func_a(1)'
-answer = 2
-answer = 3
-answer = 4
+0: answer = 0
+1: error = 'func_a(1)'
+2: answer = 2
+3: answer = 3
+4: answer = 4
 """
