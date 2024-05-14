@@ -109,7 +109,6 @@ ValueError: func_a(1)
 #: example2.py
 # Type union aka Sum Type
 # Success vs error is not clear
-from util import display
 from validate_output import console
 
 
@@ -119,17 +118,12 @@ def func_a(i: int) -> int | str:  # Sum type
     return i
 
 
-display(
-    inputs := range(3),
-    outputs := [func_a(i) for i in inputs],
-)
+print(outputs := [(i, func_a(i)) for i in range(5)])
 console == """
-0: 0
-1: func_a(1)
-2: 2
+[(0, 0), (1, 'func_a(1)'), (2, 2), (3, 3), (4, 4)]
 """
 
-for r in outputs:
+for _, r in outputs:
     match r:
         case int(answer):
             print(f"{answer = }")
@@ -139,6 +133,8 @@ console == """
 answer = 0
 error = 'func_a(1)'
 answer = 2
+answer = 3
+answer = 4
 """
 ```
 
@@ -180,8 +176,9 @@ class Failure(Result[ANSWER, ERROR]):
 ```python
 #: example3.py
 # Result type returns Success/Failure
+from pprint import pprint
+
 from returns.result import Failure, Result, Success
-from util import display
 from validate_output import console
 
 
@@ -192,14 +189,13 @@ def func_a(i: int) -> Result[int, str]:
 
 
 if __name__ == "__main__":
-    display(
-        inputs := range(3),
-        outputs := [func_a(i) for i in inputs],
-    )
+    pprint([(i, func_a(i)) for i in range(5)])
     console == """
-0: <Success: 0>
-1: <Failure: func_a(1)>
-2: <Success: 2>
+[(0, <Success: 0>),
+ (1, <Failure: func_a(1)>),
+ (2, <Success: 2>),
+ (3, <Success: 3>),
+ (4, <Success: 4>)]
 """
 ```
 
@@ -211,9 +207,10 @@ if __name__ == "__main__":
 #: example4.py
 # Composing functions
 # Using https://github.com/dry-python/returns
+from pprint import pprint
+
 from example3 import func_a
 from returns.result import Failure, Result, Success, safe
-from util import display
 from validate_output import console
 
 
@@ -229,7 +226,9 @@ def func_c(i: int) -> Result[int, ZeroDivisionError]:
     try:
         1 / (i - 3)
     except ZeroDivisionError as e:
-        return Failure(f"func_c({i}): {e}")
+        return Failure(
+            ZeroDivisionError(f"func_c({i}): {e}")
+        )
     return Success(i)
 
 
@@ -259,16 +258,13 @@ def composed(
 
 
 if __name__ == "__main__":
-    display(
-        inputs := range(5),
-        outputs := [composed(i) for i in inputs],
-    )
+    pprint([(i, composed(i)) for i in range(5)])
     console == """
-0: <Failure: division by zero>
-1: <Failure: func_a(1)>
-2: <Failure: func_b(2)>
-3: <Failure: func_c(3): division by zero>
-4: <Success: func_d(4)>
+[(0, <Failure: division by zero>),
+ (1, <Failure: func_a(1)>),
+ (2, <Failure: func_b(2)>),
+ (3, <Failure: func_c(3): division by zero>),
+ (4, <Success: func_d(4)>)]
 """
 ```
 
@@ -318,9 +314,10 @@ class Failure(Result[ANSWER, ERROR]):
 ```python
 #: example5.py
 # Simplifying composition with bind
+from pprint import pprint
+
 from example4 import func_a, func_b, func_c, func_d
 from returns.result import Result
-from util import display
 from validate_output import console
 
 
@@ -337,16 +334,13 @@ def composed(
 
 
 if __name__ == "__main__":
-    display(
-        inputs := range(5),
-        outputs := [composed(i) for i in inputs],
-    )
+    pprint([(i, composed(i)) for i in range(5)])
     console == """
-0: <Failure: division by zero>
-1: <Failure: func_a(1)>
-2: <Failure: func_b(2)>
-3: <Failure: func_c(3): division by zero>
-4: <Success: func_d(4)>
+[(0, <Failure: division by zero>),
+ (1, <Failure: func_a(1)>),
+ (2, <Failure: func_b(2)>),
+ (3, <Failure: func_c(3): division by zero>),
+ (4, <Success: func_d(4)>)]
 """
 ```
 
@@ -358,9 +352,10 @@ if __name__ == "__main__":
 ```python
 #: example6.py
 # Multiple arguments in composition
+from pprint import pprint
+
 from example4 import func_a, func_b, func_c
 from returns.result import Result
-from util import display
 from validate_output import console
 
 
@@ -383,15 +378,17 @@ def composed(
     )
 
 
-display(
-    inputs := [(1, 5), (7, 2), (2, 1), (7, 5)],
-    outputs=[composed(*args) for args in inputs],
+pprint(
+    [
+        (args, composed(*args))
+        for args in [(1, 5), (7, 2), (2, 1), (7, 5)]
+    ]
 )
 console == """
-(1, 5): <Failure: func_a(1)>
-(7, 2): <Failure: func_b(2)>
-(2, 1): <Failure: func_c(3): division by zero>
-(7, 5): <Success: add(7 + 5 + 12): 24>
+[((1, 5), <Failure: func_a(1)>),
+ ((7, 2), <Failure: func_b(2)>),
+ ((2, 1), <Failure: func_c(3): division by zero>),
+ ((7, 5), <Success: add(7 + 5 + 12): 24>)]
 """
 ```
 

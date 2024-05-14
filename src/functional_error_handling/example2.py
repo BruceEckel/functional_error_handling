@@ -1,7 +1,6 @@
 #: example2.py
 # Type union aka Sum Type
 # Success vs error is not clear
-from util import display
 from validate_output import console
 
 
@@ -11,17 +10,12 @@ def func_a(i: int) -> int | str:  # Sum type
     return i
 
 
-display(
-    inputs := range(3),
-    outputs := [func_a(i) for i in inputs],
-)
+print(outputs := [(i, func_a(i)) for i in range(5)])
 console == """
-0: 0
-1: func_a(1)
-2: 2
+[(0, 0), (1, 'func_a(1)'), (2, 2), (3, 3), (4, 4)]
 """
 
-for r in outputs:
+for _, r in outputs:
     match r:
         case int(answer):
             print(f"{answer = }")
@@ -31,4 +25,6 @@ console == """
 answer = 0
 error = 'func_a(1)'
 answer = 2
+answer = 3
+answer = 4
 """

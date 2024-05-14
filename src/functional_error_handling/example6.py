@@ -1,8 +1,9 @@
 #: example6.py
 # Multiple arguments in composition
+from pprint import pprint
+
 from example4 import func_a, func_b, func_c
 from returns.result import Result
-from util import display
 from validate_output import console
 
 
@@ -25,13 +26,15 @@ def composed(
     )
 
 
-display(
-    inputs := [(1, 5), (7, 2), (2, 1), (7, 5)],
-    outputs=[composed(*args) for args in inputs],
+pprint(
+    [
+        (args, composed(*args))
+        for args in [(1, 5), (7, 2), (2, 1), (7, 5)]
+    ]
 )
 console == """
-(1, 5): <Failure: func_a(1)>
-(7, 2): <Failure: func_b(2)>
-(2, 1): <Failure: func_c(3): division by zero>
-(7, 5): <Success: add(7 + 5 + 12): 24>
+[((1, 5), <Failure: func_a(1)>),
+ ((7, 2), <Failure: func_b(2)>),
+ ((2, 1), <Failure: func_c(3): division by zero>),
+ ((7, 5), <Success: add(7 + 5 + 12): 24>)]
 """

@@ -32,11 +32,12 @@ Github: BruceEckel/functional_error_handling
 - Gotos -> Functions
 - The Need for Modules
 - Inheritance Breaks Encapsulation
+- Error Handling
 
 ---
 ### Error Handling
 
-- Different approaches
+- Messy history with different approaches
 - Usually global solutions with race conditions
 - Hard to compose
 - The domain of the OS or the language?
@@ -45,7 +46,7 @@ Github: BruceEckel/functional_error_handling
 ---
 ### Exceptions
 
-- The language domain is closer to the problem
+- Language domain is closer to the problem
 - Standard way to report errors
 - Errors can't be ignored
 - Added recovery
@@ -59,7 +60,7 @@ Github: BruceEckel/functional_error_handling
 
 - Don’t know what exceptions will emerge
 - The function can start throwing new ones
-- C++ and Java tried a *shadow type system*: *exception specifications*—didn't work
+- C++ and Java tried a shadow type system: *exception specifications*—didn't work
 
 ---
 ### 2. Conflates Categories

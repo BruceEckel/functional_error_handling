@@ -1,7 +1,8 @@
 #: example3.py
 # Result type returns Success/Failure
+from pprint import pprint
+
 from returns.result import Failure, Result, Success
-from util import display
 from validate_output import console
 
 
@@ -12,12 +13,11 @@ def func_a(i: int) -> Result[int, str]:
 
 
 if __name__ == "__main__":
-    display(
-        inputs := range(3),
-        outputs := [func_a(i) for i in inputs],
-    )
+    pprint([(i, func_a(i)) for i in range(5)])
     console == """
-0: <Success: 0>
-1: <Failure: func_a(1)>
-2: <Success: 2>
+[(0, <Success: 0>),
+ (1, <Failure: func_a(1)>),
+ (2, <Success: 2>),
+ (3, <Success: 3>),
+ (4, <Success: 4>)]
 """
