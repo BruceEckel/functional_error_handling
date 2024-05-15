@@ -13,8 +13,8 @@ Code for Bruce Eckel's Pycon2024 Presentation
     - [example5.py](https://github.com/BruceEckel/functional_error_handling/blob/main/src/functional_error_handling/example5.py)
     - [example6.py](https://github.com/BruceEckel/functional_error_handling/blob/main/src/functional_error_handling/example6.py)
 
-- The associated paper (a work in progress, which I think may eventually become part of a larger work) is [here](https://github.com/BruceEckel/functional_error_handling/blob/main/Functional%20Error%20Handling.md).
+- The associated paper (a work in progress, which I think may eventually become part of a larger work) is [here](https://github.com/BruceEckel/functional_error_handling/blob/main/Functional%20Error%20Handling.md). Note that this is only partially done and needs significant rewriting.
 
-Works with [rye](https://rye-up.com/). Install rye, clone this repository, and run `rye sync` inside the home directory of the repository.
+- Works with [rye](https://rye-up.com/). Install rye, clone this repository, and run `rye sync` inside the home directory of the repository.
 
-Test with `rye test` (or `python -m pytest`, but not `pytest`).
+- Test with `rye test` (or `python -m pytest`, but not `pytest`).
