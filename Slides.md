@@ -38,7 +38,7 @@ Github: BruceEckel/functional_error_handling
 ### Error Handling
 
 - Messy history with different approaches
-- Usually global solutions with race conditions
+- Usually: global solutions with race conditions
 - Hard to compose
 - The domain of the OS or the language?
     - Initial OS experiments, including resumption
@@ -65,16 +65,16 @@ Github: BruceEckel/functional_error_handling
 ---
 ### 2. Conflates Categories
 
-- Recoverable
-- Panic: program can't continue
+1. Recoverable
+2. Panic: program can't continue
     - Treated the same as recoverable
     - Unecessary overhead
 
 ---
 ### 3. Exceptions Destroy Partial Calculations
 
-1. Computationally wasteful, especially with large calculations
-2. Makes debugging harder
+- Computationally wasteful, especially with large calculations
+- Makes debugging harder
 
 **`example1.py`**
 
@@ -88,7 +88,7 @@ Github: BruceEckel/functional_error_handling
 **`example2.py`**
 
 ---
-### Create a new Type for Returns
+### A new Return Type
 
 **`result.py`**
 
