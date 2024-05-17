@@ -129,4 +129,4 @@ Let's add a new method `bind` to `Result`:
 - Benefits make it worth adopting a library like `Results`
 
 ---
-- Open spaces session if you want to Q&A
+- Open spaces session for Q&A & Discussion:  Today (Saturday) 1pm Room 318
