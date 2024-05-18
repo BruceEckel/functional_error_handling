@@ -7,7 +7,7 @@ Github: BruceEckel/functional_error_handling
 - Github: BruceEckel/functional_error_handling
     - Code examples + tools
     - Paper (in progress): for depth in things I can only touch on
-    - These slides (derived from the paper)
+    - These slides
 
 - Requires Python type annotations + checker
 
@@ -20,7 +20,7 @@ Github: BruceEckel/functional_error_handling
 - ChatGPT: Unreliable but still very useful
 
 ---
-
+#### Thesis
 - Most of what we've been working towards in programming—whether we are aware of it or not—is composability
 
 > Combining smaller pieces into bigger pieces
@@ -82,7 +82,7 @@ Github: BruceEckel/functional_error_handling
 ### The Functional Approach
 
 - Stop using exceptions
-- Functions return a “package” combining the answer + potential error
+- Functions return a structure combining the answer + potential error
 - We can do this with a *type union*:
 
 **`example2.py`**
@@ -130,3 +130,4 @@ Let's add a new method `bind` to `Result`:
 
 ---
 - Open spaces session for Q&A & Discussion:  Today (Saturday) 1pm Room 318
+- Meet for dinner tonight 6:15 Westin Lobby
