@@ -1,14 +1,14 @@
 *This document, code examples, and presentation slides are in a [GitHub repository](https://github.com/BruceEckel/functional_error_handling)*. This paper assumes full usage of Python’s type system.
 <!-- #[code_location] ./src/functional_error_handling -->
 
-> **Thesis**: *Most of what we've been working towards in programming—whether we are aware of it or not—is composability.* 
+> **Thesis**: *Most of what we've been working towards in programming—whether we are aware of it or not—is composability.*
 
 Discovering the meaning of composability is part of this path—there are different definitions depending on the programming language paradigm under scrutiny.
 Here’s my definition:
 
 > The ability to assemble bigger pieces from smaller pieces.
 
-This is less-precise than some definitions. For example, composition in object-oriented programming means “putting objects inside other objects.” When dealing with functions, composability means “calling functions within other functions.” Both definitions fit my overall definition; they achieve the same goal but in different specific ways. 
+This is less-precise than some definitions. For example, composition in object-oriented programming means “putting objects inside other objects.” When dealing with functions, composability means “calling functions within other functions.” Both definitions fit my overall definition; they achieve the same goal but in different specific ways.
 
 To enable the easy construction of programs, we need to be able to effortlessly assemble components in the same way that a child assembles Legos—by simply sticking them together, without requiring extra activities. On top of that, such assemblages become their own components that can be stuck together just as easily. This composability scales up regardless of the size of the components.
 
@@ -18,7 +18,7 @@ Over the years we have encountered numerous roadblocks to this goal.
 
 [Djikstra’s 1968 note](https://homepages.cwi.nl/~storm/teaching/reader/Dijkstra68.pdf) had quite an impact on the programming community, which at the time consisted largely of assembly-language programmers. For these, the goto statement was foundational, and denigrating it was a shock. Although he never explicitly mentioned functions in his note, the effect was to push programmers towards functions. [The creator of Structured Concurrency](https://vorpus.org/blog/notes-on-structured-concurrency-or-go-statement-considered-harmful/) provides a clear description of this.
 
-Rather than jumping about within a limited program, functions present the caller with a single entry and exit point. This dramatically improves composability because you can no longer leave a section of code at any point using a goto. Within a function scope you cannot know what’s outside that scope, thus you can’t jump somewhere because you don’t know a destination to jump to. 
+Rather than jumping about within a limited program, functions present the caller with a single entry and exit point. This dramatically improves composability because you can no longer leave a section of code at any point using a goto. Within a function scope you cannot know what’s outside that scope, thus you can’t jump somewhere because you don’t know a destination to jump to.
 
 My programming training was primarily as a computer engineer and I spent the first few years of my career programming in assembly. Assembly supports subroutine calls and returns, but not the loading of arguments on the stack and passing results back out—the programmer must write this error-prone code by hand.
 
@@ -31,6 +31,7 @@ Tim Peters’ observation of the value of namespaces (see [The Zen of Python](ht
 It wasn’t always this way. Breaking assembly-language programs into pieces was not easy, and early higher-level languages tended to be single-file programs and did not consider modularity. When the idea began to surface it was incorporated as a main feature of the Modula-2 language (a descendent of Pascal). The name tells you what a significant shift it was considered at the time.
 
 Modula-2 and similar languages required an explicit declaration of a module:
+
 ```modula-2
 MODULE Hello;
 FROM STextIO IMPORT WriteString;
@@ -38,6 +39,7 @@ BEGIN
   WriteString("Hello World!")
 END Hello.
 ```
+
 This allowed complete granularity independent of file organization; perhaps this was because programmers were used to thinking in terms of one big file-per-program. Python’s merging of modules with files makes more sense in hindsight and has the benefit of eliminating the [(significant) extra verbiage](https://en.wikipedia.org/wiki/Modula-2), only a portion of which is shown here.
 
 The main benefit of modules is name control—each module creates a scope for names (a namespace) which allows programmers the freedom to choose any name at will within a module. This prevents name collisions across a project and reduces the cognitive load on the programmer. Prior to this, programs reached scaling limits as they grew larger. Program size in assembly language programs was limited by many different factors, so the need for modules was not seen until systems were able to grow larger because higher-level languages solved enough of these other factors.
@@ -54,7 +56,7 @@ Error reporting and handling has been a significant impediment to composability.
 
 ## History
 
-Original programs were small (by present-day standards), written in assembly language (machine code quickly became too unwieldy), and tightly coupled to the underlying hardware. If something went wrong, the only way to report it was to change the output on a wire, to turn on a light or a buzzer. If you had one, you put a message on the console—this might as simple as a dot-matrix display. Such an error message probably wasn’t friendly to the end-user of the system and usually required a tech support call to the manufacturer. 
+Original programs were small (by present-day standards), written in assembly language (machine code quickly became too unwieldy), and tightly coupled to the underlying hardware. If something went wrong, the only way to report it was to change the output on a wire, to turn on a light or a buzzer. If you had one, you put a message on the console—this might as simple as a dot-matrix display. Such an error message probably wasn’t friendly to the end-user of the system and usually required a tech support call to the manufacturer.
 
 Two of my first jobs were building embedded systems that controlled hardware. These systems had to work right. There was no point in reporting most errors because  an error normally meant the software was broken.
 
@@ -74,17 +76,18 @@ A fundamental question that designers were trying to understand during this evol
 
 > *Who is responsible for error handling, the OS or the language?*
 
-Since every program has the potential for errors, it initially seemed obvious that this activity should be the domain of the operating system. Some early operating systems allowed the program to invoke an error which would then jump to the operating system, and a few OSes even experimented with the ability to “resume” back to the point where the error occurred, so the handler could fix the problem and continue processing. Notably, these systems did not find success and resumption was removed. 
+Since every program has the potential for errors, it initially seemed obvious that this activity should be the domain of the operating system. Some early operating systems allowed the program to invoke an error which would then jump to the operating system, and a few OSes even experimented with the ability to “resume” back to the point where the error occurred, so the handler could fix the problem and continue processing. Notably, these systems did not find success and resumption was removed.
 
 Further experiments eventually made it clear that the language needed primary responsibility for error reporting and handling (there are a few special cases, such as out-of-memory errors, which must still be handled by the OS). This is because an OS is designed to be general-purpose, and thus cannot know the specific situation that caused an error, whereas language code can be close to the problem. Customization is normally the domain of the language. You could imagine calling the OS to install custom error-handling routines, and you can also imagine how quickly that would become overwhelmingly messy.
 
-If errors are in the language domain, the next question is how to report and handle them. 
+If errors are in the language domain, the next question is how to report and handle them.
 
 # Exceptions
 
 Unifying error reporting and recovery
 
 There were different language implementations of exceptions:
+
 - Lisp (was this the origin of language-based exceptions?). Possibly ironic as Lisp is the first functional language.
 - BASIC had “On Error Go To” (and “resume”?)
 - Pascal
@@ -93,6 +96,7 @@ There were different language implementations of exceptions:
 - Python has exceptions but doesn’t provide any type annotation or other mechanism to indicate what exceptions might emerge from a function call.
 
 Exceptions seemed like a great idea:
+
 1. A standardized way to correct problems so that an operation can recover and retry.
 2. There's only one way to report errors.
 3. Errors cannot be ignored—they flow upward until caught or displayed on the console with program termination.
@@ -103,7 +107,7 @@ To be clear, exceptions were a big improvement over all of the previous (non) so
 
 ## Problems with Exceptions
 
-In the small (and especially when teaching them), exceptions seem to work quite well. 
+In the small (and especially when teaching them), exceptions seem to work quite well.
 
 maybe you can't prove it, things work in the small but don't scale). We only figure it out when scaling composability.
 
@@ -130,7 +134,7 @@ When errors are included in the type system, you can know all the errors that ca
 
 Languages like C++ and Java attempted to add notation indicating the exceptions that might emerge from a function call. This was well-intentioned and seems to produce the necessary information the client programmer needs to handle errors. The fundamental problem was that this created an alternate or “shadow” type system that doesn’t follow the same rules as the primary type system. To make the shadow type system work, its rules were warped to the point where it became effectively useless (a discovery that has taken years to realize).
 
-C++ exception specifications were originally optional and not statically type-checked. After many years these were deprecated in favor of the statically-typed [`expected` specification](https://en.cppreference.com/w/cpp/utility/expected) (which takes the functional approached described in this paper). 
+C++ exception specifications were originally optional and not statically type-checked. After many years these were deprecated in favor of the statically-typed [`expected` specification](https://en.cppreference.com/w/cpp/utility/expected) (which takes the functional approached described in this paper).
 
 Java created checked exceptions, which must be explicitly dealt with in your code, and runtime exceptions, which could be ignored. Eventually they added a feature that allows checked exceptions to be easily converted into runtime exceptions. Java functions can always return `null` without any warning.
 
@@ -161,12 +165,13 @@ ValueError: func_a(1)
 ```
 
 `func_a` throws a `ValueError` if its argument is `1`. The `range(3)` is 0, 1, and 2; only one of these values causes the exception. So `result` contains only one problem; the other two values are fine. However, we lose everything that we were calculating when the exception is thrown. This:
+
 1. Is computationally wasteful, especially with large calculations.
 2. Makes debugging harder. It would be quite valuable to see in `result` the parts that succeeded and those that failed.
 
 # The Functional Solution
 
-Instead of creating a complex implementation to report and handle errors, the functional approach creates a “return package” containing the answer along with the (potential) error information. Instead of only returning the answer, we return this package from the function. 
+Instead of creating a complex implementation to report and handle errors, the functional approach creates a “return package” containing the answer along with the (potential) error information. Instead of only returning the answer, we return this package from the function.
 
 This package is a new type, with operations that prevent the programmer from simply plucking the result from the package without dealing with error conditions (a failing of the Go language approach).
 
@@ -436,7 +441,6 @@ At each “chaining point” in `func_a(i).bind(func_b).bind(func_c).bind(func_d
 ## Handling Multiple Arguments
 
 We could continue adding features to our `Result` library until it becomes a complete solution. However, others have worked on this problem so it makes more sense to reuse their libraries. The most popular Python library that includes this extra functionality is [Returns](https://github.com/dry-python/returns). `Returns` includes other features, but we will only focus on  `Result`.
-
 
 What if you need to create a `composed` function that takes multiple arguments? For this, we use something called “do notation,” which you access using `Result.do`:
 
